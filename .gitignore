@@ -1,0 +1,56 @@
+# Build
+bin/
+obj/
+out/
+
+# Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+[Tt]est[Rr]esult*/
+*.Cache
+ClientBin/
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Rider / JetBrains
+.idea/
+*.iml
+
+# env
+.env
+.env.local
+.env.*.local
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+secrets.json
+
+# File Storage
+uploads/
+wwwroot/uploads/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Docker
+docker-compose.override.yml
+
+# MAUI artifacts
+*.ipa
+*.apk
+*.aab
+
+# Coverage
+coverage/
+*.cobertura.xml
+*.opencover.xml

@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BookingHub.Application\BookingHub.Application.csproj" />
+    <ProjectReference Include="..\BookingHub.Infrastructure\BookingHub.Infrastructure.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/BookingHub.API/BookingHub.API.csproj" Id="00e15c85-002b-4cbb-8ff8-51b2bda42be0" />
+    <Project Path="src/BookingHub.Application/BookingHub.Application.csproj" Id="0d9bb0ce-4eb8-48ff-b508-0f3b98fc4b0c" />
+    <Project Path="src/BookingHub.Domain/BookingHub.Domain.csproj" Id="e66f190e-6bf1-4c7e-9f67-0521b4b8c3d9" />
+    <Project Path="src/BookingHub.Infrastructure/BookingHub.Infrastructure.csproj" Id="440712bf-db14-48fd-8c4d-4f52dfd4a448" />
+  </Folder>
+  <Folder Name="/tests/" />
+</Solution>

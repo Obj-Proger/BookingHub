@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\BookingHub.Application\BookingHub.Application.csproj" />
+    <ProjectReference Include="..\BookingHub.Domain\BookingHub.Domain.csproj" />
+  </ItemGroup>
+
+</Project>
