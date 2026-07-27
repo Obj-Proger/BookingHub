@@ -60,4 +60,17 @@ public static class DomainErrors
         public static readonly Error NameTooLong = new("Location.NameTooLong", "Location name exceeds the maximum allowed length.", ErrorType.Validation);
         public static readonly Error InvalidTimeZone = new("Location.InvalidTimeZone", "Time zone is not a recognized system time zone identifier.", ErrorType.Validation);
     }
+
+    public static class Client
+    {
+        public static readonly Error AlreadyLinkedToDifferentUser = new("Client.AlreadyLinkedToDifferentUser", "This client record is already linked to a different user account.", ErrorType.Conflict);
+    }
+
+    public static class Employee
+    {
+        public static readonly Error FullNameEmpty = new("Employee.FullNameEmpty", "Employee full name cannot be empty.", ErrorType.Validation);
+        public static readonly Error FullNameTooLong = new("Employee.FullNameTooLong", "Employee full name exceeds the maximum allowed length.", ErrorType.Validation);
+        public static readonly Error InvalidPhotoUrl = new("Employee.InvalidPhotoUrl", "Photo URL is not a valid absolute URL.", ErrorType.Validation);
+        public static readonly Error AlreadyLinkedToDifferentUser = new("Employee.AlreadyLinkedToDifferentUser", "This employee record is already linked to a different user account.", ErrorType.Conflict);
+    }
 }
