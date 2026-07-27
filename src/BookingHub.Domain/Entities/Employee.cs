@@ -23,6 +23,10 @@ public sealed class Employee : BaseEntity
 
     public static Result<Employee> Create(Guid organizationId, string? fullName)
     {
+        var organizationIdResult = Guard.NotEmpty(organizationId, "Employee.OrganizationIdEmpty", "OrganizationId");
+        if (organizationIdResult.IsFailure)
+            return Result.Failure<Employee>(organizationIdResult.Error);
+
         var nameResult = Guard.RequiredText(fullName, MaxFullNameLength, DomainErrors.Employee.FullNameEmpty, DomainErrors.Employee.FullNameTooLong);
         if (nameResult.IsFailure)
             return Result.Failure<Employee>(nameResult.Error);
@@ -60,6 +64,10 @@ public sealed class Employee : BaseEntity
 
     public Result LinkUser(Guid userId)
     {
+        var userIdResult = Guard.NotEmpty(userId, "Employee.UserIdEmpty", "UserId");
+        if (userIdResult.IsFailure)
+            return Result.Failure(userIdResult.Error);
+
         if (UserId is not null && UserId != userId)
             return Result.Failure(DomainErrors.Employee.AlreadyLinkedToDifferentUser);
 

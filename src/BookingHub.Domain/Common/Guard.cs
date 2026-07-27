@@ -18,4 +18,10 @@ internal static class Guard
             ? Result.Failure<string>(tooLongError)
             : trimmed;
     }
+
+    /// <summary>Validates that a referenced identifier is not <see cref="Guid.Empty"/>.</summary>
+    public static Result<Guid> NotEmpty(Guid value, string errorCode, string fieldName) =>
+        value == Guid.Empty
+            ? Result.Failure<Guid>(Error.Validation(errorCode, $"{fieldName} is required."))
+            : value;
 }

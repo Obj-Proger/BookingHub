@@ -73,4 +73,13 @@ public static class DomainErrors
         public static readonly Error InvalidPhotoUrl = new("Employee.InvalidPhotoUrl", "Photo URL is not a valid absolute URL.", ErrorType.Validation);
         public static readonly Error AlreadyLinkedToDifferentUser = new("Employee.AlreadyLinkedToDifferentUser", "This employee record is already linked to a different user account.", ErrorType.Conflict);
     }
+
+    public static class Service
+    {
+        public static readonly Error NameEmpty = new("Service.NameEmpty", "Service name cannot be empty.", ErrorType.Validation);
+        public static readonly Error NameTooLong = new("Service.NameTooLong", "Service name exceeds the maximum allowed length.", ErrorType.Validation);
+        public static readonly Error DurationNotPositive = new("Service.DurationNotPositive", "Duration must be greater than zero.", ErrorType.Validation);
+        public static readonly Error NegativeBuffer = new("Service.NegativeBuffer", "Buffer times cannot be negative.", ErrorType.Validation);
+        public static readonly Error InvalidColor = new("Service.InvalidColor", "Color must be a hex code in the format #RRGGBB.", ErrorType.Validation);
+    }
 }

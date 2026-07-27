@@ -28,8 +28,12 @@ public sealed class Location : BaseEntity
     }
 
     public static Result<Location> Create(
-        Guid organizationId, string? name, Address address, string? timeZone, WeeklyHours workingHours)
+    Guid organizationId, string? name, Address address, string? timeZone, WeeklyHours workingHours)
     {
+        var organizationIdResult = Guard.NotEmpty(organizationId, "Location.OrganizationIdEmpty", "OrganizationId");
+        if (organizationIdResult.IsFailure)
+            return Result.Failure<Location>(organizationIdResult.Error);
+
         var nameResult = Guard.RequiredText(name, MaxNameLength, DomainErrors.Location.NameEmpty, DomainErrors.Location.NameTooLong);
         if (nameResult.IsFailure)
             return Result.Failure<Location>(nameResult.Error);

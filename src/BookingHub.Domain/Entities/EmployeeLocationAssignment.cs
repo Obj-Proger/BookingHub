@@ -21,8 +21,18 @@ public sealed class EmployeeLocationAssignment : BaseEntity
     {
     }
 
-    public static EmployeeLocationAssignment Create(Guid employeeId, Guid locationId) =>
-        new(Guid.CreateVersion7(), employeeId, locationId);
+    public static Result<EmployeeLocationAssignment> Create(Guid employeeId, Guid locationId)
+    {
+        var employeeIdResult = Guard.NotEmpty(employeeId, "EmployeeLocationAssignment.EmployeeIdEmpty", "EmployeeId");
+        if (employeeIdResult.IsFailure)
+            return Result.Failure<EmployeeLocationAssignment>(employeeIdResult.Error);
+
+        var locationIdResult = Guard.NotEmpty(locationId, "EmployeeLocationAssignment.LocationIdEmpty", "LocationId");
+        if (locationIdResult.IsFailure)
+            return Result.Failure<EmployeeLocationAssignment>(locationIdResult.Error);
+
+        return new EmployeeLocationAssignment(Guid.CreateVersion7(), employeeId, locationId);
+    }
 
     /// <summary>Unassigns the employee from the location without deleting their schedule history.</summary>
     public void Deactivate() => IsActive = false;

@@ -46,6 +46,10 @@ public sealed class Client : BaseEntity
     /// <summary>Links this client record to a registered user account.</summary>
     public Result LinkUser(Guid userId)
     {
+        var userIdResult = Guard.NotEmpty(userId, "Client.UserIdEmpty", "UserId");
+        if (userIdResult.IsFailure)
+            return Result.Failure(userIdResult.Error);
+
         if (UserId is not null && UserId != userId)
             return Result.Failure(DomainErrors.Client.AlreadyLinkedToDifferentUser);
 
