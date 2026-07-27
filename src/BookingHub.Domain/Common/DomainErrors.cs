@@ -82,4 +82,14 @@ public static class DomainErrors
         public static readonly Error NegativeBuffer = new("Service.NegativeBuffer", "Buffer times cannot be negative.", ErrorType.Validation);
         public static readonly Error InvalidColor = new("Service.InvalidColor", "Color must be a hex code in the format #RRGGBB.", ErrorType.Validation);
     }
+
+    public static class RecurringSchedule
+    {
+        public static readonly Error StartNotBeforeEnd = new("RecurringSchedule.StartNotBeforeEnd", "Start time must be earlier than end time.", ErrorType.Validation);
+    }
+
+    public static class ScheduleException
+    {
+        public static readonly Error StartNotBeforeEnd = new("ScheduleException.StartNotBeforeEnd", "Modified start time must be earlier than modified end time.", ErrorType.Validation);
+    }
 }
