@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Buffers.Text;
+using System.Security.Cryptography;
 
 namespace BookingHub.Domain.ValueObjects;
 
@@ -21,8 +22,7 @@ public sealed class SecurityToken : ValueObject
     public static SecurityToken Generate()
     {
         var bytes = RandomNumberGenerator.GetBytes(ByteLength);
-        var urlSafe = Convert.ToBase64String(bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_');
-        return new SecurityToken(urlSafe);
+        return new SecurityToken(Base64Url.EncodeToString(bytes));
     }
 
     /// <summary>Reconstructs a token from a value already persisted in the database.</summary>

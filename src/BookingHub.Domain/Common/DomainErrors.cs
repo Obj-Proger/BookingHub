@@ -35,4 +35,29 @@ public static class DomainErrors
         public static readonly Error NotUtc = new("TimeSlot.NotUtc", "Start and end must be expressed in UTC.", ErrorType.Validation);
         public static readonly Error StartNotBeforeEnd = new("TimeSlot.StartNotBeforeEnd", "Start must be earlier than end.", ErrorType.Validation);
     }
+
+    public static class DailyHours
+    {
+        public static readonly Error OpenNotBeforeClose = new("DailyHours.OpenNotBeforeClose", "Opening time must be earlier than closing time.", ErrorType.Validation);
+    }
+
+    public static class WeeklyHours
+    {
+        public static readonly Error MustCoverAllDays = new("WeeklyHours.MustCoverAllDays", "Weekly hours must define exactly one entry for each day of the week.", ErrorType.Validation);
+    }
+
+    public static class Organization
+    {
+        public static readonly Error NameEmpty = new("Organization.NameEmpty", "Organization name cannot be empty.", ErrorType.Validation);
+        public static readonly Error NameTooLong = new("Organization.NameTooLong", "Organization name exceeds the maximum allowed length.", ErrorType.Validation);
+        public static readonly Error SlugEmpty = new("Organization.SlugEmpty", "Organization slug cannot be empty.", ErrorType.Validation);
+        public static readonly Error SlugInvalidFormat = new("Organization.SlugInvalidFormat", "Slug must contain only lowercase letters, digits, and hyphens, and cannot start or end with a hyphen.", ErrorType.Validation);
+    }
+
+    public static class Location
+    {
+        public static readonly Error NameEmpty = new("Location.NameEmpty", "Location name cannot be empty.", ErrorType.Validation);
+        public static readonly Error NameTooLong = new("Location.NameTooLong", "Location name exceeds the maximum allowed length.", ErrorType.Validation);
+        public static readonly Error InvalidTimeZone = new("Location.InvalidTimeZone", "Time zone is not a recognized system time zone identifier.", ErrorType.Validation);
+    }
 }
