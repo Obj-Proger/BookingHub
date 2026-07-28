@@ -53,9 +53,9 @@ public sealed class Booking : BaseEntity
 
     /// <param name="recurringSeriesId">Set when this booking is one occurrence of a recurring series; otherwise null.</param>
     public static Result<Booking> CreatePending(
-        Guid organizationId, Guid locationId, Guid employeeId, Guid serviceId,
-        ClientContact clientContact, TimeSlot timeSlot, BookingSource source,
-        DateTime utcNow, Guid? recurringSeriesId = null)
+    Guid organizationId, Guid locationId, Guid employeeId, Guid serviceId,
+    ClientContact clientContact, TimeSlot timeSlot, BookingSource source,
+    DateTime utcNow, Guid? recurringSeriesId = null)
     {
         var organizationIdResult = Guard.NotEmpty(organizationId, "Booking.OrganizationIdEmpty", "OrganizationId");
         if (organizationIdResult.IsFailure)
@@ -72,6 +72,10 @@ public sealed class Booking : BaseEntity
         var serviceIdResult = Guard.NotEmpty(serviceId, "Booking.ServiceIdEmpty", "ServiceId");
         if (serviceIdResult.IsFailure)
             return Result.Failure<Booking>(serviceIdResult.Error);
+
+        var slotResult = Guard.NotPast(timeSlot.StartUtc, utcNow, DomainErrors.Booking.SlotInPast);
+        if (slotResult.IsFailure)
+            return Result.Failure<Booking>(slotResult.Error);
 
         var booking = new Booking(
             Guid.CreateVersion7(), organizationId, locationId, employeeId, serviceId,
@@ -99,6 +103,10 @@ public sealed class Booking : BaseEntity
     {
         if (Status is not (BookingStatus.Pending or BookingStatus.Confirmed))
             return Result.Failure(DomainErrors.Booking.CannotReschedule);
+
+        var slotResult = Guard.NotPast(newTimeSlot.StartUtc, utcNow, DomainErrors.Booking.SlotInPast);
+        if (slotResult.IsFailure)
+            return Result.Failure(slotResult.Error);
 
         TimeSlot = newTimeSlot;
 

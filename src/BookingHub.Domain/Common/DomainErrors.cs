@@ -103,6 +103,7 @@ public static class DomainErrors
         public static readonly Error CannotCancel = new("Booking.CannotCancel", "Only a pending or confirmed booking can be cancelled.", ErrorType.Conflict);
         public static readonly Error CannotExpire = new("Booking.CannotExpire", "Only a pending booking can expire.", ErrorType.Conflict);
         public static readonly Error CannotReschedule = new("Booking.CannotReschedule", "Only a pending or confirmed booking can be rescheduled.", ErrorType.Conflict);
+        public static readonly Error SlotInPast = new("Booking.SlotInPast", "The booking's time slot must be in the future.", ErrorType.Validation);
     }
 
     public static class WaitlistEntry
@@ -112,6 +113,7 @@ public static class DomainErrors
         public static readonly Error CannotConvert = new("WaitlistEntry.CannotConvert", "Only an offered entry can be converted into a booking.", ErrorType.Conflict);
         public static readonly Error CannotExpire = new("WaitlistEntry.CannotExpire", "Only an offered entry can expire.", ErrorType.Conflict);
         public static readonly Error CannotCancel = new("WaitlistEntry.CannotCancel", "Only a waiting entry can be cancelled.", ErrorType.Conflict);
+        public static readonly Error SlotInPast = new("WaitlistEntry.SlotInPast", "The time slot must be in the future.", ErrorType.Validation);
     }
 
     public static class Review

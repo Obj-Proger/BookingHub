@@ -24,4 +24,8 @@ internal static class Guard
         value == Guid.Empty
             ? Result.Failure<Guid>(Error.Validation(errorCode, $"{fieldName} is required."))
             : value;
+
+    /// <summary>Validates that a UTC instant is strictly later than the current time.</summary>
+    public static Result<DateTime> NotPast(DateTime value, DateTime utcNow, Error error) =>
+        value <= utcNow ? Result.Failure<DateTime>(error) : value;
 }

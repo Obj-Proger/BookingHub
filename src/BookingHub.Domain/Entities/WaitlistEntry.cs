@@ -46,8 +46,8 @@ public sealed class WaitlistEntry : BaseEntity
     }
 
     public static Result<WaitlistEntry> Create(
-        Guid organizationId, Guid locationId, Guid? employeeId, Guid serviceId,
-        ClientContact clientContact, TimeSlot desiredWindow)
+    Guid organizationId, Guid locationId, Guid? employeeId, Guid serviceId,
+    ClientContact clientContact, TimeSlot desiredWindow, DateTime utcNow)
     {
         var organizationIdResult = Guard.NotEmpty(organizationId, "WaitlistEntry.OrganizationIdEmpty", "OrganizationId");
         if (organizationIdResult.IsFailure)
@@ -68,6 +68,10 @@ public sealed class WaitlistEntry : BaseEntity
         if (serviceIdResult.IsFailure)
             return Result.Failure<WaitlistEntry>(serviceIdResult.Error);
 
+        var windowResult = Guard.NotPast(desiredWindow.StartUtc, utcNow, DomainErrors.WaitlistEntry.SlotInPast);
+        if (windowResult.IsFailure)
+            return Result.Failure<WaitlistEntry>(windowResult.Error);
+
         return new WaitlistEntry(Guid.CreateVersion7(), organizationId, locationId, employeeId, serviceId, clientContact, desiredWindow);
     }
 
@@ -80,6 +84,10 @@ public sealed class WaitlistEntry : BaseEntity
         var employeeIdResult = Guard.NotEmpty(offeredEmployeeId, "WaitlistEntry.OfferedEmployeeIdEmpty", "OfferedEmployeeId");
         if (employeeIdResult.IsFailure)
             return Result.Failure(employeeIdResult.Error);
+
+        var slotResult = Guard.NotPast(offeredSlot.StartUtc, utcNow, DomainErrors.WaitlistEntry.SlotInPast);
+        if (slotResult.IsFailure)
+            return Result.Failure(slotResult.Error);
 
         if (!DesiredWindow.Overlaps(offeredSlot))
             return Result.Failure(DomainErrors.WaitlistEntry.OfferOutsideDesiredWindow);
