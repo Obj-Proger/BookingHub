@@ -104,4 +104,19 @@ public static class DomainErrors
         public static readonly Error CannotExpire = new("Booking.CannotExpire", "Only a pending booking can expire.", ErrorType.Conflict);
         public static readonly Error CannotReschedule = new("Booking.CannotReschedule", "Only a pending or confirmed booking can be rescheduled.", ErrorType.Conflict);
     }
+
+    public static class WaitlistEntry
+    {
+        public static readonly Error CannotOffer = new("WaitlistEntry.CannotOffer", "Only a waiting entry can receive an offer.", ErrorType.Conflict);
+        public static readonly Error OfferOutsideDesiredWindow = new("WaitlistEntry.OfferOutsideDesiredWindow", "The offered slot falls outside the client's desired window.", ErrorType.Validation);
+        public static readonly Error CannotConvert = new("WaitlistEntry.CannotConvert", "Only an offered entry can be converted into a booking.", ErrorType.Conflict);
+        public static readonly Error CannotExpire = new("WaitlistEntry.CannotExpire", "Only an offered entry can expire.", ErrorType.Conflict);
+        public static readonly Error CannotCancel = new("WaitlistEntry.CannotCancel", "Only a waiting entry can be cancelled.", ErrorType.Conflict);
+    }
+
+    public static class Review
+    {
+        public static readonly Error RatingOutOfRange = new("Review.RatingOutOfRange", "Rating must be between 1 and 5.", ErrorType.Validation);
+        public static readonly Error CommentTooLong = new("Review.CommentTooLong", "Comment exceeds the maximum allowed length.", ErrorType.Validation);
+    }
 }
