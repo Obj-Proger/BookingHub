@@ -92,4 +92,16 @@ public static class DomainErrors
     {
         public static readonly Error StartNotBeforeEnd = new("ScheduleException.StartNotBeforeEnd", "Modified start time must be earlier than modified end time.", ErrorType.Validation);
     }
+
+    public static class Booking
+    {
+        public static readonly Error CannotConfirm = new("Booking.CannotConfirm", "Only a pending booking can be confirmed.", ErrorType.Conflict);
+        public static readonly Error CannotTransitionToAwaitingReview = new("Booking.CannotTransitionToAwaitingReview", "Only a confirmed booking can transition to awaiting review.", ErrorType.Conflict);
+        public static readonly Error SlotNotYetEnded = new("Booking.SlotNotYetEnded", "The booking's time slot has not ended yet.", ErrorType.Conflict);
+        public static readonly Error CannotComplete = new("Booking.CannotComplete", "Only a booking awaiting review can be marked completed.", ErrorType.Conflict);
+        public static readonly Error CannotMarkNoShow = new("Booking.CannotMarkNoShow", "Only a booking awaiting review can be marked as a no-show.", ErrorType.Conflict);
+        public static readonly Error CannotCancel = new("Booking.CannotCancel", "Only a pending or confirmed booking can be cancelled.", ErrorType.Conflict);
+        public static readonly Error CannotExpire = new("Booking.CannotExpire", "Only a pending booking can expire.", ErrorType.Conflict);
+        public static readonly Error CannotReschedule = new("Booking.CannotReschedule", "Only a pending or confirmed booking can be rescheduled.", ErrorType.Conflict);
+    }
 }
