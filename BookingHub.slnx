@@ -5,5 +5,7 @@
     <Project Path="src/BookingHub.Domain/BookingHub.Domain.csproj" Id="e66f190e-6bf1-4c7e-9f67-0521b4b8c3d9" />
     <Project Path="src/BookingHub.Infrastructure/BookingHub.Infrastructure.csproj" Id="440712bf-db14-48fd-8c4d-4f52dfd4a448" />
   </Folder>
-  <Folder Name="/tests/" />
+  <Folder Name="/tests/">
+    <Project Path="BookingHub.Domain.Tests/BookingHub.Domain.Tests.csproj" Id="511d57c5-fae8-45b9-b27c-8fa6db11296d" />
+  </Folder>
 </Solution>

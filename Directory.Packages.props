@@ -1,6 +1,13 @@
 <Project>
-  <PropertyGroup>
-	<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-  </PropertyGroup>
-	
+	<PropertyGroup>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+
+	<!-- BookingHub.Domain.Tests -->
+	<ItemGroup Condition="'$(MSBuildProjectName)' == 'BookingHub.Domain.Tests'">
+		<PackageVersion Include="xunit.v3" Version="3.2.2" />
+		<PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
+		<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+		<PackageVersion Include="AwesomeAssertions" Version="9.5.0" />
+	</ItemGroup>
 </Project>
