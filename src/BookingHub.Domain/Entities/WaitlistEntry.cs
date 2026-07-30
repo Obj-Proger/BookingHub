@@ -118,6 +118,9 @@ public sealed class WaitlistEntry : BaseEntity
         if (Status != WaitlistEntryStatus.Offered)
             return Result.Failure(DomainErrors.WaitlistEntry.CannotExpire);
 
+        if (OfferExpiresAtUtc > utcNow)
+            return Result.Failure(DomainErrors.WaitlistEntry.OfferNotYetExpired);
+
         Status = WaitlistEntryStatus.Expired;
         ResolvedAtUtc = utcNow;
 

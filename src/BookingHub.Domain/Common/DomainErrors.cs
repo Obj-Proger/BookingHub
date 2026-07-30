@@ -110,10 +110,11 @@ public static class DomainErrors
     {
         public static readonly Error CannotOffer = new("WaitlistEntry.CannotOffer", "Only a waiting entry can receive an offer.", ErrorType.Conflict);
         public static readonly Error OfferOutsideDesiredWindow = new("WaitlistEntry.OfferOutsideDesiredWindow", "The offered slot falls outside the client's desired window.", ErrorType.Validation);
+        public static readonly Error SlotInPast = new("WaitlistEntry.SlotInPast", "The time slot must be in the future.", ErrorType.Validation);
         public static readonly Error CannotConvert = new("WaitlistEntry.CannotConvert", "Only an offered entry can be converted into a booking.", ErrorType.Conflict);
         public static readonly Error CannotExpire = new("WaitlistEntry.CannotExpire", "Only an offered entry can expire.", ErrorType.Conflict);
+        public static readonly Error OfferNotYetExpired = new("WaitlistEntry.OfferNotYetExpired", "The offer's confirmation window has not elapsed yet.", ErrorType.Conflict);
         public static readonly Error CannotCancel = new("WaitlistEntry.CannotCancel", "Only a waiting entry can be cancelled.", ErrorType.Conflict);
-        public static readonly Error SlotInPast = new("WaitlistEntry.SlotInPast", "The time slot must be in the future.", ErrorType.Validation);
     }
 
     public static class Review
