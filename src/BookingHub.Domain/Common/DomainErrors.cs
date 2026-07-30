@@ -122,4 +122,10 @@ public static class DomainErrors
         public static readonly Error RatingOutOfRange = new("Review.RatingOutOfRange", "Rating must be between 1 and 5.", ErrorType.Validation);
         public static readonly Error CommentTooLong = new("Review.CommentTooLong", "Comment exceeds the maximum allowed length.", ErrorType.Validation);
     }
+
+    public static class OrganizationMember
+    {
+        public static readonly Error LocationRequiredForLocationManager = new("OrganizationMember.LocationRequiredForLocationManager", "A location must be specified when the role is LocationManager.", ErrorType.Validation);
+        public static readonly Error LocationNotAllowedForRole = new("OrganizationMember.LocationNotAllowedForRole", "A location can only be specified when the role is LocationManager.", ErrorType.Validation);
+    }
 }
