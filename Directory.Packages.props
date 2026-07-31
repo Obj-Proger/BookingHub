@@ -3,6 +3,13 @@
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 
+	<!-- BookingHub.Application -->
+	<ItemGroup Condition="'$(MSBuildProjectName)' == 'BookingHub.Application'">
+		<PackageVersion Include="FluentValidation" Version="12.1.1" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
+		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+	</ItemGroup>
+	
 	<!-- BookingHub.Domain.Tests -->
 	<ItemGroup Condition="'$(MSBuildProjectName)' == 'BookingHub.Domain.Tests'">
 		<PackageVersion Include="xunit.v3" Version="3.2.2" />

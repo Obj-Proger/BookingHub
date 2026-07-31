@@ -5,6 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+	<PackageReference Include="FluentValidation" />
+	<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+	<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+	
+	
+  <ItemGroup>
 	<ProjectReference Include="..\BookingHub.Domain\BookingHub.Domain.csproj" />
   </ItemGroup>
 
