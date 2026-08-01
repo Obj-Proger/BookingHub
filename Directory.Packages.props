@@ -6,15 +6,16 @@
 	<!-- BookingHub.Application -->
 	<ItemGroup Condition="'$(MSBuildProjectName)' == 'BookingHub.Application'">
 		<PackageVersion Include="FluentValidation" Version="12.1.1" />
-		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.0" />
-		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.0" />
+		<PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.10" />
+		<PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
+		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
 	</ItemGroup>
 	
 	<!-- BookingHub.Domain.Tests -->
 	<ItemGroup Condition="'$(MSBuildProjectName)' == 'BookingHub.Domain.Tests'">
 		<PackageVersion Include="xunit.v3" Version="3.2.2" />
-		<PackageVersion Include="xunit.runner.visualstudio" Version="3.1.4" />
-		<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+		<PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+		<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
 		<PackageVersion Include="AwesomeAssertions" Version="9.5.0" />
 	</ItemGroup>
 </Project>
