@@ -15,23 +15,29 @@ internal sealed class AuthorizationBehavior<TRequest, TResponse>(
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        var organizationId = request switch
-        {
-            IRequireOrganizationMembership scoped => scoped.OrganizationId,
-            _ => (Guid?)null
-        };
-
-        if (organizationId is null)
+        if (request is not IRequireOrganizationMembership scoped)
             return await next();
 
         var member = await organizationMemberRepository.GetByOrganizationAndUserAsync(
-            organizationId.Value, currentUser.UserId, cancellationToken);
+            scoped.OrganizationId, currentUser.UserId, cancellationToken);
 
         if (member is null)
             return BuildFailure(ApplicationErrors.Authorization.NotAMember);
 
-        if (request is IRequireOrganizationManagement && member.Role is not (OrganizationRole.Owner or OrganizationRole.Administrator))
+        var isOrgWideManager = member.Role is OrganizationRole.Owner or OrganizationRole.Administrator;
+
+        if (request is IRequireLocationManagement locationScoped)
+        {
+            var isScopedToThisLocation =
+                member.Role == OrganizationRole.LocationManager && member.LocationId == locationScoped.LocationId;
+
+            if (!isOrgWideManager && !isScopedToThisLocation)
+                return BuildFailure(ApplicationErrors.Authorization.InsufficientRole);
+        }
+        else if (request is IRequireOrganizationManagement && !isOrgWideManager)
+        {
             return BuildFailure(ApplicationErrors.Authorization.InsufficientRole);
+        }
 
         return await next();
     }

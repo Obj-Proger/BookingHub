@@ -18,4 +18,9 @@ public static class ApplicationErrors
         public static readonly Error NotAMember = new("Authorization.NotAMember", "You are not a member of this organization.", ErrorType.Forbidden);
         public static readonly Error InsufficientRole = new("Authorization.InsufficientRole", "Your role does not grant access to this operation.", ErrorType.Forbidden);
     }
+
+    public static class Location
+    {
+        public static readonly Error NotFound = new("Location.NotFound", "Location not found.", ErrorType.NotFound);
+    }
 }

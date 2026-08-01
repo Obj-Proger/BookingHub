@@ -10,4 +10,5 @@ namespace BookingHub.Application.Common.Persistence;
 public interface IApplicationDbContext
 {
     IQueryable<Organization> Organizations { get; }
+    IQueryable<Location> Locations { get; }
 }
