@@ -12,4 +12,10 @@ public static class ApplicationErrors
         public static readonly Error SlugAlreadyTaken = new("Organization.SlugAlreadyTaken", "This slug is already in use by another organization.", ErrorType.Conflict);
         public static readonly Error NotFound = new("Organization.NotFound", "Organization not found.", ErrorType.NotFound);
     }
+
+    public static class Authorization
+    {
+        public static readonly Error NotAMember = new("Authorization.NotAMember", "You are not a member of this organization.", ErrorType.Forbidden);
+        public static readonly Error InsufficientRole = new("Authorization.InsufficientRole", "Your role does not grant access to this operation.", ErrorType.Forbidden);
+    }
 }
