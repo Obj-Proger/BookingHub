@@ -1,6 +1,7 @@
 ﻿using BookingHub.Application.Common;
 using BookingHub.Application.Common.Messaging;
 using BookingHub.Application.Common.Persistence;
+using BookingHub.Application.Common.Security;
 using BookingHub.Application.Features.Organizations.DTOs;
 using BookingHub.Domain.Entities;
 using BookingHub.Domain.Enums;
@@ -10,6 +11,7 @@ namespace BookingHub.Application.Features.Organizations.Commands.CreateOrganizat
 internal sealed class CreateOrganizationCommandHandler(
     IOrganizationRepository organizationRepository,
     IOrganizationMemberRepository organizationMemberRepository,
+    ICurrentUser currentUser,
     IUnitOfWork unitOfWork)
     : ICommandHandler<CreateOrganizationCommand, OrganizationCreatedResponse>
 {
@@ -24,7 +26,7 @@ internal sealed class CreateOrganizationCommandHandler(
 
         var organization = organizationResult.Value;
 
-        var memberResult = OrganizationMember.Create(organization.Id, command.UserId, OrganizationRole.Owner);
+        var memberResult = OrganizationMember.Create(organization.Id, currentUser.UserId, OrganizationRole.Owner);
         if (memberResult.IsFailure)
             return Result.Failure<OrganizationCreatedResponse>(memberResult.Error);
 
