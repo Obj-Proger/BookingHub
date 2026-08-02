@@ -16,4 +16,8 @@
 	<ProjectReference Include="..\BookingHub.Domain\BookingHub.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+	<InternalsVisibleTo Include="BookingHub.Application.Tests" />
+  </ItemGroup>
+
 </Project>

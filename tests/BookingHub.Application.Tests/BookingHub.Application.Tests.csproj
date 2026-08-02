@@ -10,10 +10,11 @@
 	<PackageReference Include="xunit.runner.visualstudio" />
 	<PackageReference Include="Microsoft.NET.Test.Sdk" />
 	<PackageReference Include="AwesomeAssertions" />
+	<PackageReference Include="NSubstitute" />
   </ItemGroup>
 
   <ItemGroup>
-	<ProjectReference Include="..\src\BookingHub.Domain\BookingHub.Domain.csproj" />
+	<ProjectReference Include="..\..\src\BookingHub.Application\BookingHub.Application.csproj" />
   </ItemGroup>
 
 </Project>
