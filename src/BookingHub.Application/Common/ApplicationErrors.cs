@@ -23,4 +23,14 @@ public static class ApplicationErrors
     {
         public static readonly Error NotFound = new("Location.NotFound", "Location not found.", ErrorType.NotFound);
     }
+
+    public static class Employee
+    {
+        public static readonly Error NotFound = new("Employee.NotFound", "Employee not found.", ErrorType.NotFound);
+    }
+
+    public static class EmployeeLocationAssignment
+    {
+        public static readonly Error NotFound = new("EmployeeLocationAssignment.NotFound", "Employee assignment not found.", ErrorType.NotFound);
+    }
 }

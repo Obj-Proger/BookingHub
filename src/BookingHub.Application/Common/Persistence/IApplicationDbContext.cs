@@ -11,4 +11,5 @@ public interface IApplicationDbContext
 {
     IQueryable<Organization> Organizations { get; }
     IQueryable<Location> Locations { get; }
+    IQueryable<Employee> Employees { get; }
 }
