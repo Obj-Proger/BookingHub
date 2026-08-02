@@ -15,23 +15,7 @@ internal sealed class CreateLocationCommandHandler(ILocationRepository locationR
         if (addressResult.IsFailure)
             return Result.Failure<LocationCreatedResponse>(addressResult.Error);
 
-        var dailyHours = new List<DailyHours>();
-        foreach (var dto in command.WorkingHours)
-        {
-            if (dto.OpenTime is null || dto.CloseTime is null)
-            {
-                dailyHours.Add(DailyHours.CreateClosed(dto.DayOfWeek));
-                continue;
-            }
-
-            var dailyResult = DailyHours.CreateOpen(dto.DayOfWeek, dto.OpenTime.Value, dto.CloseTime.Value);
-            if (dailyResult.IsFailure)
-                return Result.Failure<LocationCreatedResponse>(dailyResult.Error);
-
-            dailyHours.Add(dailyResult.Value);
-        }
-
-        var weeklyHoursResult = WeeklyHours.Create(dailyHours);
+        var weeklyHoursResult = WeeklyHoursMapper.ToDomain(command.WorkingHours);
         if (weeklyHoursResult.IsFailure)
             return Result.Failure<LocationCreatedResponse>(weeklyHoursResult.Error);
 
