@@ -33,4 +33,16 @@ public static class ApplicationErrors
     {
         public static readonly Error NotFound = new("EmployeeLocationAssignment.NotFound", "Employee assignment not found.", ErrorType.NotFound);
     }
+
+    public static class Service
+    {
+        public static readonly Error NotFound = new("Service.NotFound", "Service not found.", ErrorType.NotFound);
+    }
+
+    public static class LocationServiceOverride
+    {
+        public static readonly Error NotFound = new("LocationServiceOverride.NotFound", "Location service price override not found.", ErrorType.NotFound);
+        public static readonly Error AlreadyExists = new("LocationServiceOverride.AlreadyExists", "A price override for this service at this location already exists.", ErrorType.Conflict);
+        public static readonly Error CurrencyMismatch = new("LocationServiceOverride.CurrencyMismatch", "The override currency must match the service's base price currency.", ErrorType.Validation);
+    }
 }
