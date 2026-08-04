@@ -13,4 +13,8 @@ public interface IApplicationDbContext
     IQueryable<Location> Locations { get; }
     IQueryable<Employee> Employees { get; }
     IQueryable<Service> Services { get; }
+    IQueryable<EmployeeLocationAssignment> EmployeeLocationAssignments { get; }
+    IQueryable<RecurringSchedule> RecurringSchedules { get; }
+    IQueryable<ScheduleException> ScheduleExceptions { get; }
+    IQueryable<Booking> Bookings { get; }
 }
