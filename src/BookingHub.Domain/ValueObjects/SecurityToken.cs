@@ -1,5 +1,6 @@
 ﻿using System.Buffers.Text;
 using System.Security.Cryptography;
+using System.Text;
 
 namespace BookingHub.Domain.ValueObjects;
 
@@ -27,6 +28,22 @@ public sealed class SecurityToken : ValueObject
 
     /// <summary>Reconstructs a token from a value already persisted in the database.</summary>
     public static SecurityToken FromExisting(string value) => new(value);
+
+    /// <summary>
+    /// Compares this token against a candidate in constant time, regardless of where the
+    /// two values first differ — unlike the value-based <see cref="ValueObject.Equals(ValueObject)"/>
+    /// this class inherits, which is not safe for comparing secrets.
+    /// </summary>
+    public bool Matches(SecurityToken? candidate)
+    {
+        if (candidate is null)
+            return false;
+
+        var expected = Encoding.UTF8.GetBytes(Value);
+        var actual = Encoding.UTF8.GetBytes(candidate.Value);
+
+        return expected.Length == actual.Length && CryptographicOperations.FixedTimeEquals(expected, actual);
+    }
 
     protected override IEnumerable<object?> GetEqualityComponents()
     {

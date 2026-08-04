@@ -27,4 +27,36 @@ public class SecurityTokenTests
 
         token.Value.Should().Be("abc123");
     }
+
+    [Fact]
+    public void Matches_SameToken_ReturnsTrue()
+    {
+        var token = SecurityToken.FromExisting("abc123");
+
+        token.Matches(SecurityToken.FromExisting("abc123")).Should().BeTrue();
+    }
+
+    [Fact]
+    public void Matches_DifferentToken_ReturnsFalse()
+    {
+        var token = SecurityToken.FromExisting("abc123");
+
+        token.Matches(SecurityToken.FromExisting("xyz789")).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Matches_DifferentLength_ReturnsFalse()
+    {
+        var token = SecurityToken.FromExisting("abc123");
+
+        token.Matches(SecurityToken.FromExisting("abc")).Should().BeFalse();
+    }
+
+    [Fact]
+    public void Matches_Null_ReturnsFalse()
+    {
+        var token = SecurityToken.FromExisting("abc123");
+
+        token.Matches(null).Should().BeFalse();
+    }
 }

@@ -50,5 +50,7 @@ public static class ApplicationErrors
     public static class Booking
     {
         public static readonly Error SlotNotAvailable = new("Booking.SlotNotAvailable", "The requested time slot is no longer available.", ErrorType.Conflict);
+        public static readonly Error NotFound = new("Booking.NotFound", "Booking not found.", ErrorType.NotFound);
+        public static readonly Error InvalidConfirmationToken = new("Booking.InvalidConfirmationToken", "The confirmation token is invalid.", ErrorType.Forbidden);
     }
 }
