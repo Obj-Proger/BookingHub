@@ -27,6 +27,7 @@ public static class ApplicationErrors
     public static class Employee
     {
         public static readonly Error NotFound = new("Employee.NotFound", "Employee not found.", ErrorType.NotFound);
+        public static readonly Error NotAssignedToLocation = new("Employee.NotAssignedToLocation", "This employee does not work at this location.", ErrorType.Conflict);
     }
 
     public static class EmployeeLocationAssignment
@@ -44,5 +45,10 @@ public static class ApplicationErrors
         public static readonly Error NotFound = new("LocationServiceOverride.NotFound", "Location service price override not found.", ErrorType.NotFound);
         public static readonly Error AlreadyExists = new("LocationServiceOverride.AlreadyExists", "A price override for this service at this location already exists.", ErrorType.Conflict);
         public static readonly Error CurrencyMismatch = new("LocationServiceOverride.CurrencyMismatch", "The override currency must match the service's base price currency.", ErrorType.Validation);
+    }
+
+    public static class Booking
+    {
+        public static readonly Error SlotNotAvailable = new("Booking.SlotNotAvailable", "The requested time slot is no longer available.", ErrorType.Conflict);
     }
 }
