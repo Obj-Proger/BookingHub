@@ -17,14 +17,14 @@ internal sealed class CreateOrganizationCommandHandler(
 {
     public async Task<Result<OrganizationCreatedResponse>> Handle(CreateOrganizationCommand command, CancellationToken cancellationToken)
     {
-        if (await organizationRepository.SlugExistsAsync(command.Slug ?? string.Empty, cancellationToken))
-            return Result.Failure<OrganizationCreatedResponse>(ApplicationErrors.Organization.SlugAlreadyTaken);
-
         var organizationResult = Organization.Create(command.Name, command.Slug);
         if (organizationResult.IsFailure)
             return Result.Failure<OrganizationCreatedResponse>(organizationResult.Error);
 
         var organization = organizationResult.Value;
+
+        if (await organizationRepository.SlugExistsAsync(organization.Slug, cancellationToken))
+            return Result.Failure<OrganizationCreatedResponse>(ApplicationErrors.Organization.SlugAlreadyTaken);
 
         var memberResult = OrganizationMember.Create(organization.Id, currentUser.UserId, OrganizationRole.Owner);
         if (memberResult.IsFailure)
