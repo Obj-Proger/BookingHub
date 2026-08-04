@@ -1,0 +1,116 @@
+﻿using BookingHub.Domain.Enums;
+using BookingHub.Domain.Entities;
+using BookingHub.Domain.ValueObjects;
+
+namespace BookingHub.Domain.Services;
+
+/// <summary>
+/// Computes the available booking slots for one employee, at one location, for one service,
+/// on one calendar date — combining the location's operating hours, the employee's recurring
+/// schedule (or a schedule exception overriding it for that date), and windows already occupied
+/// by other bookings.
+/// </summary>
+public static class AvailabilityCalculator
+{
+    /// <param name="occupiedWindows">
+    /// Windows already blocked by other bookings, each already expanded by that booking's own
+    /// service buffers — this method only applies buffers for the new service being scheduled.
+    /// </param>
+    /// <param name="slotGranularity">The stepping interval between candidate start times.</param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="slotGranularity"/> is not positive — this is a caller
+    /// programming error (a hardcoded scheduling policy value), not a business input, so it
+    /// fails loudly rather than as a <c>Result</c>.
+    /// </exception>
+    public static IReadOnlyList<TimeSlot> CalculateAvailableSlots(
+        WeeklyHours locationHours,
+        IReadOnlyList<RecurringSchedule> recurringSchedule,
+        ScheduleException? exceptionForDate,
+        IReadOnlyList<TimeSlot> occupiedWindows,
+        TimeSpan serviceDuration,
+        TimeSpan bufferBefore,
+        TimeSpan bufferAfter,
+        DateOnly date,
+        TimeZoneInfo timeZone,
+        TimeSpan slotGranularity)
+    {
+        if (slotGranularity <= TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(slotGranularity), "Slot granularity must be positive.");
+
+        var locationHoursForDay = locationHours.For(date.DayOfWeek);
+        if (locationHoursForDay.IsClosed)
+            return [];
+
+        var employeeLocalWindows = GetEmployeeLocalWindows(recurringSchedule, exceptionForDate, date.DayOfWeek);
+        if (employeeLocalWindows.Count == 0)
+            return [];
+
+        var slots = new List<TimeSlot>();
+
+        foreach (var (localStart, localEnd) in employeeLocalWindows)
+        {
+            var effectiveStart = MaxTime(localStart, locationHoursForDay.OpenTime!.Value);
+            var effectiveEnd = MinTime(localEnd, locationHoursForDay.CloseTime!.Value);
+            if (effectiveStart >= effectiveEnd)
+                continue;
+
+            var windowStartUtc = ToUtc(date, effectiveStart, timeZone);
+            var windowEndUtc = ToUtc(date, effectiveEnd, timeZone);
+
+            for (var candidateStart = windowStartUtc; candidateStart + serviceDuration <= windowEndUtc; candidateStart += slotGranularity)
+            {
+                var candidateEnd = candidateStart + serviceDuration;
+
+                if (IsBlocked(candidateStart, candidateEnd, bufferBefore, bufferAfter, occupiedWindows))
+                    continue;
+
+                // Cannot fail: both instants are UTC, and candidateEnd > candidateStart because
+                // serviceDuration is always positive (enforced by Service.Create/UpdateDuration).
+                slots.Add(TimeSlot.Create(candidateStart, candidateEnd).Value);
+            }
+        }
+
+        return slots;
+    }
+
+    private static List<(TimeOnly Start, TimeOnly End)> GetEmployeeLocalWindows(
+        IReadOnlyList<RecurringSchedule> recurringSchedule, ScheduleException? exceptionForDate, DayOfWeek dayOfWeek)
+    {
+        if (exceptionForDate is not null)
+        {
+            return exceptionForDate.Type == ScheduleExceptionType.DayOff
+                ? []
+                : [(exceptionForDate.ModifiedStartTime!.Value, exceptionForDate.ModifiedEndTime!.Value)];
+        }
+
+        return recurringSchedule
+            .Where(s => s.DayOfWeek == dayOfWeek)
+            .Select(s => (s.StartTime, s.EndTime))
+            .ToList();
+    }
+
+    private static bool IsBlocked(
+        DateTime candidateStartUtc, DateTime candidateEndUtc, TimeSpan bufferBefore, TimeSpan bufferAfter,
+        IReadOnlyList<TimeSlot> occupiedWindows)
+    {
+        var expandedStart = candidateStartUtc - bufferBefore;
+        var expandedEnd = candidateEndUtc + bufferAfter;
+
+        foreach (var occupied in occupiedWindows)
+        {
+            if (expandedStart < occupied.EndUtc && occupied.StartUtc < expandedEnd)
+                return true;
+        }
+
+        return false;
+    }
+
+    private static DateTime ToUtc(DateOnly date, TimeOnly time, TimeZoneInfo timeZone)
+    {
+        var local = DateTime.SpecifyKind(date.ToDateTime(time), DateTimeKind.Unspecified);
+        return TimeZoneInfo.ConvertTimeToUtc(local, timeZone);
+    }
+
+    private static TimeOnly MaxTime(TimeOnly a, TimeOnly b) => a > b ? a : b;
+    private static TimeOnly MinTime(TimeOnly a, TimeOnly b) => a < b ? a : b;
+}
