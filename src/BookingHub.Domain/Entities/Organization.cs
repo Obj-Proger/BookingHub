@@ -11,10 +11,17 @@ public sealed class Organization : BaseEntity
     public string Name { get; private set; } = null!;
     public string Slug { get; private set; } = null!;
 
+    /// <summary>
+    /// How many hours before a booking's start time a client may still cancel or reschedule it
+    /// through their self-service link. Does not apply to staff-initiated cancellations.
+    /// </summary>
+    public int CancellationDeadlineHours { get; private set; }
+
     private Organization(Guid id, string name, string slug) : base(id)
     {
         Name = name;
         Slug = slug;
+        CancellationDeadlineHours = 24;
     }
 
     private Organization()
@@ -41,6 +48,15 @@ public sealed class Organization : BaseEntity
             return Result.Failure(nameResult.Error);
 
         Name = nameResult.Value;
+        return Result.Success();
+    }
+
+    public Result UpdateCancellationDeadline(int hours)
+    {
+        if (hours < 0)
+            return Result.Failure(DomainErrors.Organization.CancellationDeadlineNegative);
+
+        CancellationDeadlineHours = hours;
         return Result.Success();
     }
 

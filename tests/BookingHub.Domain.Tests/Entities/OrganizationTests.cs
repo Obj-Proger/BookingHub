@@ -96,4 +96,35 @@ public class OrganizationTests
         result.IsFailure.Should().BeTrue();
         organization.Name.Should().Be("Old Name");
     }
+
+    [Fact]
+    public void Create_NewOrganization_DefaultsCancellationDeadlineToTwentyFourHours()
+    {
+        var organization = Organization.Create("Name", "valid-slug").Value;
+
+        organization.CancellationDeadlineHours.Should().Be(24);
+    }
+
+    [Fact]
+    public void UpdateCancellationDeadline_NonNegativeValue_Succeeds()
+    {
+        var organization = Organization.Create("Name", "valid-slug").Value;
+
+        var result = organization.UpdateCancellationDeadline(48);
+
+        result.IsSuccess.Should().BeTrue();
+        organization.CancellationDeadlineHours.Should().Be(48);
+    }
+
+    [Fact]
+    public void UpdateCancellationDeadline_Negative_FailsAndLeavesValueUnchanged()
+    {
+        var organization = Organization.Create("Name", "valid-slug").Value;
+
+        var result = organization.UpdateCancellationDeadline(-1);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(DomainErrors.Organization.CancellationDeadlineNegative);
+        organization.CancellationDeadlineHours.Should().Be(24);
+    }
 }

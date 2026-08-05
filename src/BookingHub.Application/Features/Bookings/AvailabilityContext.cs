@@ -16,7 +16,7 @@ internal static class AvailabilityContextLoader
 {
     public static async Task<Result<AvailabilityContext>> LoadAsync(
         IApplicationDbContext dbContext, Guid organizationId, Guid locationId, Guid employeeId, Guid serviceId,
-        DateOnly date, CancellationToken cancellationToken)
+        DateOnly date, CancellationToken cancellationToken, Guid? excludeBookingId = null)
     {
         var location = await dbContext.Locations
             .FirstOrDefaultAsync(l => l.Id == locationId && l.OrganizationId == organizationId, cancellationToken);
@@ -58,6 +58,7 @@ internal static class AvailabilityContextLoader
                 from b in dbContext.Bookings
                 join s in dbContext.Services on b.ServiceId equals s.Id
                 where b.EmployeeId == employeeId && b.Status == BookingStatus.Confirmed
+                    && b.Id != (excludeBookingId ?? Guid.Empty)
                     && b.TimeSlot.StartUtc < rangeEndUtc && b.TimeSlot.EndUtc > rangeStartUtc
                 select new { b.TimeSlot.StartUtc, b.TimeSlot.EndUtc, s.BufferBefore, s.BufferAfter })
                 .ToListAsync(cancellationToken);

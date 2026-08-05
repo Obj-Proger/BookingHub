@@ -52,6 +52,7 @@ public static class DomainErrors
         public static readonly Error NameTooLong = new("Organization.NameTooLong", "Organization name exceeds the maximum allowed length.", ErrorType.Validation);
         public static readonly Error SlugEmpty = new("Organization.SlugEmpty", "Organization slug cannot be empty.", ErrorType.Validation);
         public static readonly Error SlugInvalidFormat = new("Organization.SlugInvalidFormat", "Slug must contain only lowercase letters, digits, and hyphens, and cannot start or end with a hyphen.", ErrorType.Validation);
+        public static readonly Error CancellationDeadlineNegative = new("Organization.CancellationDeadlineNegative", "Cancellation deadline hours cannot be negative.", ErrorType.Validation);
     }
 
     public static class Location
