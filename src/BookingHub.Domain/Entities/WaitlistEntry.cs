@@ -21,11 +21,12 @@ public sealed class WaitlistEntry : BaseEntity
     public ClientContact ClientContact { get; private set; } = null!;
     public TimeSlot DesiredWindow { get; private set; } = null!;
     public WaitlistEntryStatus Status { get; private set; }
-
     public Guid? OfferedEmployeeId { get; private set; }
     public TimeSlot? OfferedSlot { get; private set; }
     public DateTime? OfferExpiresAtUtc { get; private set; }
     public DateTime? ResolvedAtUtc { get; private set; }
+    public DateTime CreatedAtUtc { get; private set; }
+    public DateTime? ModifiedAtUtc { get; private set; }
 
     private WaitlistEntry(
         Guid id, Guid organizationId, Guid locationId, Guid? employeeId, Guid serviceId,

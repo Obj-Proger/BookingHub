@@ -55,6 +55,7 @@ public static class DomainErrors
         public static readonly Error CancellationDeadlineNegative = new("Organization.CancellationDeadlineNegative", "Cancellation deadline hours cannot be negative.", ErrorType.Validation);
         public static readonly Error PendingConfirmationWindowNotPositive = new("Organization.PendingConfirmationWindowNotPositive", "Pending confirmation window must be greater than zero.", ErrorType.Validation);
         public static readonly Error AutoCompleteWindowNotPositive = new("Organization.AutoCompleteWindowNotPositive", "Auto-complete window must be greater than zero.", ErrorType.Validation);
+        public static readonly Error WaitlistOfferWindowNotPositive = new("Organization.WaitlistOfferWindowNotPositive", "Waitlist offer window must be greater than zero.", ErrorType.Validation);
     }
 
     public static class Location
