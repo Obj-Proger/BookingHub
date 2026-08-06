@@ -55,4 +55,9 @@ public static class ApplicationErrors
         public static readonly Error InvalidManagementToken = new("Booking.InvalidManagementToken", "The management token is invalid.", ErrorType.Forbidden);
         public static readonly Error CancellationDeadlinePassed = new("Booking.CancellationDeadlinePassed", "This booking can no longer be cancelled or rescheduled — the deadline has passed.", ErrorType.Conflict);
     }
+
+    public static class WaitlistEntry
+    {
+        public static readonly Error EmployeeNotFound = new("WaitlistEntry.EmployeeNotFound", "The requested employee was not found.", ErrorType.NotFound);
+    }
 }
