@@ -59,5 +59,7 @@ public static class ApplicationErrors
     public static class WaitlistEntry
     {
         public static readonly Error EmployeeNotFound = new("WaitlistEntry.EmployeeNotFound", "The requested employee was not found.", ErrorType.NotFound);
+        public static readonly Error NotFound = new("WaitlistEntry.NotFound", "Waitlist entry not found.", ErrorType.NotFound);
+        public static readonly Error InvalidManagementToken = new("WaitlistEntry.InvalidManagementToken", "The management token is invalid.", ErrorType.Forbidden);
     }
 }

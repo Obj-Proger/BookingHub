@@ -198,4 +198,31 @@ public class AvailabilityCalculatorTests
 
         act.Should().Throw<ArgumentOutOfRangeException>();
     }
+
+    [Fact]
+    public void IsSlotAvailable_NoOverlapWithOccupiedWindows_ReturnsTrue()
+    {
+        var candidate = TimeSlot.Create(ToUtc(9, 0), ToUtc(9, 30)).Value;
+        var occupied = new[] { TimeSlot.Create(ToUtc(10, 0), ToUtc(10, 30)).Value };
+
+        AvailabilityCalculator.IsSlotAvailable(candidate, TimeSpan.Zero, TimeSpan.Zero, occupied).Should().BeTrue();
+    }
+
+    [Fact]
+    public void IsSlotAvailable_OverlapsOccupiedWindow_ReturnsFalse()
+    {
+        var candidate = TimeSlot.Create(ToUtc(10, 15), ToUtc(10, 45)).Value;
+        var occupied = new[] { TimeSlot.Create(ToUtc(10, 0), ToUtc(10, 30)).Value };
+
+        AvailabilityCalculator.IsSlotAvailable(candidate, TimeSpan.Zero, TimeSpan.Zero, occupied).Should().BeFalse();
+    }
+
+    [Fact]
+    public void IsSlotAvailable_BufferExtendsIntoOccupiedWindow_ReturnsFalse()
+    {
+        var candidate = TimeSlot.Create(ToUtc(9, 0), ToUtc(9, 30)).Value;
+        var occupied = new[] { TimeSlot.Create(ToUtc(10, 0), ToUtc(10, 30)).Value };
+
+        AvailabilityCalculator.IsSlotAvailable(candidate, TimeSpan.Zero, TimeSpan.FromMinutes(30), occupied).Should().BeFalse();
+    }
 }
