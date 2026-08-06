@@ -6,7 +6,19 @@ public interface IBookingRepository
 {
     void Add(Booking booking);
 
-    /// <remarks>Not scoped by OrganizationId — this backs the anonymous guest confirmation
-    /// link, which carries only a BookingId; the actual access check is the token, not org membership.</remarks>
     Task<Booking?> GetByIdAsync(Guid bookingId, CancellationToken cancellationToken);
+
+    /// <param name="organizationId">Filtered alongside <paramref name="locationId"/>, <paramref name="employeeId"/>,
+    /// and <paramref name="bookingId"/> together — staff-side access, unlike the token-based guest flows.</param>
+    Task<Booking?> GetByIdAsync(
+        Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, CancellationToken cancellationToken);
+
+    /// <summary>Pending bookings whose owning organization's confirmation window has elapsed.</summary>
+    Task<IReadOnlyList<Booking>> GetPendingBookingsPastConfirmationWindowAsync(DateTime utcNow, CancellationToken cancellationToken);
+
+    /// <summary>Confirmed bookings whose time slot has already ended.</summary>
+    Task<IReadOnlyList<Booking>> GetConfirmedBookingsWithEndedSlotsAsync(DateTime utcNow, CancellationToken cancellationToken);
+
+    /// <summary>AwaitingReview bookings whose owning organization's auto-complete window has elapsed.</summary>
+    Task<IReadOnlyList<Booking>> GetAwaitingReviewBookingsPastAutoCompleteWindowAsync(DateTime utcNow, CancellationToken cancellationToken);
 }

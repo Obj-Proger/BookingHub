@@ -53,6 +53,8 @@ public static class DomainErrors
         public static readonly Error SlugEmpty = new("Organization.SlugEmpty", "Organization slug cannot be empty.", ErrorType.Validation);
         public static readonly Error SlugInvalidFormat = new("Organization.SlugInvalidFormat", "Slug must contain only lowercase letters, digits, and hyphens, and cannot start or end with a hyphen.", ErrorType.Validation);
         public static readonly Error CancellationDeadlineNegative = new("Organization.CancellationDeadlineNegative", "Cancellation deadline hours cannot be negative.", ErrorType.Validation);
+        public static readonly Error PendingConfirmationWindowNotPositive = new("Organization.PendingConfirmationWindowNotPositive", "Pending confirmation window must be greater than zero.", ErrorType.Validation);
+        public static readonly Error AutoCompleteWindowNotPositive = new("Organization.AutoCompleteWindowNotPositive", "Auto-complete window must be greater than zero.", ErrorType.Validation);
     }
 
     public static class Location
@@ -128,5 +130,7 @@ public static class DomainErrors
     {
         public static readonly Error LocationRequiredForLocationManager = new("OrganizationMember.LocationRequiredForLocationManager", "A location must be specified when the role is LocationManager.", ErrorType.Validation);
         public static readonly Error LocationNotAllowedForRole = new("OrganizationMember.LocationNotAllowedForRole", "A location can only be specified when the role is LocationManager.", ErrorType.Validation);
+        public static readonly Error EmployeeRequiredForEmployeeRole = new("OrganizationMember.EmployeeRequiredForEmployeeRole", "An employee must be specified when the role is Employee.", ErrorType.Validation);
+        public static readonly Error EmployeeNotAllowedForRole = new("OrganizationMember.EmployeeNotAllowedForRole", "An employee can only be specified when the role is Employee.", ErrorType.Validation);
     }
 }

@@ -10,18 +10,19 @@ public sealed class Organization : BaseEntity
 
     public string Name { get; private set; } = null!;
     public string Slug { get; private set; } = null!;
-
-    /// <summary>
-    /// How many hours before a booking's start time a client may still cancel or reschedule it
-    /// through their self-service link. Does not apply to staff-initiated cancellations.
-    /// </summary>
     public int CancellationDeadlineHours { get; private set; }
+    public TimeSpan PendingConfirmationWindow { get; private set; }
+    public TimeSpan AutoCompleteWindow { get; private set; }
+    public TimeSpan WaitlistOfferWindow { get; private set; }
 
     private Organization(Guid id, string name, string slug) : base(id)
     {
         Name = name;
         Slug = slug;
         CancellationDeadlineHours = 24;
+        PendingConfirmationWindow = TimeSpan.FromMinutes(30);
+        AutoCompleteWindow = TimeSpan.FromHours(24);
+        WaitlistOfferWindow = TimeSpan.FromHours(2);
     }
 
     private Organization()
@@ -57,6 +58,33 @@ public sealed class Organization : BaseEntity
             return Result.Failure(DomainErrors.Organization.CancellationDeadlineNegative);
 
         CancellationDeadlineHours = hours;
+        return Result.Success();
+    }
+
+    public Result UpdatePendingConfirmationWindow(TimeSpan window)
+    {
+        if (window <= TimeSpan.Zero)
+            return Result.Failure(DomainErrors.Organization.PendingConfirmationWindowNotPositive);
+
+        PendingConfirmationWindow = window;
+        return Result.Success();
+    }
+
+    public Result UpdateAutoCompleteWindow(TimeSpan window)
+    {
+        if (window <= TimeSpan.Zero)
+            return Result.Failure(DomainErrors.Organization.AutoCompleteWindowNotPositive);
+
+        AutoCompleteWindow = window;
+        return Result.Success();
+    }
+
+    public Result UpdateWaitlistOfferWindow(TimeSpan window)
+    {
+        if (window <= TimeSpan.Zero)
+            return Result.Failure(DomainErrors.Organization.WaitlistOfferWindowNotPositive);
+
+        WaitlistOfferWindow = window;
         return Result.Success();
     }
 

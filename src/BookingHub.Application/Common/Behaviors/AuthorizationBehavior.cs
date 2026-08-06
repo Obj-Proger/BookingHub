@@ -1,5 +1,4 @@
-﻿using BookingHub.Application.Common;
-using BookingHub.Application.Common.Messaging;
+﻿using BookingHub.Application.Common.Messaging;
 using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Common.Security;
 using BookingHub.Domain.Enums;
@@ -26,7 +25,15 @@ internal sealed class AuthorizationBehavior<TRequest, TResponse>(
 
         var isOrgWideManager = member.Role is OrganizationRole.Owner or OrganizationRole.Administrator;
 
-        if (request is IRequireLocationManagement locationScoped)
+        if (request is IRequireBookingAccess bookingScoped)
+        {
+            var isOwnBooking = member.Role == OrganizationRole.Employee && member.EmployeeId == bookingScoped.EmployeeId;
+            var isScopedToThisLocation = member.Role == OrganizationRole.LocationManager && member.LocationId == bookingScoped.LocationId;
+
+            if (!isOrgWideManager && !isScopedToThisLocation && !isOwnBooking)
+                return BuildFailure(ApplicationErrors.Authorization.InsufficientRole);
+        }
+        else if (request is IRequireLocationManagement locationScoped)
         {
             var isScopedToThisLocation =
                 member.Role == OrganizationRole.LocationManager && member.LocationId == locationScoped.LocationId;

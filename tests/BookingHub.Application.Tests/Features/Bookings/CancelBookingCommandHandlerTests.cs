@@ -15,19 +15,19 @@ public class CancelBookingCommandHandlerTests
 
     private CancelBookingCommandHandler CreateSut() => new(_bookingRepository, _dbContext, _unitOfWork);
 
-    private static Booking CreateConfirmedBooking(TimeSpan leadTime)
+    private void SetUpOrganizations(IEnumerable<Organization> organizations) =>
+        _dbContext.Organizations.Returns(organizations.AsQueryable());
+
+    private static Booking CreateConfirmedBooking(Guid organizationId, TimeSpan leadTime)
     {
         var booking = Booking.CreatePending(
-            Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
+            organizationId, Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
             ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
             TimeSlot.Create(DateTime.UtcNow + leadTime, DateTime.UtcNow + leadTime + TimeSpan.FromHours(1)).Value,
             BookingSource.Public, DateTime.UtcNow).Value;
         booking.Confirm(DateTime.UtcNow);
         return booking;
     }
-
-    private void SetUpOrganizations(IEnumerable<Organization> organizations) =>
-        _dbContext.Organizations.Returns(organizations.AsQueryable());
 
     [Fact]
     public async Task Handle_CorrectTokenAndBeforeDeadline_CancelsBooking()
@@ -72,16 +72,5 @@ public class CancelBookingCommandHandlerTests
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(ApplicationErrors.Booking.InvalidManagementToken);
-    }
-
-    private static Booking CreateConfirmedBooking(Guid organizationId, TimeSpan leadTime)
-    {
-        var booking = Booking.CreatePending(
-            organizationId, Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
-            ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
-            TimeSlot.Create(DateTime.UtcNow + leadTime, DateTime.UtcNow + leadTime + TimeSpan.FromHours(1)).Value,
-            BookingSource.Public, DateTime.UtcNow).Value;
-        booking.Confirm(DateTime.UtcNow);
-        return booking;
     }
 }

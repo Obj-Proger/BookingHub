@@ -8,7 +8,7 @@ namespace BookingHub.Domain.Entities;
 /// The central aggregate of the scheduling domain: a client's reservation of
 /// one employee's time for one service, for a specific time slot.
 /// </summary>
-public sealed class Booking : BaseEntity
+public sealed class Booking : BaseEntity, IAuditable
 {
     public Guid OrganizationId { get; private set; }
     public Guid LocationId { get; private set; }
@@ -27,6 +27,12 @@ public sealed class Booking : BaseEntity
 
     /// <summary>UTC timestamp of when the booking reached its final state — check <see cref="Status"/> for which one.</summary>
     public DateTime? ResolvedAtUtc { get; private set; }
+
+    /// <inheritdoc />
+    public DateTime CreatedAtUtc { get; private set; }
+
+    /// <inheritdoc />
+    public DateTime? ModifiedAtUtc { get; private set; }
 
     private Booking(
         Guid id, Guid organizationId, Guid locationId, Guid employeeId, Guid serviceId,
@@ -53,9 +59,9 @@ public sealed class Booking : BaseEntity
 
     /// <param name="recurringSeriesId">Set when this booking is one occurrence of a recurring series; otherwise null.</param>
     public static Result<Booking> CreatePending(
-    Guid organizationId, Guid locationId, Guid employeeId, Guid serviceId,
-    ClientContact clientContact, TimeSlot timeSlot, BookingSource source,
-    DateTime utcNow, Guid? recurringSeriesId = null)
+        Guid organizationId, Guid locationId, Guid employeeId, Guid serviceId,
+        ClientContact clientContact, TimeSlot timeSlot, BookingSource source,
+        DateTime utcNow, Guid? recurringSeriesId = null)
     {
         var organizationIdResult = Guard.NotEmpty(organizationId, "Booking.OrganizationIdEmpty", "OrganizationId");
         if (organizationIdResult.IsFailure)
