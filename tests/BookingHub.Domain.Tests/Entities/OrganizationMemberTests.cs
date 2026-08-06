@@ -58,4 +58,51 @@ public class OrganizationMemberTests
         member.Role.Should().Be(OrganizationRole.Administrator);
         member.LocationId.Should().BeNull();
     }
+
+    [Fact]
+    public void Create_EmployeeRoleWithEmployeeId_Succeeds()
+    {
+        var employeeId = Guid.CreateVersion7();
+
+        var result = OrganizationMember.Create(ValidOrganizationId, ValidUserId, OrganizationRole.Employee, employeeId: employeeId);
+
+        result.IsSuccess.Should().BeTrue();
+        result.Value.EmployeeId.Should().Be(employeeId);
+    }
+
+    [Fact]
+    public void Create_EmployeeRoleWithoutEmployeeId_FailsWithEmployeeRequiredError()
+    {
+        var result = OrganizationMember.Create(ValidOrganizationId, ValidUserId, OrganizationRole.Employee);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(DomainErrors.OrganizationMember.EmployeeRequiredForEmployeeRole);
+    }
+
+    [Theory]
+    [InlineData(OrganizationRole.Owner)]
+    [InlineData(OrganizationRole.Administrator)]
+    [InlineData(OrganizationRole.LocationManager)]
+    public void Create_NonEmployeeRoleWithEmployeeId_FailsWithEmployeeNotAllowedError(OrganizationRole role)
+    {
+        var locationId = role == OrganizationRole.LocationManager ? Guid.CreateVersion7() : (Guid?)null;
+
+        var result = OrganizationMember.Create(ValidOrganizationId, ValidUserId, role, locationId, Guid.CreateVersion7());
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(DomainErrors.OrganizationMember.EmployeeNotAllowedForRole);
+    }
+
+    [Fact]
+    public void ChangeRole_ToEmployee_UpdatesRoleAndSetsEmployeeId()
+    {
+        var member = OrganizationMember.Create(ValidOrganizationId, ValidUserId, OrganizationRole.Owner).Value;
+        var employeeId = Guid.CreateVersion7();
+
+        var result = member.ChangeRole(OrganizationRole.Employee, employeeId: employeeId);
+
+        result.IsSuccess.Should().BeTrue();
+        member.Role.Should().Be(OrganizationRole.Employee);
+        member.EmployeeId.Should().Be(employeeId);
+    }
 }

@@ -127,4 +127,63 @@ public class OrganizationTests
         result.Error.Should().Be(DomainErrors.Organization.CancellationDeadlineNegative);
         organization.CancellationDeadlineHours.Should().Be(24);
     }
+
+    [Fact]
+    public void Create_NewOrganization_DefaultsSchedulingWindows()
+    {
+        var organization = Organization.Create("Name", "valid-slug").Value;
+
+        organization.CancellationDeadlineHours.Should().Be(24);
+        organization.PendingConfirmationWindow.Should().Be(TimeSpan.FromMinutes(30));
+        organization.AutoCompleteWindow.Should().Be(TimeSpan.FromHours(24));
+    }
+
+    [Fact]
+    public void UpdatePendingConfirmationWindow_PositiveValue_Succeeds()
+    {
+        var organization = Organization.Create("Name", "valid-slug").Value;
+
+        var result = organization.UpdatePendingConfirmationWindow(TimeSpan.FromMinutes(15));
+
+        result.IsSuccess.Should().BeTrue();
+        organization.PendingConfirmationWindow.Should().Be(TimeSpan.FromMinutes(15));
+    }
+
+    [Theory]
+    [MemberData(nameof(NonPositiveWindows))]
+    public void UpdatePendingConfirmationWindow_NotPositive_FailsAndLeavesValueUnchanged(TimeSpan window)
+    {
+        var organization = Organization.Create("Name", "valid-slug").Value;
+
+        var result = organization.UpdatePendingConfirmationWindow(window);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(DomainErrors.Organization.PendingConfirmationWindowNotPositive);
+        organization.PendingConfirmationWindow.Should().Be(TimeSpan.FromMinutes(30));
+    }
+
+    [Fact]
+    public void UpdateAutoCompleteWindow_PositiveValue_Succeeds()
+    {
+        var organization = Organization.Create("Name", "valid-slug").Value;
+
+        var result = organization.UpdateAutoCompleteWindow(TimeSpan.FromHours(48));
+
+        result.IsSuccess.Should().BeTrue();
+        organization.AutoCompleteWindow.Should().Be(TimeSpan.FromHours(48));
+    }
+
+    [Theory]
+    [MemberData(nameof(NonPositiveWindows))]
+    public void UpdateAutoCompleteWindow_NotPositive_FailsWithAutoCompleteWindowNotPositiveError(TimeSpan window)
+    {
+        var organization = Organization.Create("Name", "valid-slug").Value;
+
+        var result = organization.UpdateAutoCompleteWindow(window);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(DomainErrors.Organization.AutoCompleteWindowNotPositive);
+    }
+
+    public static TheoryData<TimeSpan> NonPositiveWindows() => new() { TimeSpan.Zero, TimeSpan.FromMinutes(-5) };
 }
