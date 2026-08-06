@@ -9,7 +9,7 @@ namespace BookingHub.Domain.Entities;
 /// When a matching slot opens up, it is offered to the earliest waiting entry
 /// with a limited confirmation window before moving on to the next one.
 /// </summary>
-public sealed class WaitlistEntry : BaseEntity
+public sealed class WaitlistEntry : BaseEntity, IAuditable
 {
     public Guid OrganizationId { get; private set; }
     public Guid LocationId { get; private set; }
@@ -21,16 +21,24 @@ public sealed class WaitlistEntry : BaseEntity
     public ClientContact ClientContact { get; private set; } = null!;
     public TimeSlot DesiredWindow { get; private set; } = null!;
     public WaitlistEntryStatus Status { get; private set; }
+
     public Guid? OfferedEmployeeId { get; private set; }
     public TimeSlot? OfferedSlot { get; private set; }
     public DateTime? OfferExpiresAtUtc { get; private set; }
     public DateTime? ResolvedAtUtc { get; private set; }
+
+    /// <summary>Lets the guest act on this entry (e.g. confirm an offer) without an account, mirroring <c>Booking</c>.</summary>
+    public SecurityToken ManagementToken { get; private set; } = null!;
+
+    /// <inheritdoc />
     public DateTime CreatedAtUtc { get; private set; }
+
+    /// <inheritdoc />
     public DateTime? ModifiedAtUtc { get; private set; }
 
     private WaitlistEntry(
         Guid id, Guid organizationId, Guid locationId, Guid? employeeId, Guid serviceId,
-        ClientContact clientContact, TimeSlot desiredWindow)
+        ClientContact clientContact, TimeSlot desiredWindow, SecurityToken managementToken)
         : base(id)
     {
         OrganizationId = organizationId;
@@ -39,6 +47,7 @@ public sealed class WaitlistEntry : BaseEntity
         ServiceId = serviceId;
         ClientContact = clientContact;
         DesiredWindow = desiredWindow;
+        ManagementToken = managementToken;
         Status = WaitlistEntryStatus.Waiting;
     }
 
@@ -47,8 +56,8 @@ public sealed class WaitlistEntry : BaseEntity
     }
 
     public static Result<WaitlistEntry> Create(
-    Guid organizationId, Guid locationId, Guid? employeeId, Guid serviceId,
-    ClientContact clientContact, TimeSlot desiredWindow, DateTime utcNow)
+        Guid organizationId, Guid locationId, Guid? employeeId, Guid serviceId,
+        ClientContact clientContact, TimeSlot desiredWindow, DateTime utcNow)
     {
         var organizationIdResult = Guard.NotEmpty(organizationId, "WaitlistEntry.OrganizationIdEmpty", "OrganizationId");
         if (organizationIdResult.IsFailure)
@@ -73,7 +82,9 @@ public sealed class WaitlistEntry : BaseEntity
         if (windowResult.IsFailure)
             return Result.Failure<WaitlistEntry>(windowResult.Error);
 
-        return new WaitlistEntry(Guid.CreateVersion7(), organizationId, locationId, employeeId, serviceId, clientContact, desiredWindow);
+        return new WaitlistEntry(
+            Guid.CreateVersion7(), organizationId, locationId, employeeId, serviceId,
+            clientContact, desiredWindow, SecurityToken.Generate());
     }
 
     /// <summary>Offers a freed-up slot to this entry, starting its confirmation window.</summary>
@@ -130,10 +141,10 @@ public sealed class WaitlistEntry : BaseEntity
         return Result.Success();
     }
 
-    /// <summary>The client voluntarily leaves the queue before receiving an offer.</summary>
+    /// <summary>The client voluntarily leaves the queue — either before any offer, or by declining one already made.</summary>
     public Result Cancel(DateTime utcNow)
     {
-        if (Status != WaitlistEntryStatus.Waiting)
+        if (Status is not (WaitlistEntryStatus.Waiting or WaitlistEntryStatus.Offered))
             return Result.Failure(DomainErrors.WaitlistEntry.CannotCancel);
 
         Status = WaitlistEntryStatus.Cancelled;

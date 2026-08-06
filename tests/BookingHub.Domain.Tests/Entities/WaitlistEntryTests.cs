@@ -65,6 +65,14 @@ public class WaitlistEntryTests
         result.Error.Should().Be(DomainErrors.WaitlistEntry.SlotInPast);
     }
 
+    [Fact]
+    public void Create_ValidData_GeneratesManagementToken()
+    {
+        var result = WaitlistEntryFixture.CreateWaitingResult();
+
+        result.Value.ManagementToken.Value.Should().NotBeNullOrEmpty();
+    }
+
     // Offer
 
     [Fact]
