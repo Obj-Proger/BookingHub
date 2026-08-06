@@ -11,6 +11,7 @@ namespace BookingHub.Application.Features.Waitlist;
 /// </summary>
 internal sealed class WaitlistOfferService(
     IWaitlistEntryRepository waitlistEntryRepository, IApplicationDbContext dbContext, IUnitOfWork unitOfWork)
+    : IWaitlistOfferService
 {
     public async Task TryOfferFreedSlotAsync(
         Guid organizationId, Guid locationId, Guid employeeId, Guid serviceId, TimeSlot freedSlot,

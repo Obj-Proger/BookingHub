@@ -118,7 +118,7 @@ public static class DomainErrors
         public static readonly Error CannotConvert = new("WaitlistEntry.CannotConvert", "Only an offered entry can be converted into a booking.", ErrorType.Conflict);
         public static readonly Error CannotExpire = new("WaitlistEntry.CannotExpire", "Only an offered entry can expire.", ErrorType.Conflict);
         public static readonly Error OfferNotYetExpired = new("WaitlistEntry.OfferNotYetExpired", "The offer's confirmation window has not elapsed yet.", ErrorType.Conflict);
-        public static readonly Error CannotCancel = new("WaitlistEntry.CannotCancel", "Only a waiting entry can be cancelled.", ErrorType.Conflict);
+        public static readonly Error CannotCancel = new("WaitlistEntry.CannotCancel", "Only a waiting or offered entry can be cancelled.", ErrorType.Conflict);
     }
 
     public static class Review

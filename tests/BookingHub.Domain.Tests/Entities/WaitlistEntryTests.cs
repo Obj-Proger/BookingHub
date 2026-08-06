@@ -219,9 +219,9 @@ public class WaitlistEntryTests
     // Cancel
 
     [Fact]
-    public void Cancel_FromWaiting_Succeeds()
+    public void Cancel_FromOffered_SucceedsAsDecliningTheOffer()
     {
-        var entry = WaitlistEntryFixture.CreateWaiting();
+        var entry = WaitlistEntryFixture.CreateOffered();
 
         var result = entry.Cancel(WaitlistEntryFixture.UtcNow);
 
@@ -230,9 +230,10 @@ public class WaitlistEntryTests
     }
 
     [Fact]
-    public void Cancel_AlreadyOffered_FailsWithCannotCancelError()
+    public void Cancel_AlreadyConverted_FailsWithCannotCancelError()
     {
         var entry = WaitlistEntryFixture.CreateOffered();
+        entry.Convert(WaitlistEntryFixture.UtcNow.AddMinutes(10));
 
         var result = entry.Cancel(WaitlistEntryFixture.UtcNow);
 

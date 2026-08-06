@@ -3,7 +3,7 @@ using BookingHub.Domain.Events;
 
 namespace BookingHub.Application.Features.Waitlist.EventHandlers;
 
-internal sealed class BookingExpiredWaitlistOfferHandler(WaitlistOfferService offerService)
+internal sealed class BookingExpiredWaitlistOfferHandler(IWaitlistOfferService offerService)
     : IDomainEventHandler<BookingExpiredEvent>
 {
     public Task Handle(BookingExpiredEvent domainEvent, CancellationToken cancellationToken) =>
