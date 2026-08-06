@@ -1,6 +1,6 @@
-﻿using BookingHub.Application.Common;
-using BookingHub.Application.Common.Behaviors;
+﻿using BookingHub.Application.Common.Behaviors;
 using BookingHub.Application.Common.Persistence;
+using BookingHub.Application.Common.Security;
 using BookingHub.Application.Tests.TestDoubles;
 using BookingHub.Domain.Entities;
 using BookingHub.Domain.Enums;
@@ -9,6 +9,9 @@ namespace BookingHub.Application.Tests.Common.Behaviors;
 
 public class AuthorizationBehaviorTests
 {
+    private sealed record BookingAccessTestRequest(Guid OrganizationId, Guid LocationId, Guid EmployeeId)
+        : IRequest<Result>, IRequireBookingAccess;
+
     private readonly IOrganizationMemberRepository _memberRepository = Substitute.For<IOrganizationMemberRepository>();
     private static readonly Guid UserId = Guid.CreateVersion7();
     private static readonly Guid OrganizationId = Guid.CreateVersion7();
@@ -124,5 +127,45 @@ public class AuthorizationBehaviorTests
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(ApplicationErrors.Authorization.InsufficientRole);
+    }
+
+    [Fact]
+    public async Task Handle_BookingAccessRequest_OwningEmployeeSucceeds()
+    {
+        var employeeId = Guid.CreateVersion7();
+        var member = OrganizationMember.Create(OrganizationId, UserId, OrganizationRole.Employee, employeeId: employeeId).Value;
+        _memberRepository.GetByOrganizationAndUserAsync(OrganizationId, UserId, Arg.Any<CancellationToken>()).Returns(member);
+        var sut = CreateSut<BookingAccessTestRequest>();
+
+        var result = await sut.Handle(new BookingAccessTestRequest(OrganizationId, LocationId, employeeId), NextReturningSuccess(), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task Handle_BookingAccessRequest_DifferentEmployee_FailsWithInsufficientRoleError()
+    {
+        var member = OrganizationMember.Create(OrganizationId, UserId, OrganizationRole.Employee, employeeId: Guid.CreateVersion7()).Value;
+        _memberRepository.GetByOrganizationAndUserAsync(OrganizationId, UserId, Arg.Any<CancellationToken>()).Returns(member);
+        var sut = CreateSut<BookingAccessTestRequest>();
+
+        var result = await sut.Handle(
+            new BookingAccessTestRequest(OrganizationId, LocationId, Guid.CreateVersion7()), NextReturningSuccess(), CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(ApplicationErrors.Authorization.InsufficientRole);
+    }
+
+    [Fact]
+    public async Task Handle_BookingAccessRequest_LocationManagerScopedToThisLocation_Succeeds()
+    {
+        var member = OrganizationMember.Create(OrganizationId, UserId, OrganizationRole.LocationManager, locationId: LocationId).Value;
+        _memberRepository.GetByOrganizationAndUserAsync(OrganizationId, UserId, Arg.Any<CancellationToken>()).Returns(member);
+        var sut = CreateSut<BookingAccessTestRequest>();
+
+        var result = await sut.Handle(
+            new BookingAccessTestRequest(OrganizationId, LocationId, Guid.CreateVersion7()), NextReturningSuccess(), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
     }
 }
