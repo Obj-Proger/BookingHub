@@ -17,4 +17,5 @@ public interface IApplicationDbContext
     IQueryable<RecurringSchedule> RecurringSchedules { get; }
     IQueryable<ScheduleException> ScheduleExceptions { get; }
     IQueryable<Booking> Bookings { get; }
+    IQueryable<Review> Reviews { get; }
 }

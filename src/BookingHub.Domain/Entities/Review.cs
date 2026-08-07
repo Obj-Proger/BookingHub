@@ -7,16 +7,18 @@ public sealed class Review : BaseEntity
     private const int MaxCommentLength = 2000;
 
     public Guid OrganizationId { get; private set; }
+    public Guid LocationId { get; private set; }
     public Guid EmployeeId { get; private set; }
     public Guid BookingId { get; private set; }
     public int Rating { get; private set; }
     public string? Comment { get; private set; }
     public bool IsHidden { get; private set; }
 
-    private Review(Guid id, Guid organizationId, Guid employeeId, Guid bookingId, int rating, string? comment)
+    private Review(Guid id, Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, int rating, string? comment)
         : base(id)
     {
         OrganizationId = organizationId;
+        LocationId = locationId;
         EmployeeId = employeeId;
         BookingId = bookingId;
         Rating = rating;
@@ -32,11 +34,15 @@ public sealed class Review : BaseEntity
     /// that requires loading the booking, which is the Application layer's responsibility.
     /// </remarks>
     public static Result<Review> Create(
-        Guid organizationId, Guid employeeId, Guid bookingId, int rating, string? comment, DateTime utcNow)
+        Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, int rating, string? comment, DateTime utcNow)
     {
         var organizationIdResult = Guard.NotEmpty(organizationId, "Review.OrganizationIdEmpty", "OrganizationId");
         if (organizationIdResult.IsFailure)
             return Result.Failure<Review>(organizationIdResult.Error);
+
+        var locationIdResult = Guard.NotEmpty(locationId, "Review.LocationIdEmpty", "LocationId");
+        if (locationIdResult.IsFailure)
+            return Result.Failure<Review>(locationIdResult.Error);
 
         var employeeIdResult = Guard.NotEmpty(employeeId, "Review.EmployeeIdEmpty", "EmployeeId");
         if (employeeIdResult.IsFailure)
@@ -53,7 +59,7 @@ public sealed class Review : BaseEntity
         if (trimmedComment is { Length: > MaxCommentLength })
             return Result.Failure<Review>(DomainErrors.Review.CommentTooLong);
 
-        var review = new Review(Guid.CreateVersion7(), organizationId, employeeId, bookingId, rating, trimmedComment);
+        var review = new Review(Guid.CreateVersion7(), organizationId, locationId, employeeId, bookingId, rating, trimmedComment);
         review.RaiseDomainEvent(new ReviewSubmittedEvent(review.Id, organizationId, employeeId, rating, utcNow));
         return review;
     }

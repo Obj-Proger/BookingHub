@@ -8,7 +8,7 @@ public class ReviewTests
     private static readonly DateTime UtcNow = new(2026, 3, 10, 8, 0, 0, DateTimeKind.Utc);
 
     private static Result<Review> CreateValidReview(int rating = 5, string? comment = "Great service!") =>
-        Review.Create(ValidOrganizationId, ValidEmployeeId, ValidBookingId, rating, comment, UtcNow);
+        Review.Create(ValidOrganizationId, Guid.CreateVersion7(), ValidEmployeeId, ValidBookingId, rating, comment, UtcNow);
 
     [Fact]
     public void Create_ValidData_Succeeds()
@@ -40,7 +40,7 @@ public class ReviewTests
     [Fact]
     public void Create_EmptyOrganizationId_FailsWithValidationError()
     {
-        var result = Review.Create(Guid.Empty, ValidEmployeeId, ValidBookingId, 5, null, UtcNow);
+        var result = Review.Create(Guid.Empty, ValidEmployeeId, Guid.CreateVersion7(), ValidBookingId, 5, null, UtcNow);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Type.Should().Be(ErrorType.Validation);
@@ -49,7 +49,7 @@ public class ReviewTests
     [Fact]
     public void Create_EmptyBookingId_FailsWithValidationError()
     {
-        var result = Review.Create(ValidOrganizationId, ValidEmployeeId, Guid.Empty, 5, null, UtcNow);
+        var result = Review.Create(ValidOrganizationId, Guid.CreateVersion7(), ValidEmployeeId, Guid.Empty, 5, null, UtcNow);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Type.Should().Be(ErrorType.Validation);
@@ -115,5 +115,14 @@ public class ReviewTests
         review.Unhide();
 
         review.IsHidden.Should().BeFalse();
+    }
+
+    [Fact]
+    public void Create_EmptyLocationId_FailsWithValidationError()
+    {
+        var result = Domain.Entities.Review.Create(ValidOrganizationId, Guid.Empty, ValidEmployeeId, ValidBookingId, 5, null, UtcNow);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Type.Should().Be(ErrorType.Validation);
     }
 }

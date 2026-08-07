@@ -62,4 +62,11 @@ public static class ApplicationErrors
         public static readonly Error NotFound = new("WaitlistEntry.NotFound", "Waitlist entry not found.", ErrorType.NotFound);
         public static readonly Error InvalidManagementToken = new("WaitlistEntry.InvalidManagementToken", "The management token is invalid.", ErrorType.Forbidden);
     }
+
+    public static class Review
+    {
+        public static readonly Error NotFound = new("Review.NotFound", "Review not found.", ErrorType.NotFound);
+        public static readonly Error BookingNotCompleted = new("Review.BookingNotCompleted", "Only a completed booking can be reviewed.", ErrorType.Conflict);
+        public static readonly Error AlreadyExists = new("Review.AlreadyExists", "A review has already been submitted for this booking.", ErrorType.Conflict);
+    }
 }
