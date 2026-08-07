@@ -72,4 +72,33 @@ public class JoinWaitlistCommandHandlerTests
         result.Error.Should().Be(ApplicationErrors.Location.NotFound);
         await _serviceRepository.DidNotReceive().GetByIdAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }
+
+    [Fact]
+    public async Task Handle_InvalidPhone_FailsWithoutTouchingRepository()
+    {
+        _locationRepository.GetByIdAsync(OrganizationId, LocationId, Arg.Any<CancellationToken>()).Returns(ValidLocation());
+        _serviceRepository.GetByIdAsync(OrganizationId, ServiceId, Arg.Any<CancellationToken>()).Returns(ValidService());
+        var sut = CreateSut();
+        var command = ValidCommand() with { Phone = "not-a-number" };
+
+        var result = await sut.Handle(command, CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(DomainErrors.PhoneNumber.InvalidFormat);
+        _waitlistEntryRepository.DidNotReceive().Add(Arg.Any<Domain.Entities.WaitlistEntry>());
+    }
+
+    [Fact]
+    public async Task Handle_DesiredWindowInPast_FailsWithDomainSlotInPastError()
+    {
+        _locationRepository.GetByIdAsync(OrganizationId, LocationId, Arg.Any<CancellationToken>()).Returns(ValidLocation());
+        _serviceRepository.GetByIdAsync(OrganizationId, ServiceId, Arg.Any<CancellationToken>()).Returns(ValidService());
+        var sut = CreateSut();
+        var command = ValidCommand() with { DesiredStartUtc = DateTime.UtcNow.AddHours(-2), DesiredEndUtc = DateTime.UtcNow.AddHours(-1) };
+
+        var result = await sut.Handle(command, CancellationToken.None);
+
+        result.IsFailure.Should().BeTrue();
+        result.Error.Should().Be(DomainErrors.WaitlistEntry.SlotInPast);
+    }
 }
