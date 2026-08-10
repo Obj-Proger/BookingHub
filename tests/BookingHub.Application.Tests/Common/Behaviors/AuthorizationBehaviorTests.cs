@@ -52,7 +52,8 @@ public class AuthorizationBehaviorTests
     [InlineData(OrganizationRole.Employee)]
     public async Task Handle_MembershipOnlyRequest_AnyRoleSucceeds(OrganizationRole role)
     {
-        var member = OrganizationMember.Create(OrganizationId, UserId, role).Value;
+        var employeeId = role == OrganizationRole.Employee ? Guid.CreateVersion7() : (Guid?)null;
+        var member = OrganizationMember.Create(OrganizationId, UserId, role, employeeId: employeeId).Value;
         _memberRepository.GetByOrganizationAndUserAsync(OrganizationId, UserId, Arg.Any<CancellationToken>()).Returns(member);
         var sut = CreateSut<OrgScopedTestRequest>();
 
@@ -67,7 +68,8 @@ public class AuthorizationBehaviorTests
     [InlineData(OrganizationRole.Employee, false)]
     public async Task Handle_OrganizationManagementRequest_OnlyOwnerOrAdministratorSucceed(OrganizationRole role, bool expectedSuccess)
     {
-        var member = OrganizationMember.Create(OrganizationId, UserId, role).Value;
+        var employeeId = role == OrganizationRole.Employee ? Guid.CreateVersion7() : (Guid?)null;
+        var member = OrganizationMember.Create(OrganizationId, UserId, role, employeeId: employeeId).Value;
         _memberRepository.GetByOrganizationAndUserAsync(OrganizationId, UserId, Arg.Any<CancellationToken>()).Returns(member);
         var sut = CreateSut<OrgManagementTestRequest>();
 
@@ -119,7 +121,7 @@ public class AuthorizationBehaviorTests
     [Fact]
     public async Task Handle_LocationManagementRequest_PlainEmployee_FailsWithInsufficientRoleError()
     {
-        var member = OrganizationMember.Create(OrganizationId, UserId, OrganizationRole.Employee).Value;
+        var member = OrganizationMember.Create(OrganizationId, UserId, OrganizationRole.Employee, employeeId: Guid.CreateVersion7()).Value;
         _memberRepository.GetByOrganizationAndUserAsync(OrganizationId, UserId, Arg.Any<CancellationToken>()).Returns(member);
         var sut = CreateSut<LocationManagementTestRequest>();
 

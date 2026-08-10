@@ -3,12 +3,13 @@ using BookingHub.Application.Common.Persistence;
 
 namespace BookingHub.Application.Features.Bookings.Commands.TransitionBookingsToAwaitingReview;
 
-internal sealed class TransitionBookingsToAwaitingReviewCommandHandler(IBookingRepository bookingRepository, IUnitOfWork unitOfWork)
+internal sealed class TransitionBookingsToAwaitingReviewCommandHandler(
+    IBookingRepository bookingRepository, IUnitOfWork unitOfWork, TimeProvider timeProvider)
     : ICommandHandler<TransitionBookingsToAwaitingReviewCommand, int>
 {
     public async Task<Result<int>> Handle(TransitionBookingsToAwaitingReviewCommand command, CancellationToken cancellationToken)
     {
-        var utcNow = DateTime.UtcNow;
+        var utcNow = timeProvider.GetUtcNow().UtcDateTime;
         var bookings = await bookingRepository.GetConfirmedBookingsWithEndedSlotsAsync(utcNow, cancellationToken);
 
         var transitionedCount = 0;

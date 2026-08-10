@@ -4,6 +4,7 @@ using BookingHub.Application.Features.Bookings.Commands.RescheduleBooking;
 using BookingHub.Domain.Entities;
 using BookingHub.Domain.Enums;
 using BookingHub.Domain.ValueObjects;
+using MockQueryable;
 
 namespace BookingHub.Application.Tests.Features.Bookings;
 
@@ -63,7 +64,7 @@ public class RescheduleBookingCommandHandlerTests
         var organization = Organization.Create("Name", "slug").Value;
         var booking = CreateConfirmedBooking(organization.Id, TimeSpan.FromHours(2));
         _bookingRepository.GetByIdAsync(booking.Id, Arg.Any<CancellationToken>()).Returns(booking);
-        _dbContext.Organizations.Returns(new[] { organization }.AsQueryable());
+        _dbContext.Organizations.Returns(new[] { organization }.ToList().BuildMock());
         var sut = CreateSut();
 
         var result = await sut.Handle(

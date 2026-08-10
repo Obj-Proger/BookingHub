@@ -10,6 +10,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        ValidatorOptions.Global.LanguageManager.Enabled = false;
+
+        services.AddSingleton(TimeProvider.System);
+
         services.AddScoped<IDispatcher, Dispatcher>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IWaitlistOfferService, WaitlistOfferService>();

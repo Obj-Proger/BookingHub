@@ -69,4 +69,12 @@ public static class ApplicationErrors
         public static readonly Error BookingNotCompleted = new("Review.BookingNotCompleted", "Only a completed booking can be reviewed.", ErrorType.Conflict);
         public static readonly Error AlreadyExists = new("Review.AlreadyExists", "A review has already been submitted for this booking.", ErrorType.Conflict);
     }
+
+    public static class OrganizationMember
+    {
+        public static readonly Error NotFound = new("OrganizationMember.NotFound", "Organization member not found.", ErrorType.NotFound);
+        public static readonly Error AlreadyMember = new("OrganizationMember.AlreadyMember", "This user is already a member of the organization.", ErrorType.Conflict);
+        public static readonly Error OnlyOwnerCanManageOwnerRole = new("OrganizationMember.OnlyOwnerCanManageOwnerRole", "Only an existing Owner can grant, change, or revoke the Owner role.", ErrorType.Forbidden);
+        public static readonly Error CannotRemoveLastOwner = new("OrganizationMember.CannotRemoveLastOwner", "The organization must always have at least one Owner.", ErrorType.Conflict);
+    }
 }

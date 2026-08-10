@@ -11,10 +11,15 @@
 	<PackageReference Include="Microsoft.NET.Test.Sdk" />
 	<PackageReference Include="AwesomeAssertions" />
 	<PackageReference Include="NSubstitute" />
+	<PackageReference Include="MockQueryable.NSubstitute" />
   </ItemGroup>
 
   <ItemGroup>
 	<ProjectReference Include="..\..\src\BookingHub.Application\BookingHub.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+	<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 
 </Project>

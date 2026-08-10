@@ -3,12 +3,13 @@ using BookingHub.Application.Common.Persistence;
 
 namespace BookingHub.Application.Features.Bookings.Commands.AutoCompleteBookings;
 
-internal sealed class AutoCompleteBookingsCommandHandler(IBookingRepository bookingRepository, IUnitOfWork unitOfWork)
-: ICommandHandler<AutoCompleteBookingsCommand, int>
+internal sealed class AutoCompleteBookingsCommandHandler(
+    IBookingRepository bookingRepository, IUnitOfWork unitOfWork, TimeProvider timeProvider)
+    : ICommandHandler<AutoCompleteBookingsCommand, int>
 {
     public async Task<Result<int>> Handle(AutoCompleteBookingsCommand command, CancellationToken cancellationToken)
     {
-        var utcNow = DateTime.UtcNow;
+        var utcNow = timeProvider.GetUtcNow().UtcDateTime;
         var bookings = await bookingRepository.GetAwaitingReviewBookingsPastAutoCompleteWindowAsync(utcNow, cancellationToken);
 
         var completedCount = 0;

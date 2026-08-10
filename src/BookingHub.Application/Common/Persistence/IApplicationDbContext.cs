@@ -18,4 +18,5 @@ public interface IApplicationDbContext
     IQueryable<ScheduleException> ScheduleExceptions { get; }
     IQueryable<Booking> Bookings { get; }
     IQueryable<Review> Reviews { get; }
+    IQueryable<OrganizationMember> OrganizationMembers { get; }
 }

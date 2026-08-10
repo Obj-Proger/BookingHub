@@ -30,7 +30,7 @@ public class DispatcherTests
         services.AddScoped<IRequestHandler<PingRequest, Result<string>>, PingRequestHandler>();
         var dispatcher = new Dispatcher(services.BuildServiceProvider());
 
-        var result = await dispatcher.Send(new PingRequest());
+        var result = await dispatcher.Send(new PingRequest(), TestContext.Current.CancellationToken);
 
         result.IsSuccess.Should().BeTrue();
         result.Value.Should().Be("pong");
@@ -41,7 +41,7 @@ public class DispatcherTests
     {
         var dispatcher = new Dispatcher(new ServiceCollection().BuildServiceProvider());
 
-        var act = async () => await dispatcher.Send(new PingRequest());
+        var act = async () => await dispatcher.Send(new PingRequest(), TestContext.Current.CancellationToken);
 
         await act.Should().ThrowAsync<InvalidOperationException>();
     }
@@ -56,7 +56,7 @@ public class DispatcherTests
         services.AddScoped<IPipelineBehavior<PingRequest, Result<string>>>(_ => new RecordingBehavior(log, "Second"));
         var dispatcher = new Dispatcher(services.BuildServiceProvider());
 
-        await dispatcher.Send(new PingRequest());
+        await dispatcher.Send(new PingRequest(), TestContext.Current.CancellationToken);
 
         log.Should().Equal("First:before", "Second:before", "Second:after", "First:after");
     }

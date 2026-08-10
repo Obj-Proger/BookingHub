@@ -1,9 +1,9 @@
-﻿using BookingHub.Application.Common;
-using BookingHub.Application.Common.Persistence;
+﻿using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Bookings.Commands.CancelBooking;
 using BookingHub.Domain.Entities;
 using BookingHub.Domain.Enums;
 using BookingHub.Domain.ValueObjects;
+using MockQueryable;
 
 namespace BookingHub.Application.Tests.Features.Bookings;
 
@@ -16,7 +16,7 @@ public class CancelBookingCommandHandlerTests
     private CancelBookingCommandHandler CreateSut() => new(_bookingRepository, _dbContext, _unitOfWork);
 
     private void SetUpOrganizations(IEnumerable<Organization> organizations) =>
-        _dbContext.Organizations.Returns(organizations.AsQueryable());
+        _dbContext.Organizations.Returns(organizations.ToList().BuildMock());
 
     private static Booking CreateConfirmedBooking(Guid organizationId, TimeSpan leadTime)
     {

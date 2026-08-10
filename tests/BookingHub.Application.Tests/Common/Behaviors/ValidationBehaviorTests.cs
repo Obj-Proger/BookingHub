@@ -45,13 +45,14 @@ public class ValidationBehaviorTests
     {
         var sut = new ValidationBehavior<SampleCommand, Result>([new SampleCommandValidator()]);
         var nextWasCalled = false;
-        RequestHandlerDelegate<Result> next = () =>
+
+        Task<Result> Next()
         {
             nextWasCalled = true;
             return Task.FromResult(Result.Success());
-        };
+        }
 
-        var result = await sut.Handle(new SampleCommand(null), next, CancellationToken.None);
+        var result = await sut.Handle(new SampleCommand(null), Next, CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Type.Should().Be(ErrorType.Validation);

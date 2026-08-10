@@ -30,9 +30,11 @@ public class CreateLocationServiceOverrideCommandHandlerTests
     [Fact]
     public async Task Handle_OverrideCurrencyMatchesServiceCurrency_Succeeds()
     {
-        _locationRepository.GetByIdAsync(OrganizationId, LocationId, Arg.Any<CancellationToken>()).Returns(ValidLocation());
-        _serviceRepository.GetByIdAsync(OrganizationId, ServiceId, Arg.Any<CancellationToken>()).Returns(ValidService("USD"));
-        _overrideRepository.ExistsForServiceAsync(LocationId, ServiceId, Arg.Any<CancellationToken>()).Returns(false);
+        var location = ValidLocation();
+        var service = ValidService("USD");
+        _locationRepository.GetByIdAsync(OrganizationId, LocationId, Arg.Any<CancellationToken>()).Returns(location);
+        _serviceRepository.GetByIdAsync(OrganizationId, ServiceId, Arg.Any<CancellationToken>()).Returns(service);
+        _overrideRepository.ExistsForServiceAsync(location.Id, service.Id, Arg.Any<CancellationToken>()).Returns(false);
         var sut = CreateSut();
 
         var result = await sut.Handle(
@@ -44,8 +46,10 @@ public class CreateLocationServiceOverrideCommandHandlerTests
     [Fact]
     public async Task Handle_OverrideCurrencyDiffersFromServiceCurrency_FailsWithoutCheckingExistence()
     {
-        _locationRepository.GetByIdAsync(OrganizationId, LocationId, Arg.Any<CancellationToken>()).Returns(ValidLocation());
-        _serviceRepository.GetByIdAsync(OrganizationId, ServiceId, Arg.Any<CancellationToken>()).Returns(ValidService("USD"));
+        var location = ValidLocation();
+        var service = ValidService("USD");
+        _locationRepository.GetByIdAsync(OrganizationId, LocationId, Arg.Any<CancellationToken>()).Returns(location);
+        _serviceRepository.GetByIdAsync(OrganizationId, ServiceId, Arg.Any<CancellationToken>()).Returns(service);
         var sut = CreateSut();
 
         var result = await sut.Handle(
@@ -59,9 +63,11 @@ public class CreateLocationServiceOverrideCommandHandlerTests
     [Fact]
     public async Task Handle_OverrideAlreadyExistsForServiceAtLocation_FailsWithAlreadyExistsError()
     {
-        _locationRepository.GetByIdAsync(OrganizationId, LocationId, Arg.Any<CancellationToken>()).Returns(ValidLocation());
-        _serviceRepository.GetByIdAsync(OrganizationId, ServiceId, Arg.Any<CancellationToken>()).Returns(ValidService("USD"));
-        _overrideRepository.ExistsForServiceAsync(LocationId, ServiceId, Arg.Any<CancellationToken>()).Returns(true);
+        var location = ValidLocation();
+        var service = ValidService("USD");
+        _locationRepository.GetByIdAsync(OrganizationId, LocationId, Arg.Any<CancellationToken>()).Returns(location);
+        _serviceRepository.GetByIdAsync(OrganizationId, ServiceId, Arg.Any<CancellationToken>()).Returns(service);
+        _overrideRepository.ExistsForServiceAsync(location.Id, service.Id, Arg.Any<CancellationToken>()).Returns(true);
         var sut = CreateSut();
 
         var result = await sut.Handle(

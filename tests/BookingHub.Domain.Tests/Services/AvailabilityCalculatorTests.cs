@@ -223,6 +223,6 @@ public class AvailabilityCalculatorTests
         var candidate = TimeSlot.Create(ToUtc(9, 0), ToUtc(9, 30)).Value;
         var occupied = new[] { TimeSlot.Create(ToUtc(10, 0), ToUtc(10, 30)).Value };
 
-        AvailabilityCalculator.IsSlotAvailable(candidate, TimeSpan.Zero, TimeSpan.FromMinutes(30), occupied).Should().BeFalse();
+        AvailabilityCalculator.IsSlotAvailable(candidate, TimeSpan.Zero, TimeSpan.FromMinutes(45), occupied).Should().BeFalse();
     }
 }

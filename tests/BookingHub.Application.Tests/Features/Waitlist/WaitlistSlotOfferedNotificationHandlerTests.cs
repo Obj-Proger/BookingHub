@@ -38,8 +38,7 @@ public class WaitlistSlotOfferedNotificationHandlerTests
 
         await sut.Handle(domainEvent, CancellationToken.None);
 
-        await _emailService.Received(1).SendAsync(Arg.Is<EmailMessage>(m => m.ToAddress == "guest@example.com"), Arg.Any<CancellationToken>());
-        await _smsService.Received(1).SendAsync(Arg.Any<SmsMessage>(), Arg.Any<CancellationToken>());
+        await _emailService.Received(1).SendAsync(Arg.Is<EmailMessage>(m => m!.ToAddress == "guest@example.com"), Arg.Any<CancellationToken>()); await _smsService.Received(1).SendAsync(Arg.Any<SmsMessage>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

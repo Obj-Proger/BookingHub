@@ -40,7 +40,7 @@ public class SubmitReviewCommandHandlerTests
 
         result.IsSuccess.Should().BeTrue();
         _reviewRepository.Received(1).Add(Arg.Is<Review>(
-            r => r.OrganizationId == booking.OrganizationId && r.LocationId == booking.LocationId && r.EmployeeId == booking.EmployeeId));
+            r => r!.OrganizationId == booking.OrganizationId && r.LocationId == booking.LocationId && r.EmployeeId == booking.EmployeeId));
     }
 
     [Fact]

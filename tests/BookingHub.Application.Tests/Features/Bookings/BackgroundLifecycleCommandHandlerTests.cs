@@ -13,6 +13,11 @@ public class BackgroundLifecycleCommandHandlerTests
     private readonly IBookingRepository _bookingRepository = Substitute.For<IBookingRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
 
+    private sealed class FixedTimeProvider(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+    }
+
     private static Booking CreatePendingBooking() => Booking.CreatePending(
         Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
         ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
@@ -25,7 +30,7 @@ public class BackgroundLifecycleCommandHandlerTests
         var bookings = new[] { CreatePendingBooking(), CreatePendingBooking() };
         _bookingRepository.GetPendingBookingsPastConfirmationWindowAsync(Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns(bookings);
-        var sut = new ExpirePendingBookingsCommandHandler(_bookingRepository, _unitOfWork);
+        var sut = new ExpirePendingBookingsCommandHandler(_bookingRepository, _unitOfWork, TimeProvider.System);
 
         var result = await sut.Handle(new ExpirePendingBookingsCommand(), CancellationToken.None);
 
@@ -39,7 +44,7 @@ public class BackgroundLifecycleCommandHandlerTests
     {
         _bookingRepository.GetPendingBookingsPastConfirmationWindowAsync(Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns([]);
-        var sut = new ExpirePendingBookingsCommandHandler(_bookingRepository, _unitOfWork);
+        var sut = new ExpirePendingBookingsCommandHandler(_bookingRepository, _unitOfWork, TimeProvider.System);
 
         var result = await sut.Handle(new ExpirePendingBookingsCommand(), CancellationToken.None);
 
@@ -54,7 +59,8 @@ public class BackgroundLifecycleCommandHandlerTests
         booking.Confirm(DateTime.UtcNow);
         _bookingRepository.GetConfirmedBookingsWithEndedSlotsAsync(Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns([booking]);
-        var sut = new TransitionBookingsToAwaitingReviewCommandHandler(_bookingRepository, _unitOfWork);
+        var timeProvider = new FixedTimeProvider(booking.TimeSlot.EndUtc.AddMinutes(1));
+        var sut = new TransitionBookingsToAwaitingReviewCommandHandler(_bookingRepository, _unitOfWork, timeProvider);
 
         var result = await sut.Handle(new TransitionBookingsToAwaitingReviewCommand(), CancellationToken.None);
 
@@ -70,7 +76,7 @@ public class BackgroundLifecycleCommandHandlerTests
         booking.TransitionToAwaitingReview(DateTime.UtcNow.AddHours(4));
         _bookingRepository.GetAwaitingReviewBookingsPastAutoCompleteWindowAsync(Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns([booking]);
-        var sut = new AutoCompleteBookingsCommandHandler(_bookingRepository, _unitOfWork);
+        var sut = new AutoCompleteBookingsCommandHandler(_bookingRepository, _unitOfWork, TimeProvider.System);
 
         var result = await sut.Handle(new AutoCompleteBookingsCommand(), CancellationToken.None);
 

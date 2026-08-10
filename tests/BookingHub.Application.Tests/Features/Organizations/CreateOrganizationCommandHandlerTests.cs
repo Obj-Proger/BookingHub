@@ -26,9 +26,9 @@ public class CreateOrganizationCommandHandlerTests
         var result = await sut.Handle(new CreateOrganizationCommand("Bright Smile", "bright-smile"), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        _organizationRepository.Received(1).Add(Arg.Is<Organization>(o => o.Slug == "bright-smile"));
+        _organizationRepository.Received(1).Add(Arg.Is<Organization>(o => o!.Slug == "bright-smile"));
         _organizationMemberRepository.Received(1).Add(
-            Arg.Is<OrganizationMember>(m => m.Role == OrganizationRole.Owner && m.UserId == CallerUserId));
+            Arg.Is<OrganizationMember>(m => m!.Role == OrganizationRole.Owner && m.UserId == CallerUserId));
         await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
     }
 

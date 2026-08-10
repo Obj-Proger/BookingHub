@@ -5,7 +5,7 @@ namespace BookingHub.Application.Tests.Common.Behaviors;
 
 public class LoggingBehaviorTests
 {
-    private sealed record SampleRequest : IRequest<Result>;
+    internal sealed record SampleRequest : IRequest<Result>;
 
     private readonly ILogger<LoggingBehavior<SampleRequest, Result>> _logger =
         Substitute.For<ILogger<LoggingBehavior<SampleRequest, Result>>>();

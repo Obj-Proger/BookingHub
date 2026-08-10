@@ -1,4 +1,10 @@
-﻿internal sealed class UnhideReviewCommandHandler(IReviewRepository reviewRepository, IUnitOfWork unitOfWork)
+﻿using BookingHub.Application.Common;
+using BookingHub.Application.Common.Messaging;
+using BookingHub.Application.Common.Persistence;
+
+namespace BookingHub.Application.Features.Reviews.Commands.UnhideReview;
+
+internal sealed class UnhideReviewCommandHandler(IReviewRepository reviewRepository, IUnitOfWork unitOfWork)
     : ICommandHandler<UnhideReviewCommand>
 {
     public async Task<Result> Handle(UnhideReviewCommand command, CancellationToken cancellationToken)
