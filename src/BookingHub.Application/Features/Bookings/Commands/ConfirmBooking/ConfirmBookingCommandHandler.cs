@@ -22,6 +22,15 @@ internal sealed class ConfirmBookingCommandHandler(IBookingRepository bookingRep
         if (confirmResult.IsFailure)
             return confirmResult;
 
+        if (booking.RecurringSeriesId is not null)
+        {
+            var siblings = await bookingRepository.GetPendingSiblingsInSeriesAsync(
+                booking.RecurringSeriesId.Value, booking.Id, cancellationToken);
+
+            foreach (var sibling in siblings)
+                sibling.Confirm(DateTime.UtcNow);
+        }
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }

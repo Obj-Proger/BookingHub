@@ -14,11 +14,11 @@ public class ConfirmBookingCommandHandlerTests
 
     private ConfirmBookingCommandHandler CreateSut() => new(_bookingRepository, _unitOfWork);
 
-    private static Booking CreatePendingBooking() => Booking.CreatePending(
+    private static Booking CreatePendingBooking(Guid? recurringSeriesId = null) => Booking.CreatePending(
         Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
         ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
         TimeSlot.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddHours(1)).Value,
-        BookingSource.Public, DateTime.UtcNow).Value;
+        BookingSource.Public, DateTime.UtcNow, recurringSeriesId).Value;
 
     [Fact]
     public async Task Handle_CorrectToken_ConfirmsBooking()
@@ -85,5 +85,34 @@ public class ConfirmBookingCommandHandlerTests
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(DomainErrors.Booking.CannotConfirm);
+    }
+
+    [Fact]
+    public async Task Handle_BookingIsPartOfRecurringSeries_AlsoConfirmsPendingSiblings()
+    {
+        var seriesId = Guid.CreateVersion7();
+        var firstBooking = CreatePendingBooking(seriesId);
+        var sibling = CreatePendingBooking(seriesId);
+        _bookingRepository.GetByIdAsync(firstBooking.Id, Arg.Any<CancellationToken>()).Returns(firstBooking);
+        _bookingRepository.GetPendingSiblingsInSeriesAsync(seriesId, firstBooking.Id, Arg.Any<CancellationToken>())
+            .Returns([sibling]);
+        var sut = CreateSut();
+
+        var result = await sut.Handle(new ConfirmBookingCommand(firstBooking.Id, firstBooking.ConfirmationToken.Value), CancellationToken.None);
+
+        result.IsSuccess.Should().BeTrue();
+        sibling.Status.Should().Be(BookingStatus.Confirmed);
+    }
+
+    [Fact]
+    public async Task Handle_BookingNotPartOfSeries_DoesNotQuerySiblings()
+    {
+        var booking = CreatePendingBooking();
+        _bookingRepository.GetByIdAsync(booking.Id, Arg.Any<CancellationToken>()).Returns(booking);
+        var sut = CreateSut();
+
+        await sut.Handle(new ConfirmBookingCommand(booking.Id, booking.ConfirmationToken.Value), CancellationToken.None);
+
+        await _bookingRepository.DidNotReceive().GetPendingSiblingsInSeriesAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }
 }

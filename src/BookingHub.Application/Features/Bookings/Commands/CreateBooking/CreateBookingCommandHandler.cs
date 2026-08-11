@@ -1,13 +1,10 @@
-﻿using BookingHub.Application.Common;
-using BookingHub.Application.Common.Messaging;
+﻿using BookingHub.Application.Common.Messaging;
 using BookingHub.Application.Common.Notifications;
 using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Bookings.DTOs;
 using BookingHub.Domain.Entities;
 using BookingHub.Domain.Enums;
-using BookingHub.Domain.Services;
 using BookingHub.Domain.ValueObjects;
-using Microsoft.EntityFrameworkCore;
 
 namespace BookingHub.Application.Features.Bookings.Commands.CreateBooking;
 
@@ -40,42 +37,11 @@ internal sealed class CreateBookingCommandHandler(
             email = emailResult.Value;
         }
 
-        var locationTimeZoneId = await dbContext.Locations
-            .Where(l => l.Id == command.LocationId && l.OrganizationId == command.OrganizationId)
-            .Select(l => l.TimeZone)
-            .FirstOrDefaultAsync(cancellationToken);
-        if (locationTimeZoneId is null)
-            return Result.Failure<BookingCreatedResponse>(ApplicationErrors.Location.NotFound);
-
-        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(locationTimeZoneId);
-        var localDate = DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(command.StartUtc, timeZone));
-
-        var contextResult = await AvailabilityContextLoader.LoadAsync(
-            dbContext, command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId, localDate, cancellationToken);
-        if (contextResult.IsFailure)
-            return Result.Failure<BookingCreatedResponse>(contextResult.Error);
-
-        var context = contextResult.Value;
-        if (context.Assignment is null)
-            return Result.Failure<BookingCreatedResponse>(ApplicationErrors.Employee.NotAssignedToLocation);
-
-        var availableSlots = AvailabilityCalculator.CalculateAvailableSlots(
-            context.Location.WorkingHours, context.RecurringSchedule, context.ExceptionForDate, context.OccupiedWindows,
-            context.Service.Duration, context.Service.BufferBefore, context.Service.BufferAfter,
-            localDate, context.TimeZone, SlotGranularity);
-
-        if (availableSlots.All(s => s.StartUtc != command.StartUtc))
-            return Result.Failure<BookingCreatedResponse>(ApplicationErrors.Booking.SlotNotAvailable);
-
-        var timeSlotResult = TimeSlot.Create(command.StartUtc, command.StartUtc + context.Service.Duration);
-        if (timeSlotResult.IsFailure)
-            return Result.Failure<BookingCreatedResponse>(timeSlotResult.Error);
-
         var clientContact = ClientContact.Create(phoneResult.Value, command.ClientName, email);
 
-        var bookingResult = Booking.CreatePending(
-            command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId,
-            clientContact, timeSlotResult.Value, BookingSource.Public, DateTime.UtcNow);
+        var bookingResult = await BookingSlotBuilder.TryCreatePendingBookingAsync(
+            dbContext, command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId,
+            command.StartUtc, clientContact, BookingSource.Public, recurringSeriesId: null, SlotGranularity, cancellationToken);
         if (bookingResult.IsFailure)
             return Result.Failure<BookingCreatedResponse>(bookingResult.Error);
 

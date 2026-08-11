@@ -21,4 +21,9 @@ public interface IBookingRepository
 
     /// <summary>AwaitingReview bookings whose owning organization's auto-complete window has elapsed.</summary>
     Task<IReadOnlyList<Booking>> GetAwaitingReviewBookingsPastAutoCompleteWindowAsync(DateTime utcNow, CancellationToken cancellationToken);
+
+    /// <summary>Other Pending bookings in the same recurring series — for cascading confirmation
+    /// when the guest confirms via the first occurrence's link.</summary>
+    Task<IReadOnlyList<Booking>> GetPendingSiblingsInSeriesAsync(
+        Guid recurringSeriesId, Guid excludingBookingId, CancellationToken cancellationToken);
 }
