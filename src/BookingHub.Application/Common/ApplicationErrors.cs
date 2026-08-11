@@ -77,4 +77,16 @@ public static class ApplicationErrors
         public static readonly Error OnlyOwnerCanManageOwnerRole = new("OrganizationMember.OnlyOwnerCanManageOwnerRole", "Only an existing Owner can grant, change, or revoke the Owner role.", ErrorType.Forbidden);
         public static readonly Error CannotRemoveLastOwner = new("OrganizationMember.CannotRemoveLastOwner", "The organization must always have at least one Owner.", ErrorType.Conflict);
     }
+
+    public static class RecurringSchedule
+    {
+        public static readonly Error NotFound = new("RecurringSchedule.NotFound", "Recurring schedule entry not found.", ErrorType.NotFound);
+        public static readonly Error Overlaps = new("RecurringSchedule.Overlaps", "This time range overlaps with an existing recurring schedule entry on the same day.", ErrorType.Conflict);
+    }
+
+    public static class ScheduleException
+    {
+        public static readonly Error NotFound = new("ScheduleException.NotFound", "Schedule exception not found.", ErrorType.NotFound);
+        public static readonly Error AlreadyExists = new("ScheduleException.AlreadyExists", "A schedule exception already exists for this date.", ErrorType.Conflict);
+    }
 }
