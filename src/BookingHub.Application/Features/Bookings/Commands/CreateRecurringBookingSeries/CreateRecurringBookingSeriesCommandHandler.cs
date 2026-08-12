@@ -84,7 +84,7 @@ internal sealed class CreateRecurringBookingSeriesCommandHandler(
 
         return new RecurringBookingSeriesCreatedResponse(
             seriesId,
-            createdBookings.Select(b => new BookingCreatedResponse(b.Id, b.TimeSlot.StartUtc, b.TimeSlot.EndUtc, b.Status)).ToList(),
+            [.. createdBookings.Select(b => new BookingCreatedResponse(b.Id, b.TimeSlot.StartUtc, b.TimeSlot.EndUtc, b.Status))],
             skippedStarts);
     }
 

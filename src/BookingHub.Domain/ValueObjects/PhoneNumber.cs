@@ -3,9 +3,13 @@
 namespace BookingHub.Domain.ValueObjects;
 
 /// <summary>An international phone number in E.164 format (e.g. <c>+14155552671</c>).</summary>
-public sealed class PhoneNumber : ValueObject
+public sealed partial class PhoneNumber : ValueObject
 {
-    private static readonly Regex Pattern = new(@"^\+[1-9]\d{7,14}$", RegexOptions.Compiled);
+    [GeneratedRegex(@"^\+[1-9]\d{7,14}$")]
+    private static partial Regex Pattern();
+
+    [GeneratedRegex(@"[\s\-()]")]
+    private static partial Regex NormalizationPattern();
 
     public string Value { get; }
 
@@ -26,9 +30,9 @@ public sealed class PhoneNumber : ValueObject
         if (string.IsNullOrWhiteSpace(rawValue))
             return Result.Failure<PhoneNumber>(DomainErrors.PhoneNumber.Empty);
 
-        var normalized = Regex.Replace(rawValue.Trim(), @"[\s\-()]", "");
+        var normalized = NormalizationPattern().Replace(rawValue.Trim(), "");
 
-        if (!Pattern.IsMatch(normalized))
+        if (!Pattern().IsMatch(normalized))
             return Result.Failure<PhoneNumber>(DomainErrors.PhoneNumber.InvalidFormat);
 
         return new PhoneNumber(normalized);

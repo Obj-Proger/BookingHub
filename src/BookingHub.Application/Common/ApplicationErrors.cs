@@ -17,6 +17,7 @@ public static class ApplicationErrors
     {
         public static readonly Error NotAMember = new("Authorization.NotAMember", "You are not a member of this organization.", ErrorType.Forbidden);
         public static readonly Error InsufficientRole = new("Authorization.InsufficientRole", "Your role does not grant access to this operation.", ErrorType.Forbidden);
+        public static readonly Error FinancialAccessDisabled = new("Authorization.FinancialAccessDisabled", "The organization's Owner has not enabled financial data access for Administrators.", ErrorType.Forbidden);
     }
 
     public static class Location

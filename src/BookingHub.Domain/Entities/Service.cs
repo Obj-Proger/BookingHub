@@ -3,10 +3,12 @@ using BookingHub.Domain.ValueObjects;
 
 namespace BookingHub.Domain.Entities;
 
-public sealed class Service : BaseEntity
+public sealed partial class Service : BaseEntity
 {
     private const int MaxNameLength = 200;
-    private static readonly Regex ColorPattern = new(@"^#[0-9A-Fa-f]{6}$", RegexOptions.Compiled);
+
+    [GeneratedRegex(@"^#[0-9A-Fa-f]{6}$")]
+    private static partial Regex ColorPattern();
 
     public Guid OrganizationId { get; private set; }
     public string Name { get; private set; } = null!;
@@ -35,8 +37,8 @@ public sealed class Service : BaseEntity
     }
 
     public static Result<Service> Create(
-    Guid organizationId, string? name, TimeSpan duration, Money basePrice,
-    TimeSpan bufferBefore, TimeSpan bufferAfter, string? color)
+        Guid organizationId, string? name, TimeSpan duration, Money basePrice,
+        TimeSpan bufferBefore, TimeSpan bufferAfter, string? color)
     {
         var organizationIdResult = Guard.NotEmpty(organizationId, "Service.OrganizationIdEmpty", "OrganizationId");
         if (organizationIdResult.IsFailure)
@@ -102,7 +104,7 @@ public sealed class Service : BaseEntity
 
     private static Result<string> ValidateColor(string? color)
     {
-        if (string.IsNullOrWhiteSpace(color) || !ColorPattern.IsMatch(color.Trim()))
+        if (string.IsNullOrWhiteSpace(color) || !ColorPattern().IsMatch(color.Trim()))
             return Result.Failure<string>(DomainErrors.Service.InvalidColor);
 
         return color.Trim().ToUpperInvariant();

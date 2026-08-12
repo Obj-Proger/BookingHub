@@ -185,5 +185,25 @@ public class OrganizationTests
         result.Error.Should().Be(DomainErrors.Organization.AutoCompleteWindowNotPositive);
     }
 
-    public static TheoryData<TimeSpan> NonPositiveWindows() => new() { TimeSpan.Zero, TimeSpan.FromMinutes(-5) };
+    public static TheoryData<TimeSpan> NonPositiveWindows() => [TimeSpan.Zero, TimeSpan.FromMinutes(-5)];
+
+    [Fact]
+    public void Create_NewOrganization_DefaultsCanAdministratorsViewFinancialsToFalse()
+    {
+        var organization = Organization.Create("Name", "valid-slug").Value;
+
+        organization.CanAdministratorsViewFinancials.Should().BeFalse();
+    }
+
+    [Fact]
+    public void SetAdministratorFinancialAccess_EnablesAndDisables()
+    {
+        var organization = Organization.Create("Name", "valid-slug").Value;
+
+        organization.SetAdministratorFinancialAccess(true);
+        organization.CanAdministratorsViewFinancials.Should().BeTrue();
+
+        organization.SetAdministratorFinancialAccess(false);
+        organization.CanAdministratorsViewFinancials.Should().BeFalse();
+    }
 }

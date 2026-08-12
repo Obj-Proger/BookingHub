@@ -3,9 +3,10 @@
 namespace BookingHub.Domain.ValueObjects;
 
 /// <summary>A validated email address.</summary>
-public sealed class Email : ValueObject
+public sealed partial class Email : ValueObject
 {
-    private static readonly Regex Pattern = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled);
+    [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
+    private static partial Regex Pattern();
 
     public string Value { get; }
 
@@ -25,7 +26,7 @@ public sealed class Email : ValueObject
         if (trimmed.Length > 320) // RFC 5321 maximum mailbox length
             return Result.Failure<Email>(DomainErrors.Email.TooLong);
 
-        if (!Pattern.IsMatch(trimmed))
+        if (!Pattern().IsMatch(trimmed))
             return Result.Failure<Email>(DomainErrors.Email.InvalidFormat);
 
         return new Email(trimmed.ToLowerInvariant());

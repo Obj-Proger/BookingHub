@@ -2,11 +2,13 @@
 
 namespace BookingHub.Domain.Entities;
 
-public sealed class Organization : BaseEntity
+public sealed partial class Organization : BaseEntity
 {
     private const int MaxNameLength = 200;
     private const int MaxSlugLength = 100;
-    private static readonly Regex SlugPattern = new(@"^[a-z0-9]+(-[a-z0-9]+)*$", RegexOptions.Compiled);
+
+    [GeneratedRegex(@"^[a-z0-9]+(-[a-z0-9]+)*$")]
+    private static partial Regex SlugPattern();
 
     public string Name { get; private set; } = null!;
     public string Slug { get; private set; } = null!;
@@ -14,6 +16,7 @@ public sealed class Organization : BaseEntity
     public TimeSpan PendingConfirmationWindow { get; private set; }
     public TimeSpan AutoCompleteWindow { get; private set; }
     public TimeSpan WaitlistOfferWindow { get; private set; }
+    public bool CanAdministratorsViewFinancials { get; private set; }
 
     private Organization(Guid id, string name, string slug) : base(id)
     {
@@ -23,6 +26,7 @@ public sealed class Organization : BaseEntity
         PendingConfirmationWindow = TimeSpan.FromMinutes(30);
         AutoCompleteWindow = TimeSpan.FromHours(24);
         WaitlistOfferWindow = TimeSpan.FromHours(2);
+        CanAdministratorsViewFinancials = false;
     }
 
     private Organization()
@@ -88,6 +92,9 @@ public sealed class Organization : BaseEntity
         return Result.Success();
     }
 
+    /// <summary>Owner-only in practice — enforced by the Application handler, not here (Domain doesn't know who is calling).</summary>
+    public void SetAdministratorFinancialAccess(bool enabled) => CanAdministratorsViewFinancials = enabled;
+
     private static Result<string> ValidateSlug(string? slug)
     {
         if (string.IsNullOrWhiteSpace(slug))
@@ -95,7 +102,7 @@ public sealed class Organization : BaseEntity
 
         var trimmed = slug.Trim();
 
-        return trimmed.Length > MaxSlugLength || !SlugPattern.IsMatch(trimmed)
+        return trimmed.Length > MaxSlugLength || !SlugPattern().IsMatch(trimmed)
             ? Result.Failure<string>(DomainErrors.Organization.SlugInvalidFormat)
             : trimmed;
     }
