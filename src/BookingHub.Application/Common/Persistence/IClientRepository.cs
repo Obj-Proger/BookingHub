@@ -7,4 +7,5 @@ public interface IClientRepository
 {
     void Add(Client client);
     Task<Client?> GetByPhoneAsync(PhoneNumber phone, CancellationToken cancellationToken);
+    Task<Client?> GetByIdAsync(Guid clientId, CancellationToken cancellationToken);
 }

@@ -30,7 +30,7 @@ public class BookingTests
     {
         var result = Booking.CreatePending(
             Guid.Empty, BookingFixture.LocationId, BookingFixture.EmployeeId, BookingFixture.ServiceId,
-            BookingFixture.ClientContact, BookingFixture.FutureSlot, BookingSource.Public, BookingFixture.UtcNow);
+            BookingFixture.ClientContact, BookingFixture.FutureSlot, BookingFixture.Price, BookingSource.Public, BookingFixture.UtcNow);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Type.Should().Be(ErrorType.Validation);
@@ -41,7 +41,7 @@ public class BookingTests
     {
         var result = Booking.CreatePending(
             BookingFixture.OrganizationId, Guid.Empty, BookingFixture.EmployeeId, BookingFixture.ServiceId,
-            BookingFixture.ClientContact, BookingFixture.FutureSlot, BookingSource.Public, BookingFixture.UtcNow);
+            BookingFixture.ClientContact, BookingFixture.FutureSlot, BookingFixture.Price, BookingSource.Public, BookingFixture.UtcNow);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Type.Should().Be(ErrorType.Validation);
@@ -52,7 +52,7 @@ public class BookingTests
     {
         var result = Booking.CreatePending(
             BookingFixture.OrganizationId, BookingFixture.LocationId, Guid.Empty, BookingFixture.ServiceId,
-            BookingFixture.ClientContact, BookingFixture.FutureSlot, BookingSource.Public, BookingFixture.UtcNow);
+            BookingFixture.ClientContact, BookingFixture.FutureSlot, BookingFixture.Price, BookingSource.Public, BookingFixture.UtcNow);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Type.Should().Be(ErrorType.Validation);
@@ -63,7 +63,7 @@ public class BookingTests
     {
         var result = Booking.CreatePending(
             BookingFixture.OrganizationId, BookingFixture.LocationId, BookingFixture.EmployeeId, Guid.Empty,
-            BookingFixture.ClientContact, BookingFixture.FutureSlot, BookingSource.Public, BookingFixture.UtcNow);
+            BookingFixture.ClientContact, BookingFixture.FutureSlot, BookingFixture.Price, BookingSource.Public, BookingFixture.UtcNow);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Type.Should().Be(ErrorType.Validation);
@@ -78,6 +78,14 @@ public class BookingTests
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(DomainErrors.Booking.SlotInPast);
+    }
+
+    [Fact]
+    public void CreatePending_ValidData_SetsPrice()
+    {
+        var result = BookingFixture.CreatePendingResult();
+
+        result.Value.Price.Should().Be(BookingFixture.Price);
     }
 
     // Confirm

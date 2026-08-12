@@ -56,9 +56,13 @@ internal sealed class ConfirmWaitlistOfferCommandHandler(
         if (convertResult.IsFailure)
             return Result.Failure<BookingCreatedResponse>(convertResult.Error);
 
+        var overrideEntity = await dbContext.LocationServiceOverrides
+            .FirstOrDefaultAsync(o => o.LocationId == entry.LocationId && o.ServiceId == entry.ServiceId, cancellationToken);
+        var effectivePrice = overrideEntity?.OverridePrice ?? context.Service.BasePrice;
+
         var bookingResult = Booking.CreatePending(
             entry.OrganizationId, entry.LocationId, offeredEmployeeId, entry.ServiceId,
-            entry.ClientContact, offeredSlot, BookingSource.Waitlist, DateTime.UtcNow);
+            entry.ClientContact, offeredSlot, effectivePrice, BookingSource.Waitlist, DateTime.UtcNow);
         if (bookingResult.IsFailure)
             return Result.Failure<BookingCreatedResponse>(bookingResult.Error);
 

@@ -21,7 +21,7 @@ public class BackgroundLifecycleCommandHandlerTests
     private static Booking CreatePendingBooking() => Booking.CreatePending(
         Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
         ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
-        TimeSlot.Create(DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(3)).Value,
+        TimeSlot.Create(DateTime.UtcNow.AddHours(2), DateTime.UtcNow.AddHours(3)).Value, Money.Create(50m, "USD").Value,
         BookingSource.Public, DateTime.UtcNow).Value;
 
     [Fact]

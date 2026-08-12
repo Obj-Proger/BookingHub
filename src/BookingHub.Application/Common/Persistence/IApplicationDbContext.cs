@@ -19,4 +19,5 @@ public interface IApplicationDbContext
     IQueryable<Booking> Bookings { get; }
     IQueryable<Review> Reviews { get; }
     IQueryable<OrganizationMember> OrganizationMembers { get; }
+    IQueryable<LocationServiceOverride> LocationServiceOverrides { get; }
 }

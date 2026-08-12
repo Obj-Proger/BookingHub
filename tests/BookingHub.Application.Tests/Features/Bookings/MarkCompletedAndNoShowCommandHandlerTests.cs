@@ -22,7 +22,7 @@ public class MarkCompletedAndNoShowCommandHandlerTests
         var booking = Booking.CreatePending(
             OrganizationId, LocationId, EmployeeId, Guid.CreateVersion7(),
             ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
-            TimeSlot.Create(DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddHours(2)).Value,
+            TimeSlot.Create(DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddHours(2)).Value, Money.Create(50m, "USD").Value,
             BookingSource.Public, DateTime.UtcNow).Value;
         booking.Confirm(DateTime.UtcNow);
         booking.TransitionToAwaitingReview(DateTime.UtcNow.AddHours(3));
@@ -75,7 +75,7 @@ public class MarkCompletedAndNoShowCommandHandlerTests
         var booking = Booking.CreatePending(
             OrganizationId, LocationId, EmployeeId, Guid.CreateVersion7(),
             ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
-            TimeSlot.Create(DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddHours(2)).Value,
+            TimeSlot.Create(DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddHours(2)).Value, Money.Create(50m, "USD").Value,
             BookingSource.Public, DateTime.UtcNow).Value;
         booking.Confirm(DateTime.UtcNow);
         _bookingRepository.GetByIdAsync(OrganizationId, LocationId, EmployeeId, BookingId, Arg.Any<CancellationToken>()).Returns(booking);

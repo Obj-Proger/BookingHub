@@ -23,7 +23,7 @@ public class CancelBookingCommandHandlerTests
         var booking = Booking.CreatePending(
             organizationId, Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
             ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
-            TimeSlot.Create(DateTime.UtcNow + leadTime, DateTime.UtcNow + leadTime + TimeSpan.FromHours(1)).Value,
+            TimeSlot.Create(DateTime.UtcNow + leadTime, DateTime.UtcNow + leadTime + TimeSpan.FromHours(1)).Value, Money.Create(50m, "USD").Value,
             BookingSource.Public, DateTime.UtcNow).Value;
         booking.Confirm(DateTime.UtcNow);
         return booking;

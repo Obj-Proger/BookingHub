@@ -47,11 +47,16 @@ internal static class BookingSlotBuilder
         if (availableSlots.All(s => s.StartUtc != startUtc))
             return Result.Failure<Booking>(ApplicationErrors.Booking.SlotNotAvailable);
 
+        var overrideEntity = await dbContext.LocationServiceOverrides
+            .FirstOrDefaultAsync(o => o.LocationId == locationId && o.ServiceId == serviceId, cancellationToken);
+        var effectivePrice = overrideEntity?.OverridePrice ?? context.Service.BasePrice;
+
         var timeSlotResult = TimeSlot.Create(startUtc, startUtc + context.Service.Duration);
         if (timeSlotResult.IsFailure)
             return Result.Failure<Booking>(timeSlotResult.Error);
 
         return Booking.CreatePending(
-            organizationId, locationId, employeeId, serviceId, clientContact, timeSlotResult.Value, source, DateTime.UtcNow, recurringSeriesId);
+            organizationId, locationId, employeeId, serviceId, clientContact, timeSlotResult.Value, effectivePrice,
+            source, DateTime.UtcNow, recurringSeriesId);
     }
 }

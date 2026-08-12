@@ -90,4 +90,8 @@ public static class ApplicationErrors
         public static readonly Error NotFound = new("ScheduleException.NotFound", "Schedule exception not found.", ErrorType.NotFound);
         public static readonly Error AlreadyExists = new("ScheduleException.AlreadyExists", "A schedule exception already exists for this date.", ErrorType.Conflict);
     }
+    public static class Client
+    {
+        public static readonly Error NotFound = new("Client.NotFound", "Client not found.", ErrorType.NotFound);
+    }
 }

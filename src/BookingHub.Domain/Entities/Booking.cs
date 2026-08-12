@@ -34,9 +34,11 @@ public sealed class Booking : BaseEntity, IAuditable
     /// <inheritdoc />
     public DateTime? ModifiedAtUtc { get; private set; }
 
+    public Money Price { get; private set; } = null!;
+
     private Booking(
         Guid id, Guid organizationId, Guid locationId, Guid employeeId, Guid serviceId,
-        ClientContact clientContact, TimeSlot timeSlot, BookingSource source,
+        ClientContact clientContact, TimeSlot timeSlot, Money price, BookingSource source,
         SecurityToken confirmationToken, SecurityToken cancellationToken, Guid? recurringSeriesId)
         : base(id)
     {
@@ -46,6 +48,7 @@ public sealed class Booking : BaseEntity, IAuditable
         ServiceId = serviceId;
         ClientContact = clientContact;
         TimeSlot = timeSlot;
+        Price = price;
         Status = BookingStatus.Pending;
         Source = source;
         ConfirmationToken = confirmationToken;
@@ -60,7 +63,7 @@ public sealed class Booking : BaseEntity, IAuditable
     /// <param name="recurringSeriesId">Set when this booking is one occurrence of a recurring series; otherwise null.</param>
     public static Result<Booking> CreatePending(
         Guid organizationId, Guid locationId, Guid employeeId, Guid serviceId,
-        ClientContact clientContact, TimeSlot timeSlot, BookingSource source,
+        ClientContact clientContact, TimeSlot timeSlot, Money price, BookingSource source,
         DateTime utcNow, Guid? recurringSeriesId = null)
     {
         var organizationIdResult = Guard.NotEmpty(organizationId, "Booking.OrganizationIdEmpty", "OrganizationId");
@@ -85,7 +88,7 @@ public sealed class Booking : BaseEntity, IAuditable
 
         var booking = new Booking(
             Guid.CreateVersion7(), organizationId, locationId, employeeId, serviceId,
-            clientContact, timeSlot, source, SecurityToken.Generate(), SecurityToken.Generate(), recurringSeriesId);
+            clientContact, timeSlot, price, source, SecurityToken.Generate(), SecurityToken.Generate(), recurringSeriesId);
 
         booking.RaiseDomainEvent(new BookingCreatedEvent(
             booking.Id, organizationId, clientContact, booking.ConfirmationToken, utcNow));
