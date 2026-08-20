@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+	<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+	<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+	<PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+  </ItemGroup>
+	
+  <ItemGroup>
 	<ProjectReference Include="..\BookingHub.Application\BookingHub.Application.csproj" />
 	<ProjectReference Include="..\BookingHub.Domain\BookingHub.Domain.csproj" />
   </ItemGroup>
