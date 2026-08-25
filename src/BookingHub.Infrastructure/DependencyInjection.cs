@@ -1,5 +1,6 @@
 ﻿using BookingHub.Application.Common.Persistence;
 using BookingHub.Infrastructure.Persistence;
+using BookingHub.Infrastructure.Persistence.Interceptors;
 using BookingHub.Infrastructure.Persistence.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -11,8 +12,14 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("Database")));
+        services.AddSingleton<AuditableEntitySaveChangesInterceptor>();
+        services.AddScoped<DomainEventDispatchingSaveChangesInterceptor>();
+
+        services.AddDbContext<ApplicationDbContext>((sp, options) =>
+            options.UseNpgsql(configuration.GetConnectionString("Database"))
+                .AddInterceptors(
+                    sp.GetRequiredService<AuditableEntitySaveChangesInterceptor>(),
+                    sp.GetRequiredService<DomainEventDispatchingSaveChangesInterceptor>()));
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<IUnitOfWork, UnitOfWork>();
