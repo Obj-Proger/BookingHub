@@ -31,7 +31,15 @@ internal sealed class ConfirmBookingCommandHandler(IBookingRepository bookingRep
                 sibling.Confirm(DateTime.UtcNow);
         }
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (ConcurrencyConflictException)
+        {
+            return Result.Failure(ApplicationErrors.Booking.SlotNotAvailable);
+        }
+
         return Result.Success();
     }
 }

@@ -66,7 +66,14 @@ internal sealed class RescheduleBookingCommandHandler(
         if (rescheduleResult.IsFailure)
             return Result.Failure<BookingCreatedResponse>(rescheduleResult.Error);
 
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        try
+        {
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        catch (ConcurrencyConflictException)
+        {
+            return Result.Failure<BookingCreatedResponse>(ApplicationErrors.Booking.SlotNotAvailable);
+        }
 
         return new BookingCreatedResponse(booking.Id, booking.TimeSlot.StartUtc, booking.TimeSlot.EndUtc, booking.Status);
     }
