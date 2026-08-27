@@ -13,6 +13,8 @@
 		<PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" />
+		<PackageReference Include="MailKit" />
+		<PackageReference Include="Twilio" />
 	</ItemGroup>
 	
   <ItemGroup>

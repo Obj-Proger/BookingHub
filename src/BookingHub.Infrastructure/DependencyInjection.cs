@@ -1,6 +1,8 @@
-﻿using BookingHub.Application.Common.Persistence;
+﻿using BookingHub.Application.Common.Notifications;
+using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Common.Security;
 using BookingHub.Infrastructure.Identity;
+using BookingHub.Infrastructure.Notifications;
 using BookingHub.Infrastructure.Persistence;
 using BookingHub.Infrastructure.Persistence.Interceptors;
 using BookingHub.Infrastructure.Persistence.Repositories;
@@ -11,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Twilio.Clients;
 
 namespace BookingHub.Infrastructure;
 
@@ -59,6 +62,17 @@ public static class DependencyInjection
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey))
                 };
             });
+
+        services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
+        services.AddScoped<IEmailService, SmtpEmailService>();
+
+        services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.SectionName));
+
+        var twilioOptions = configuration.GetSection(TwilioOptions.SectionName).Get<TwilioOptions>()
+            ?? throw new InvalidOperationException("The \"Twilio\" configuration section is missing.");
+        services.AddSingleton<ITwilioRestClient>(new TwilioRestClient(twilioOptions.AccountSid, twilioOptions.AuthToken));
+
+        services.AddScoped<ISmsService, TwilioSmsService>();
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<IUnitOfWork, UnitOfWork>();
