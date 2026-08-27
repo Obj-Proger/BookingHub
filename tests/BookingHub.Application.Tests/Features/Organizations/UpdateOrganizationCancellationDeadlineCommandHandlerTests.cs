@@ -1,6 +1,6 @@
-﻿using BookingHub.Application.Common.Persistence;
+﻿using BookingHub.Domain.Entities;
+using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Organizations.Commands.UpdateOrganizationCancellationDeadline;
-using BookingHub.Domain.Entities;
 
 namespace BookingHub.Application.Tests.Features.Organizations;
 
@@ -12,30 +12,30 @@ public class UpdateOrganizationCancellationDeadlineCommandHandlerTests
     private UpdateOrganizationCancellationDeadlineCommandHandler CreateSut() => new(_organizationRepository, _unitOfWork);
 
     [Fact]
-    public async Task Handle_ValidHours_UpdatesDeadline()
+    public async Task Handle_ValidDeadline_UpdatesDeadline()
     {
         var organization = Organization.Create("Name", "slug").Value;
         _organizationRepository.GetByIdAsync(organization.Id, Arg.Any<CancellationToken>()).Returns(organization);
         var sut = CreateSut();
 
-        var result = await sut.Handle(new UpdateOrganizationCancellationDeadlineCommand(organization.Id, 48), CancellationToken.None);
+        var result = await sut.Handle(new UpdateOrganizationCancellationDeadlineCommand(organization.Id, TimeSpan.FromHours(48)), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        organization.CancellationDeadlineHours.Should().Be(48);
+        organization.CancellationDeadline.Should().Be(TimeSpan.FromHours(48));
     }
 
     [Fact]
-    public async Task Handle_NegativeHours_FailsWithDomainCancellationDeadlineNegativeError()
+    public async Task Handle_NegativeDeadline_FailsWithDomainCancellationDeadlineNegativeError()
     {
         var organization = Organization.Create("Name", "slug").Value;
         _organizationRepository.GetByIdAsync(organization.Id, Arg.Any<CancellationToken>()).Returns(organization);
         var sut = CreateSut();
 
-        var result = await sut.Handle(new UpdateOrganizationCancellationDeadlineCommand(organization.Id, -1), CancellationToken.None);
+        var result = await sut.Handle(new UpdateOrganizationCancellationDeadlineCommand(organization.Id, TimeSpan.FromHours(-1)), CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(DomainErrors.Organization.CancellationDeadlineNegative);
-        organization.CancellationDeadlineHours.Should().Be(24);
+        organization.CancellationDeadline.Should().Be(TimeSpan.FromHours(24));
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class UpdateOrganizationCancellationDeadlineCommandHandlerTests
         _organizationRepository.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Organization?)null);
         var sut = CreateSut();
 
-        var result = await sut.Handle(new UpdateOrganizationCancellationDeadlineCommand(Guid.CreateVersion7(), 48), CancellationToken.None);
+        var result = await sut.Handle(new UpdateOrganizationCancellationDeadlineCommand(Guid.CreateVersion7(), TimeSpan.FromHours(48)), CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(ApplicationErrors.Organization.NotFound);

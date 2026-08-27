@@ -27,12 +27,12 @@ internal sealed class RescheduleBookingCommandHandler(
         if (!booking.CancellationToken.Matches(providedToken))
             return Result.Failure<BookingCreatedResponse>(ApplicationErrors.Booking.InvalidManagementToken);
 
-        var deadlineHours = await dbContext.Organizations
+        var cancellationDeadline = await dbContext.Organizations
             .Where(o => o.Id == booking.OrganizationId)
-            .Select(o => o.CancellationDeadlineHours)
+            .Select(o => o.CancellationDeadline)
             .FirstAsync(cancellationToken);
 
-        if (booking.TimeSlot.StartUtc - DateTime.UtcNow < TimeSpan.FromHours(deadlineHours))
+        if (booking.TimeSlot.StartUtc - DateTime.UtcNow < cancellationDeadline)
             return Result.Failure<BookingCreatedResponse>(ApplicationErrors.Booking.CancellationDeadlinePassed);
 
         var locationTimeZoneId = await dbContext.Locations

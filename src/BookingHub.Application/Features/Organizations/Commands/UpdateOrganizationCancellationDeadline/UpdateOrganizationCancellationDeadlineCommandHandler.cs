@@ -14,7 +14,7 @@ internal sealed class UpdateOrganizationCancellationDeadlineCommandHandler(
         if (organization is null)
             return Result.Failure(ApplicationErrors.Organization.NotFound);
 
-        var updateResult = organization.UpdateCancellationDeadline(command.Hours);
+        var updateResult = organization.UpdateCancellationDeadline(command.Deadline);
         if (updateResult.IsFailure)
             return updateResult;
 

@@ -12,7 +12,7 @@ public sealed partial class Organization : BaseEntity
 
     public string Name { get; private set; } = null!;
     public string Slug { get; private set; } = null!;
-    public int CancellationDeadlineHours { get; private set; }
+    public TimeSpan CancellationDeadline { get; private set; }
     public TimeSpan PendingConfirmationWindow { get; private set; }
     public TimeSpan AutoCompleteWindow { get; private set; }
     public TimeSpan WaitlistOfferWindow { get; private set; }
@@ -22,7 +22,7 @@ public sealed partial class Organization : BaseEntity
     {
         Name = name;
         Slug = slug;
-        CancellationDeadlineHours = 24;
+        CancellationDeadline = TimeSpan.FromHours(24);
         PendingConfirmationWindow = TimeSpan.FromMinutes(30);
         AutoCompleteWindow = TimeSpan.FromHours(24);
         WaitlistOfferWindow = TimeSpan.FromHours(2);
@@ -56,12 +56,12 @@ public sealed partial class Organization : BaseEntity
         return Result.Success();
     }
 
-    public Result UpdateCancellationDeadline(int hours)
+    public Result UpdateCancellationDeadline(TimeSpan deadline)
     {
-        if (hours < 0)
+        if (deadline < TimeSpan.Zero)
             return Result.Failure(DomainErrors.Organization.CancellationDeadlineNegative);
 
-        CancellationDeadlineHours = hours;
+        CancellationDeadline = deadline;
         return Result.Success();
     }
 

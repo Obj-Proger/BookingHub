@@ -98,11 +98,13 @@ public class OrganizationTests
     }
 
     [Fact]
-    public void Create_NewOrganization_DefaultsCancellationDeadlineToTwentyFourHours()
+    public void Create_NewOrganization_DefaultsSchedulingWindows()
     {
         var organization = Organization.Create("Name", "valid-slug").Value;
 
-        organization.CancellationDeadlineHours.Should().Be(24);
+        organization.CancellationDeadline.Should().Be(TimeSpan.FromHours(24));
+        organization.PendingConfirmationWindow.Should().Be(TimeSpan.FromMinutes(30));
+        organization.AutoCompleteWindow.Should().Be(TimeSpan.FromHours(24));
     }
 
     [Fact]
@@ -110,10 +112,10 @@ public class OrganizationTests
     {
         var organization = Organization.Create("Name", "valid-slug").Value;
 
-        var result = organization.UpdateCancellationDeadline(48);
+        var result = organization.UpdateCancellationDeadline(TimeSpan.FromHours(48));
 
         result.IsSuccess.Should().BeTrue();
-        organization.CancellationDeadlineHours.Should().Be(48);
+        organization.CancellationDeadline.Should().Be(TimeSpan.FromHours(48));
     }
 
     [Fact]
@@ -121,21 +123,11 @@ public class OrganizationTests
     {
         var organization = Organization.Create("Name", "valid-slug").Value;
 
-        var result = organization.UpdateCancellationDeadline(-1);
+        var result = organization.UpdateCancellationDeadline(TimeSpan.FromHours(-1));
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(DomainErrors.Organization.CancellationDeadlineNegative);
-        organization.CancellationDeadlineHours.Should().Be(24);
-    }
-
-    [Fact]
-    public void Create_NewOrganization_DefaultsSchedulingWindows()
-    {
-        var organization = Organization.Create("Name", "valid-slug").Value;
-
-        organization.CancellationDeadlineHours.Should().Be(24);
-        organization.PendingConfirmationWindow.Should().Be(TimeSpan.FromMinutes(30));
-        organization.AutoCompleteWindow.Should().Be(TimeSpan.FromHours(24));
+        organization.CancellationDeadline.Should().Be(TimeSpan.FromHours(24));
     }
 
     [Fact]

@@ -1,6 +1,7 @@
 ﻿using BookingHub.Application.Common.Notifications;
 using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Common.Security;
+using BookingHub.Infrastructure.BackgroundJobs;
 using BookingHub.Infrastructure.Identity;
 using BookingHub.Infrastructure.Notifications;
 using BookingHub.Infrastructure.Persistence;
@@ -12,8 +13,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using Hangfire;
+using Hangfire.PostgreSql;
 using Twilio.Clients;
+using System.Text;
+
 
 namespace BookingHub.Infrastructure;
 
@@ -90,6 +94,15 @@ public static class DependencyInjection
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IWaitlistEntryRepository, WaitlistEntryRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
+
+        services.AddHangfire(config => config
+            .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+            .UseSimpleAssemblyNameTypeSerializer()
+            .UseRecommendedSerializerSettings()
+            .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(configuration.GetConnectionString("Database"))));
+
+        services.AddHangfireServer();
+        services.AddScoped<BookingLifecycleJobs>();
 
         return services;
     }
