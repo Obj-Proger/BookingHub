@@ -18,7 +18,6 @@ using Hangfire.PostgreSql;
 using Twilio.Clients;
 using System.Text;
 
-
 namespace BookingHub.Infrastructure;
 
 public static class DependencyInjection

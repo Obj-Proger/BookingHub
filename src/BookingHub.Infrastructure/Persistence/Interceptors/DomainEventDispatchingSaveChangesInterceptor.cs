@@ -40,15 +40,15 @@ internal sealed class DomainEventDispatchingSaveChangesInterceptor(
         if (domainEvents.Count == 0)
             return;
 
+        foreach (var domainEvent in domainEvents)
+            logger.LogInformation("Dispatching domain event {DomainEventType}", domainEvent.GetType().Name);
+
         try
         {
             await domainEventDispatcher.DispatchAsync(domainEvents, cancellationToken);
         }
         catch (Exception ex)
         {
-            // Deliberately not rethrown — see the class-level remark. The write these events
-            // describe already succeeded; a failure here is a problem for the log, not for the
-            // caller of the SaveChangesAsync that already committed successfully.
             logger.LogError(ex, "Domain event dispatch failed for: {EventTypes}",
                 string.Join(", ", domainEvents.Select(e => e.GetType().Name)));
         }
