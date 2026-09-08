@@ -2,6 +2,7 @@
 using BookingHub.Application.Features.Bookings.Commands.AutoCompleteBookings;
 using BookingHub.Application.Features.Bookings.Commands.ExpirePendingBookings;
 using BookingHub.Application.Features.Bookings.Commands.TransitionBookingsToAwaitingReview;
+using BookingHub.Infrastructure.Logging;
 using Hangfire;
 using Hangfire.Server;
 using Microsoft.Extensions.Logging;
@@ -19,20 +20,20 @@ internal sealed class BookingLifecycleJobs(IDispatcher dispatcher, ILogger<Booki
     public async Task ExpirePendingBookingsAsync(IJobCancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(new ExpirePendingBookingsCommand(), cancellationToken.ShutdownToken);
-        logger.LogInformation("Expired {Count} pending bookings past their confirmation window", result.Value);
+        Log.ExpiredPendingBookings(logger, result.Value);
     }
 
     [DisableConcurrentExecution(timeoutInSeconds: 60)]
     public async Task TransitionBookingsToAwaitingReviewAsync(IJobCancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(new TransitionBookingsToAwaitingReviewCommand(), cancellationToken.ShutdownToken);
-        logger.LogInformation("Transitioned {Count} bookings to AwaitingReview", result.Value);
+        Log.TransitionedBookingsToAwaitingReview(logger, result.Value);
     }
 
     [DisableConcurrentExecution(timeoutInSeconds: 60)]
     public async Task AutoCompleteBookingsAsync(IJobCancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(new AutoCompleteBookingsCommand(), cancellationToken.ShutdownToken);
-        logger.LogInformation("Auto-completed {Count} bookings past their auto-complete window", result.Value);
+        Log.AutoCompletedBookings(logger, result.Value);
     }
 }

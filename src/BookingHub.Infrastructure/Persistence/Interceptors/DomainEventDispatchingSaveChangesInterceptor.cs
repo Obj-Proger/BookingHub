@@ -1,5 +1,6 @@
 ﻿using BookingHub.Application.Common.Messaging;
 using BookingHub.Domain.Common;
+using BookingHub.Infrastructure.Logging;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Logging;
@@ -41,7 +42,7 @@ internal sealed class DomainEventDispatchingSaveChangesInterceptor(
             return;
 
         foreach (var domainEvent in domainEvents)
-            logger.LogInformation("Dispatching domain event {DomainEventType}", domainEvent.GetType().Name);
+            Log.DispatchingDomainEvent(logger, domainEvent.GetType().Name);
 
         try
         {
@@ -49,8 +50,7 @@ internal sealed class DomainEventDispatchingSaveChangesInterceptor(
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Domain event dispatch failed for: {EventTypes}",
-                string.Join(", ", domainEvents.Select(e => e.GetType().Name)));
+            Log.DomainEventDispatchFailed(logger, ex, string.Join(", ", domainEvents.Select(e => e.GetType().Name)));
         }
     }
 }

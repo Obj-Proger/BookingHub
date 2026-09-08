@@ -18,7 +18,7 @@ public sealed class WeeklyHours : ValueObject
         if (list.Count != 7 || list.Select(d => d.DayOfWeek).Distinct().Count() != 7)
             return Result.Failure<WeeklyHours>(DomainErrors.WeeklyHours.MustCoverAllDays);
 
-        return new WeeklyHours(list.OrderBy(d => d.DayOfWeek).ToList());
+        return new WeeklyHours([.. list.OrderBy(d => d.DayOfWeek)]);
     }
 
     /// <summary>Gets the operating hours for the specified day.</summary>

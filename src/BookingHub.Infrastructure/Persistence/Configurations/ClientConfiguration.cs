@@ -22,10 +22,10 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
             email.Property(e => e.Value).HasColumnName("Email").HasMaxLength(320);
         });
 
-        // Global uniqueness — Client is not organization-scoped (Domain: the same person
-        // can have bookings across multiple organizations under one Client record).
-        builder.HasIndex(c => c.Phone.Value).IsUnique();
-
+        // Global uniqueness on Phone — EF Core's HasIndex cannot express a path through a
+        // complex type property (confirmed: dotnet/efcore#32578, #32350, #34794 — a documented,
+        // still-open limitation, not specific to our case). Added as raw SQL directly in the
+        // migration instead, on the "Phone" column this configuration names above.
         builder.HasIndex(c => c.UserId).IsUnique();
     }
 }

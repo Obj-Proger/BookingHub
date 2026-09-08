@@ -1,4 +1,6 @@
-﻿using BookingHub.Domain.Entities;
+﻿using System.Text.Json;
+using BookingHub.Domain.Entities;
+using BookingHub.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -18,11 +20,14 @@ internal sealed class LocationConfiguration : IEntityTypeConfiguration<Location>
             address.Property(a => a.Value).HasColumnName("Address").HasMaxLength(500).IsRequired();
         });
 
-        builder.ComplexProperty(l => l.WorkingHours, workingHours =>
-        {
-            workingHours.ToJson();
-            workingHours.ComplexCollection(w => w.Days);
-        });
+        builder.Property(l => l.WorkingHours)
+            .HasConversion(
+                weeklyHours => JsonSerializer.Serialize(weeklyHours.Days.Select(DailyHoursJson.FromDomain), (JsonSerializerOptions?)null),
+                json => WeeklyHours.Create(
+                    JsonSerializer.Deserialize<List<DailyHoursJson>>(json, (JsonSerializerOptions?)null)!.Select(d => d.ToDomain())
+                ).Value)
+            .HasColumnName("WorkingHours")
+            .HasColumnType("jsonb");
 
         builder.HasIndex(l => l.OrganizationId);
     }

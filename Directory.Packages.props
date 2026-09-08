@@ -42,4 +42,15 @@
 		<PackageVersion Include="NSubstitute" Version="6.2.0" />
 		<PackageVersion Include="MockQueryable.NSubstitute" Version="10.0.8" />
 	</ItemGroup>
+
+	<!-- BookingHub.Infrastructure.IntegrationTests -->
+	<ItemGroup Condition="'$(MSBuildProjectName)' == 'BookingHub.Infrastructure.IntegrationTests'">
+		<PackageVersion Include="xunit.v3" Version="4.0.0" />
+		<PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />
+		<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.9.0" />
+		<PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
+		<PackageVersion Include="Testcontainers.PostgreSql" Version="4.1.0" />
+		<PackageVersion Include="SSH.NET" Version="2026.0.0" />
+	</ItemGroup>
+
 </Project>

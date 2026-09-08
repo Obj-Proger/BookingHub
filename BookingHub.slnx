@@ -8,5 +8,6 @@
   <Folder Name="/tests/">
     <Project Path="tests/BookingHub.Application.Tests/BookingHub.Application.Tests.csproj" />
     <Project Path="tests/BookingHub.Domain.Tests/BookingHub.Domain.Tests.csproj" />
+    <Project Path="tests/BookingHub.Infrastructure.IntegrationTests/BookingHub.Infrastructure.IntegrationTests.csproj" />
   </Folder>
 </Solution>
