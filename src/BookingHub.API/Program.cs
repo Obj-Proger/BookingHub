@@ -41,7 +41,10 @@ try
 
     app.UseSerilogRequestLogging();
     app.UseExceptionHandler();
+
+    app.UseRouting();
     app.UseCors("Default");
+    app.UseMiddleware<TenantResolutionMiddleware>();
     app.UseAuthentication();
     app.UseAuthorization();
 
@@ -70,5 +73,3 @@ finally
 {
     Log.CloseAndFlush();
 }
-
-public partial class Program;

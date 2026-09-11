@@ -11,7 +11,7 @@ public abstract class ApiControllerBase : ControllerBase
     protected IActionResult HandleResult<T>(Result<T> result) =>
         result.IsSuccess ? Ok(result.Value) : MapError(result.Error);
 
-    private IActionResult MapError(Error error)
+    private ObjectResult MapError(Error error)
     {
         var statusCode = error.Type switch
         {

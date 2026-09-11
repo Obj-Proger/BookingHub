@@ -1,5 +1,6 @@
 ﻿using BookingHub.Application.Common.Behaviors;
 using BookingHub.Application.Common.Messaging;
+using BookingHub.Application.Common.Security;
 using BookingHub.Application.Features.Waitlist;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,7 @@ public static class DependencyInjection
 
         services.AddSingleton(TimeProvider.System);
 
+        services.AddScoped<TenantContext>();
         services.AddScoped<IDispatcher, Dispatcher>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IWaitlistOfferService, WaitlistOfferService>();
