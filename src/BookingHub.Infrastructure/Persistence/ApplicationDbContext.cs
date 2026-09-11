@@ -1,4 +1,5 @@
 ﻿using BookingHub.Application.Common.Persistence;
+using BookingHub.Application.Common.Security;
 using BookingHub.Domain.Entities;
 using BookingHub.Domain.Enums;
 using BookingHub.Infrastructure.Identity;
@@ -7,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BookingHub.Infrastructure.Persistence;
 
-public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ICurrentTenant currentTenant)
     : IdentityUserContext<ApplicationUser, Guid>(options), IApplicationDbContext
 {
     public DbSet<Organization> Organizations => Set<Organization>();
@@ -59,5 +60,16 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+
+        // Third, independent layer of tenant isolation (Application's explicit .Where(...) is the
+        // first; RLS, activated separately, is the second) — a no-op on public routes, where
+        // currentTenant.OrganizationId is null and Application's own filtering is what protects.
+        modelBuilder.Entity<Location>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
+        modelBuilder.Entity<OrganizationMember>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
+        modelBuilder.Entity<Employee>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
+        modelBuilder.Entity<Service>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
+        modelBuilder.Entity<Booking>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
+        modelBuilder.Entity<WaitlistEntry>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
+        modelBuilder.Entity<Review>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
     }
 }

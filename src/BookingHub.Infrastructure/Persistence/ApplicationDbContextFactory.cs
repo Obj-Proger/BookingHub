@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using BookingHub.Application.Common.Security;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
 namespace BookingHub.Infrastructure.Persistence;
@@ -17,6 +18,11 @@ public sealed class ApplicationDbContextFactory : IDesignTimeDbContextFactory<Ap
         var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>()
             .UseNpgsql("Host=localhost;Database=bookinghub_design;Username=postgres;Password=postgres");
 
-        return new ApplicationDbContext(optionsBuilder.Options);
+        return new ApplicationDbContext(optionsBuilder.Options, new DesignTimeCurrentTenant());
+    }
+
+    private sealed class DesignTimeCurrentTenant : ICurrentTenant
+    {
+        public Guid? OrganizationId => null;
     }
 }
