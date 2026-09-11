@@ -1,17 +1,74 @@
-var builder = WebApplication.CreateBuilder(args);
+using BookingHub.API.BackgroundJobs;
+using BookingHub.API.Common;
+using BookingHub.Application;
+using BookingHub.Infrastructure;
+using BookingHub.Infrastructure.BackgroundJobs;
+using BookingHub.Infrastructure.Logging;
+using BookingHub.Infrastructure.Persistence;
+using Hangfire;
+using Scalar.AspNetCore;
+using Serilog;
 
-// Add services to the container.
+Log.Logger = SerilogConfiguration.Configure(new LoggerConfiguration(), new ConfigurationBuilder().Build())
+    .CreateBootstrapLogger();
 
-builder.Services.AddControllers();
+try
+{
+    Log.Information("Starting BookingHub API");
 
-var app = builder.Build();
+    var builder = WebApplication.CreateBuilder(args);
 
-// Configure the HTTP request pipeline.
+    builder.Host.UseSerilog((context, configuration) => SerilogConfiguration.Configure(configuration, context.Configuration));
 
-app.UseHttpsRedirection();
+    builder.Services.AddControllers();
+    builder.Services.AddApplication();
+    builder.Services.AddInfrastructure(builder.Configuration);
+    builder.Services.AddOpenApi();
+    builder.Services.AddHealthChecks().AddDbContextCheck<ApplicationDbContext>();
 
-app.UseAuthorization();
+    builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+    builder.Services.AddProblemDetails();
 
-app.MapControllers();
+    builder.Services.AddCors(options =>
+    {
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
 
-app.Run();
+        options.AddPolicy("Default", policy =>
+            policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod());
+    });
+
+    var app = builder.Build();
+
+    app.UseSerilogRequestLogging();
+    app.UseExceptionHandler();
+    app.UseCors("Default");
+    app.UseAuthentication();
+    app.UseAuthorization();
+
+    app.UseHangfireDashboard(options: new DashboardOptions
+    {
+        Authorization = [new HangfireDashboardAuthorizationFilter(app.Environment)]
+    });
+    HangfireJobScheduler.ScheduleRecurringJobs();
+
+    app.MapControllers();
+    app.MapHealthChecks("/health");
+
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapOpenApi();
+        app.MapScalarApiReference();
+    }
+
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "BookingHub API terminated unexpectedly");
+}
+finally
+{
+    Log.CloseAndFlush();
+}
+
+public partial class Program;
