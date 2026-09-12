@@ -5,6 +5,7 @@ using BookingHub.Infrastructure;
 using BookingHub.Infrastructure.BackgroundJobs;
 using BookingHub.Infrastructure.Logging;
 using BookingHub.Infrastructure.Persistence;
+using BookingHub.Infrastructure.Identity;
 using Hangfire;
 using Scalar.AspNetCore;
 using Serilog;
