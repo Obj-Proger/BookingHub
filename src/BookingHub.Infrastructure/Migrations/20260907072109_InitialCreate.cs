@@ -649,6 +649,7 @@ namespace BookingHub.Infrastructure.Migrations
                 name: "IX_WaitlistEntries_ServiceId",
                 table: "WaitlistEntries",
                 column: "ServiceId");
+
             migrationBuilder.Sql("CREATE EXTENSION IF NOT EXISTS btree_gist;");
 
             migrationBuilder.Sql("""
@@ -665,43 +666,43 @@ namespace BookingHub.Infrastructure.Migrations
             migrationBuilder.Sql("""ALTER TABLE "Locations" ENABLE ROW LEVEL SECURITY;""");
             migrationBuilder.Sql("""
                 CREATE POLICY tenant_isolation ON "Locations"
-                    USING ("OrganizationId" = current_setting('app.current_organization_id', true)::uuid);
+                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
                 """);
 
             migrationBuilder.Sql("""ALTER TABLE "OrganizationMembers" ENABLE ROW LEVEL SECURITY;""");
             migrationBuilder.Sql("""
                 CREATE POLICY tenant_isolation ON "OrganizationMembers"
-                    USING ("OrganizationId" = current_setting('app.current_organization_id', true)::uuid);
+                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
                 """);
 
             migrationBuilder.Sql("""ALTER TABLE "Employees" ENABLE ROW LEVEL SECURITY;""");
             migrationBuilder.Sql("""
                 CREATE POLICY tenant_isolation ON "Employees"
-                    USING ("OrganizationId" = current_setting('app.current_organization_id', true)::uuid);
+                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
                 """);
 
             migrationBuilder.Sql("""ALTER TABLE "Services" ENABLE ROW LEVEL SECURITY;""");
             migrationBuilder.Sql("""
                 CREATE POLICY tenant_isolation ON "Services"
-                    USING ("OrganizationId" = current_setting('app.current_organization_id', true)::uuid);
+                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
                 """);
 
             migrationBuilder.Sql("""ALTER TABLE "Bookings" ENABLE ROW LEVEL SECURITY;""");
             migrationBuilder.Sql("""
                 CREATE POLICY tenant_isolation ON "Bookings"
-                    USING ("OrganizationId" = current_setting('app.current_organization_id', true)::uuid);
+                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
                 """);
 
             migrationBuilder.Sql("""ALTER TABLE "WaitlistEntries" ENABLE ROW LEVEL SECURITY;""");
             migrationBuilder.Sql("""
                 CREATE POLICY tenant_isolation ON "WaitlistEntries"
-                    USING ("OrganizationId" = current_setting('app.current_organization_id', true)::uuid);
+                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
                 """);
 
             migrationBuilder.Sql("""ALTER TABLE "Reviews" ENABLE ROW LEVEL SECURITY;""");
             migrationBuilder.Sql("""
                 CREATE POLICY tenant_isolation ON "Reviews"
-                    USING ("OrganizationId" = current_setting('app.current_organization_id', true)::uuid);
+                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
                 """);
 
             migrationBuilder.Sql("""ALTER TABLE "EmployeeLocationAssignments" ENABLE ROW LEVEL SECURITY;""");
@@ -709,7 +710,7 @@ namespace BookingHub.Infrastructure.Migrations
                 CREATE POLICY tenant_isolation ON "EmployeeLocationAssignments"
                     USING (EXISTS (
                         SELECT 1 FROM "Locations" l
-                        WHERE l."Id" = "LocationId" AND l."OrganizationId" = current_setting('app.current_organization_id', true)::uuid
+                        WHERE l."Id" = "LocationId" AND l."OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid
                     ));
                 """);
 
@@ -719,7 +720,7 @@ namespace BookingHub.Infrastructure.Migrations
                     USING (EXISTS (
                         SELECT 1 FROM "EmployeeLocationAssignments" a
                         JOIN "Locations" l ON l."Id" = a."LocationId"
-                        WHERE a."Id" = "EmployeeLocationAssignmentId" AND l."OrganizationId" = current_setting('app.current_organization_id', true)::uuid
+                        WHERE a."Id" = "EmployeeLocationAssignmentId" AND l."OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid
                     ));
                 """);
 
@@ -729,7 +730,7 @@ namespace BookingHub.Infrastructure.Migrations
                     USING (EXISTS (
                         SELECT 1 FROM "EmployeeLocationAssignments" a
                         JOIN "Locations" l ON l."Id" = a."LocationId"
-                        WHERE a."Id" = "EmployeeLocationAssignmentId" AND l."OrganizationId" = current_setting('app.current_organization_id', true)::uuid
+                        WHERE a."Id" = "EmployeeLocationAssignmentId" AND l."OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid
                     ));
                 """);
 
@@ -738,14 +739,24 @@ namespace BookingHub.Infrastructure.Migrations
                 CREATE POLICY tenant_isolation ON "LocationServiceOverrides"
                     USING (EXISTS (
                         SELECT 1 FROM "Locations" l
-                        WHERE l."Id" = "LocationId" AND l."OrganizationId" = current_setting('app.current_organization_id', true)::uuid
+                        WHERE l."Id" = "LocationId" AND l."OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid
                     ));
                 """);
+
+            migrationBuilder.Sql("""CREATE ROLE bookinghub_app WITH LOGIN;""");
+            migrationBuilder.Sql("""GRANT USAGE ON SCHEMA public TO bookinghub_app;""");
+            migrationBuilder.Sql("""GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO bookinghub_app;""");
+            migrationBuilder.Sql("""ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO bookinghub_app;""");
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("""ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE SELECT, INSERT, UPDATE, DELETE ON TABLES FROM bookinghub_app;""");
+            migrationBuilder.Sql("""REVOKE ALL ON ALL TABLES IN SCHEMA public FROM bookinghub_app;""");
+            migrationBuilder.Sql("""REVOKE USAGE ON SCHEMA public FROM bookinghub_app;""");
+            migrationBuilder.Sql("""DROP ROLE bookinghub_app;""");
+
             migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "LocationServiceOverrides";""");
             migrationBuilder.Sql("""ALTER TABLE "LocationServiceOverrides" DISABLE ROW LEVEL SECURITY;""");
             migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "ScheduleExceptions";""");
