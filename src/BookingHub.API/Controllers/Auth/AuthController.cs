@@ -1,8 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
-using BookingHub.API.Common;
+﻿using BookingHub.API.Common;
 using BookingHub.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+using System.ComponentModel.DataAnnotations;
 
 namespace BookingHub.API.Controllers.Auth;
 
@@ -20,6 +21,7 @@ public sealed class AuthController(
     private static readonly string DummyPasswordHash =
         new PasswordHasher<ApplicationUser>().HashPassword(DummyUser, "not-a-real-password");
 
+    [EnableRateLimiting("public-write")]
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
@@ -44,6 +46,7 @@ public sealed class AuthController(
     /// (password hashing is deliberately slow; skipping it for "no such user" would make that
     /// path measurably faster).
     /// </summary>
+    [EnableRateLimiting("public-write")]
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {

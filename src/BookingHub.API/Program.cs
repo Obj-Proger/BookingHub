@@ -6,9 +6,11 @@ using BookingHub.Infrastructure.BackgroundJobs;
 using BookingHub.Infrastructure.Identity;
 using BookingHub.Infrastructure.Logging;
 using BookingHub.Infrastructure.Persistence;
+using Microsoft.AspNetCore.HttpOverrides;
 using System.Text.Json.Serialization;
-using Scalar.AspNetCore;
+using System.Threading.RateLimiting;
 using Hangfire;
+using Scalar.AspNetCore;
 using Serilog;
 
 Log.Logger = SerilogConfiguration.Configure(new LoggerConfiguration(), new ConfigurationBuilder().Build())
@@ -40,12 +42,51 @@ try
             policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod());
     });
 
+    builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    {
+        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+        // KnownProxies/KnownNetworks intentionally left at their defaults (trust none) here —
+        // a real deployment must add its actual reverse proxy's address explicitly; trusting
+        // X-Forwarded-For from an unconfigured wildcard would let any client spoof its own IP
+        // and trivially bypass the per-IP limits below.
+    });
+
+    builder.Services.AddRateLimiter(options =>
+    {
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+        options.AddPolicy("public-read", context => RateLimitPartition.GetSlidingWindowLimiter(
+            GetPartitionKey(context),
+            _ => new SlidingWindowRateLimiterOptions
+            {
+                Window = TimeSpan.FromMinutes(1),
+                SegmentsPerWindow = 4,
+                PermitLimit = 60,
+                QueueLimit = 0
+            }));
+
+        options.AddPolicy("public-write", context => RateLimitPartition.GetSlidingWindowLimiter(
+            GetPartitionKey(context),
+            _ => new SlidingWindowRateLimiterOptions
+            {
+                Window = TimeSpan.FromMinutes(1),
+                SegmentsPerWindow = 4,
+                PermitLimit = 10,
+                QueueLimit = 0
+            }));
+
+        static string GetPartitionKey(HttpContext context) => context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+    });
+
     var app = builder.Build();
+
+    app.UseForwardedHeaders();
 
     app.UseSerilogRequestLogging();
     app.UseExceptionHandler();
 
     app.UseRouting();
+    app.UseRateLimiter();
     app.UseCors("Default");
     app.UseMiddleware<TenantResolutionMiddleware>();
     app.UseAuthentication();
