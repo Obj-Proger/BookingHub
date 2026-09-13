@@ -3,11 +3,12 @@ using BookingHub.API.Common;
 using BookingHub.Application;
 using BookingHub.Infrastructure;
 using BookingHub.Infrastructure.BackgroundJobs;
+using BookingHub.Infrastructure.Identity;
 using BookingHub.Infrastructure.Logging;
 using BookingHub.Infrastructure.Persistence;
-using BookingHub.Infrastructure.Identity;
-using Hangfire;
+using System.Text.Json.Serialization;
 using Scalar.AspNetCore;
+using Hangfire;
 using Serilog;
 
 Log.Logger = SerilogConfiguration.Configure(new LoggerConfiguration(), new ConfigurationBuilder().Build())
@@ -21,7 +22,8 @@ try
 
     builder.Host.UseSerilog((context, configuration) => SerilogConfiguration.Configure(configuration, context.Configuration));
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+        .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);
     builder.Services.AddOpenApi();
