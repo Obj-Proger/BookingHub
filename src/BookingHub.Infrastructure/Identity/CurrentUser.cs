@@ -11,6 +11,9 @@ internal sealed class CurrentUser(IHttpContextAccessor httpContextAccessor) : IC
     {
         get
         {
+            // Requires JwtBearerOptions.MapInboundClaims = false (see DependencyInjection) —
+            // otherwise the validation pipeline silently renames "sub" to a legacy long claim
+            // URI before this code ever runs, and FindFirstValue below would always return null.
             var subjectClaim = httpContextAccessor.HttpContext?.User.FindFirstValue(JwtRegisteredClaimNames.Sub);
 
             if (subjectClaim is null || !Guid.TryParse(subjectClaim, out var userId))

@@ -6,6 +6,7 @@
     <Project Path="src/BookingHub.Infrastructure/BookingHub.Infrastructure.csproj" Id="440712bf-db14-48fd-8c4d-4f52dfd4a448" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/BookingHub.API.Tests/BookingHub.API.Tests.csproj" Id="b48baa47-2ddc-46fe-b573-b18f20d1becb" />
     <Project Path="tests/BookingHub.Application.Tests/BookingHub.Application.Tests.csproj" />
     <Project Path="tests/BookingHub.Domain.Tests/BookingHub.Domain.Tests.csproj" />
     <Project Path="tests/BookingHub.Infrastructure.IntegrationTests/BookingHub.Infrastructure.IntegrationTests.csproj" />

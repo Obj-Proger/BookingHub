@@ -15,4 +15,7 @@
 		<ProjectReference Include="..\BookingHub.Infrastructure\BookingHub.Infrastructure.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="BookingHub.API.Tests" />
+	</ItemGroup>
 </Project>

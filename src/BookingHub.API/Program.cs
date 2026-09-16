@@ -22,8 +22,8 @@ try
 
     var builder = WebApplication.CreateBuilder(args);
 
-    builder.Host.UseSerilog((context, configuration) => SerilogConfiguration.Configure(configuration, context.Configuration));
-
+    builder.Host.UseSerilog((context, configuration) => SerilogConfiguration.Configure(configuration, context.Configuration),
+        preserveStaticLogger: true);
     builder.Services.AddControllers()
         .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
     builder.Services.AddApplication();
@@ -55,13 +55,16 @@ try
     {
         options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 
+        var publicReadLimit = builder.Configuration.GetValue("RateLimiting:PublicReadPermitLimit", 60);
+        var publicWriteLimit = builder.Configuration.GetValue("RateLimiting:PublicWritePermitLimit", 10);
+
         options.AddPolicy("public-read", context => RateLimitPartition.GetSlidingWindowLimiter(
             GetPartitionKey(context),
             _ => new SlidingWindowRateLimiterOptions
             {
                 Window = TimeSpan.FromMinutes(1),
                 SegmentsPerWindow = 4,
-                PermitLimit = 60,
+                PermitLimit = publicReadLimit,
                 QueueLimit = 0
             }));
 
@@ -71,7 +74,7 @@ try
             {
                 Window = TimeSpan.FromMinutes(1),
                 SegmentsPerWindow = 4,
-                PermitLimit = 10,
+                PermitLimit = publicWriteLimit,
                 QueueLimit = 0
             }));
 
