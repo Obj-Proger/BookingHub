@@ -24,6 +24,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<Booking> Bookings => Set<Booking>();
     public DbSet<WaitlistEntry> WaitlistEntries => Set<WaitlistEntry>();
     public DbSet<Review> Reviews => Set<Review>();
+    internal DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     // DbSet<T> implements IQueryable<T>, but a property declared as DbSet<T> does not
     // automatically satisfy an interface member declared as IQueryable<T> — the two are

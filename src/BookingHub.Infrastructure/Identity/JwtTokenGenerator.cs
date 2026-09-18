@@ -18,7 +18,10 @@ internal sealed class JwtTokenGenerator(IOptions<JwtOptions> jwtOptions) : IJwtT
 
         var descriptor = new SecurityTokenDescriptor
         {
-            Subject = new ClaimsIdentity([new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString())]),
+            Subject = new ClaimsIdentity([
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString())
+            ]),
             Expires = DateTime.UtcNow.AddMinutes(_options.ExpiryMinutes),
             Issuer = _options.Issuer,
             Audience = _options.Audience,

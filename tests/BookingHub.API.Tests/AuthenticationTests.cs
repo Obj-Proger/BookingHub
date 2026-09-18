@@ -77,4 +77,38 @@ public class AuthenticationTests(ApiTestFixture fixture)
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
+
+    [Fact]
+    public async Task Refresh_ValidToken_ReturnsNewWorkingTokens()
+    {
+        var client = fixture.Factory.CreateClient();
+        var (accessToken, refreshToken) = await TestHelpers.RegisterAndLoginWithRefreshAsync(client, $"{Guid.CreateVersion7()}@example.com");
+
+        var response = await client.PostAsJsonAsync("api/v1/auth/refresh", new RefreshRequest(refreshToken), TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadFromJsonAsync<AuthenticatedResponse>(TestContext.Current.CancellationToken);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        body!.AccessToken.Should().NotBe(accessToken);
+        body.RefreshToken.Should().NotBe(refreshToken);
+    }
+
+    [Fact]
+    public async Task Refresh_ReusedRotatedToken_FailsAndRevokesTheReplacementToo()
+    {
+        var client = fixture.Factory.CreateClient();
+        var (_, refreshToken) = await TestHelpers.RegisterAndLoginWithRefreshAsync(client, $"{Guid.CreateVersion7()}@example.com");
+
+        var firstRefresh = await client.PostAsJsonAsync("api/v1/auth/refresh", new RefreshRequest(refreshToken), TestContext.Current.CancellationToken);
+        var firstBody = await firstRefresh.Content.ReadFromJsonAsync<AuthenticatedResponse>(TestContext.Current.CancellationToken);
+
+        // Reusing the original (now-rotated) token — this is the theft-detection path.
+        var reuseAttempt = await client.PostAsJsonAsync("api/v1/auth/refresh", new RefreshRequest(refreshToken), TestContext.Current.CancellationToken);
+
+        // The legitimate replacement token from the first refresh should now be revoked too.
+        var secondAttempt = await client.PostAsJsonAsync(
+            "api/v1/auth/refresh", new RefreshRequest(firstBody!.RefreshToken), TestContext.Current.CancellationToken);
+
+        reuseAttempt.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+        secondAttempt.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
 }

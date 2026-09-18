@@ -1,22 +1,21 @@
 ﻿using BookingHub.API.Common;
 using BookingHub.Infrastructure.Identity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
-using System.ComponentModel.DataAnnotations;
 
 namespace BookingHub.API.Controllers.Auth;
 
+[AllowAnonymous]
 [Route("api/v1/auth")]
 public sealed class AuthController(
     UserManager<ApplicationUser> userManager,
     IPasswordHasher<ApplicationUser> passwordHasher,
-    IJwtTokenGenerator jwtTokenGenerator)
+    IJwtTokenGenerator jwtTokenGenerator,
+    IRefreshTokenService refreshTokenService)
     : ApiControllerBase
 {
-    // Generated once via the real hasher (not hand-typed) so its format is guaranteed valid for
-    // VerifyHashedPassword — used only to keep Login's timing indistinguishable between "no such
-    // user" and "wrong password" (see class-level remark on Login).
     private static readonly ApplicationUser DummyUser = new();
     private static readonly string DummyPasswordHash =
         new PasswordHasher<ApplicationUser>().HashPassword(DummyUser, "not-a-real-password");
@@ -36,15 +35,13 @@ public sealed class AuthController(
             return ValidationProblem(ModelState);
         }
 
-        return Ok(new AuthenticatedResponse(jwtTokenGenerator.GenerateToken(user)));
+        return await IssueTokensAsync(user);
     }
 
     /// <summary>
     /// Always runs a full password verification, even when no account exists for the given
     /// email — checking a dummy hash in that case, instead of returning immediately — so a
-    /// nonexistent email can't be distinguished from a wrong password by response time alone
-    /// (password hashing is deliberately slow; skipping it for "no such user" would make that
-    /// path measurably faster).
+    /// nonexistent email can't be distinguished from a wrong password by response time alone.
     /// </summary>
     [EnableRateLimiting("public-write")]
     [HttpPost("login")]
@@ -64,6 +61,48 @@ public sealed class AuthController(
             });
         }
 
-        return Ok(new AuthenticatedResponse(jwtTokenGenerator.GenerateToken(user)));
+        return await IssueTokensAsync(user);
+    }
+
+    [EnableRateLimiting("public-write")]
+    [HttpPost("refresh")]
+    public async Task<IActionResult> Refresh(RefreshRequest request, CancellationToken cancellationToken)
+    {
+        var validation = await refreshTokenService.ValidateAndRotateAsync(request.RefreshToken, cancellationToken);
+        if (!validation.Succeeded)
+        {
+            return Unauthorized(new ProblemDetails
+            {
+                Title = "Invalid or expired refresh token.",
+                Status = StatusCodes.Status401Unauthorized
+            });
+        }
+
+        var user = await userManager.FindByIdAsync(validation.UserId.ToString());
+        if (user is null)
+        {
+            return Unauthorized(new ProblemDetails
+            {
+                Title = "Invalid or expired refresh token.",
+                Status = StatusCodes.Status401Unauthorized
+            });
+        }
+
+        return Ok(new AuthenticatedResponse(jwtTokenGenerator.GenerateToken(user), validation.NewRawToken!));
+    }
+
+    [EnableRateLimiting("public-write")]
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(LogoutRequest request, CancellationToken cancellationToken)
+    {
+        await refreshTokenService.RevokeAsync(request.RefreshToken, cancellationToken);
+        return NoContent();
+    }
+
+    private async Task<IActionResult> IssueTokensAsync(ApplicationUser user)
+    {
+        var accessToken = jwtTokenGenerator.GenerateToken(user);
+        var refreshToken = await refreshTokenService.IssueAsync(user.Id, CancellationToken.None);
+        return Ok(new AuthenticatedResponse(accessToken, refreshToken));
     }
 }
