@@ -4,6 +4,7 @@
     <Project Path="src/BookingHub.Application/BookingHub.Application.csproj" Id="0d9bb0ce-4eb8-48ff-b508-0f3b98fc4b0c" />
     <Project Path="src/BookingHub.Domain/BookingHub.Domain.csproj" Id="e66f190e-6bf1-4c7e-9f67-0521b4b8c3d9" />
     <Project Path="src/BookingHub.Infrastructure/BookingHub.Infrastructure.csproj" Id="440712bf-db14-48fd-8c4d-4f52dfd4a448" />
+    <Project Path="src/BookingHub.Mobile/BookingHub.Mobile.csproj" Id="1f0109d2-3df0-42ca-95fa-df0e51ef0b9e" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/BookingHub.API.Tests/BookingHub.API.Tests.csproj" Id="b48baa47-2ddc-46fe-b573-b18f20d1becb" />

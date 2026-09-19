@@ -10,14 +10,14 @@ internal sealed class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavi
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
         var requestName = typeof(TRequest).Name;
-        logger.LogInformation("Handling {RequestName}", requestName);
+        Log.HandlingRequest(logger, requestName);
 
         var response = await next();
 
         if (response is Result { IsFailure: true } result)
-            logger.LogWarning("{RequestName} failed: [{ErrorCode}] {ErrorMessage}", requestName, result.Error.Code, result.Error.Message);
+            Log.RequestFailed(logger, requestName, result.Error.Code, result.Error.Message);
         else
-            logger.LogInformation("Handled {RequestName}", requestName);
+            Log.HandledRequest(logger, requestName);
 
         return response;
     }
