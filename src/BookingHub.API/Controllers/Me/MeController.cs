@@ -1,5 +1,6 @@
 ﻿using BookingHub.API.Common;
 using BookingHub.Application.Features.Organizations.Queries.GetMyOrganizationMemberships;
+using BookingHub.Application.Features.Employees.Queries.GetMyEmployeeLocations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,6 +14,13 @@ public sealed class MeController(IDispatcher dispatcher) : ApiControllerBase
     public async Task<IActionResult> GetOrganizations(CancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(new GetMyOrganizationMembershipsQuery(), cancellationToken);
+        return HandleResult(result);
+    }
+
+    [HttpGet("organizations/{organizationId:guid}/locations")]
+    public async Task<IActionResult> GetMyLocationsInOrganization(Guid organizationId, CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(new GetMyEmployeeLocationsQuery(organizationId), cancellationToken);
         return HandleResult(result);
     }
 }

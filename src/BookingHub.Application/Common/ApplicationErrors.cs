@@ -29,6 +29,7 @@ public static class ApplicationErrors
     {
         public static readonly Error NotFound = new("Employee.NotFound", "Employee not found.", ErrorType.NotFound);
         public static readonly Error NotAssignedToLocation = new("Employee.NotAssignedToLocation", "This employee does not work at this location.", ErrorType.Conflict);
+        public static readonly Error CallerIsNotAnEmployee = new("Employee.CallerIsNotAnEmployee", "The caller has no Employee membership in this organization.", ErrorType.Forbidden);
     }
 
     public static class EmployeeLocationAssignment
