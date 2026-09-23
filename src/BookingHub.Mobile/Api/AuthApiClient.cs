@@ -13,9 +13,9 @@ internal sealed class AuthApiClient(HttpClient httpClient) : IAuthApiClient
 {
     public async Task<AuthenticatedResponse?> LoginAsync(string email, string password, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PostAsJsonAsync("api/v1/auth/login", new LoginRequest(email, password), cancellationToken);
+        var response = await httpClient.PostAsJsonAsync("api/v1/auth/login", new LoginRequest(email, password), ApiJsonOptions.Default, cancellationToken);
         return response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync<AuthenticatedResponse>(cancellationToken)
+            ? await response.Content.ReadFromJsonAsync<AuthenticatedResponse>(ApiJsonOptions.Default, cancellationToken)
             : null;
     }
 

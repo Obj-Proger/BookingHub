@@ -1,5 +1,6 @@
 ﻿using BookingHub.Mobile.Api;
 using BookingHub.Mobile.Services;
+using BookingHub.Mobile.ViewModels;
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 
@@ -24,18 +25,19 @@ public static class MauiProgram
 #endif
 
         builder.Services.AddSingleton<ISecureTokenStore, SecureTokenStore>();
+        builder.Services.AddSingleton<IAppSessionContext, AppSessionContext>();
 
-        // No AuthTokenHandler here — every /auth/* endpoint is anonymous, and Refresh must
-        // never route through the handler that calls it (see AuthTokenHandler's own remarks).
         builder.Services.AddHttpClient<IAuthApiClient, AuthApiClient>(client =>
             client.BaseAddress = new Uri(ApiConstants.BaseUrl));
 
         builder.Services.AddTransient<AuthTokenHandler>();
 
-        // Every other typed API client (Organizations, Bookings — added in later commits) is
-        // built on this named client instead, carrying the bearer token automatically.
-        builder.Services.AddHttpClient("Api", client => client.BaseAddress = new Uri(ApiConstants.BaseUrl))
+        builder.Services.AddHttpClient<IMeApiClient, MeApiClient>(client => client.BaseAddress = new Uri(ApiConstants.BaseUrl))
             .AddHttpMessageHandler<AuthTokenHandler>();
+
+        builder.Services.AddTransient<LoginViewModel>();
+        builder.Services.AddTransient<Views.LoginPage>();
+        builder.Services.AddTransient<Views.SchedulePage>();
 
         return builder.Build();
     }

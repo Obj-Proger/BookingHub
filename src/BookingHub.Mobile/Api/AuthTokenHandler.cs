@@ -9,7 +9,7 @@ namespace BookingHub.Mobile.Api;
 /// 401, refreshes once (via IAuthApiClient, built on a client without this handler — see its
 /// own remarks) and retries the original request exactly once with the new token.
 /// </summary>
-internal sealed class AuthTokenHandler(ISecureTokenStore tokenStore, IAuthApiClient authApiClient) : DelegatingHandler
+internal sealed partial class AuthTokenHandler(ISecureTokenStore tokenStore, IAuthApiClient authApiClient) : DelegatingHandler
 {
     private static readonly SemaphoreSlim RefreshLock = new(1, 1);
 

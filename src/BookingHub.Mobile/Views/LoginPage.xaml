@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BookingHub.Mobile.ViewModels"
+             x:Class="BookingHub.Mobile.Views.LoginPage"
+             x:DataType="vm:LoginViewModel"
+             Shell.NavBarIsVisible="False">
+
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+                                         EventName="Appearing" Command="{Binding TryResumeSessionCommand}" />
+    </ContentPage.Behaviors>
+
+    <Grid Padding="24" RowDefinitions="*,Auto">
+
+        <!-- Step: Credentials -->
+        <VerticalStackLayout Grid.Row="0" Spacing="16" VerticalOptions="Center"
+                             IsVisible="{Binding IsCredentialsStepVisible}">
+            <Label Text="BookingHub" FontSize="32" FontAttributes="Bold" HorizontalOptions="Center" />
+            <Entry Placeholder="Email" Text="{Binding Email}" Keyboard="Email" />
+            <Entry Placeholder="Пароль" Text="{Binding Password}" IsPassword="True" />
+            <Button Text="Войти" Command="{Binding LoginCommand}" />
+        </VerticalStackLayout>
+
+        <!-- Step: SelectOrganization -->
+        <VerticalStackLayout Grid.Row="0" Spacing="12"
+                             IsVisible="{Binding IsOrganizationStepVisible}">
+            <Label Text="Выберите организацию" FontSize="20" FontAttributes="Bold" />
+            <CollectionView ItemsSource="{Binding Organizations}"
+                             SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="{x:Null}">
+                        <Border Padding="16" Margin="0,4">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LoginViewModel}}, Path=SelectOrganizationCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="{Binding OrganizationName}" FontSize="16" />
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+
+        <!-- Step: SelectLocation -->
+        <VerticalStackLayout Grid.Row="0" Spacing="12"
+                             IsVisible="{Binding IsLocationStepVisible}">
+            <Label Text="Выберите локацию" FontSize="20" FontAttributes="Bold" />
+            <CollectionView ItemsSource="{Binding Locations}"
+                             SelectionMode="None">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="{x:Null}">
+                        <Border Padding="16" Margin="0,4">
+                            <Border.GestureRecognizers>
+                                <TapGestureRecognizer
+                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:LoginViewModel}}, Path=SelectLocationCommand}"
+                                    CommandParameter="{Binding .}" />
+                            </Border.GestureRecognizers>
+                            <Label Text="{Binding LocationName}" FontSize="16" />
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+
+        <VerticalStackLayout Grid.Row="1" Spacing="8">
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+            <Label Text="{Binding ErrorMessage}" TextColor="Red" IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}" />
+        </VerticalStackLayout>
+    </Grid>
+</ContentPage>

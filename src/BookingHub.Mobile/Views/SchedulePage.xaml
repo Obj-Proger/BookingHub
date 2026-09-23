@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="BookingHub.Mobile.Views.SchedulePage"
+             Title="Расписание">
+    <VerticalStackLayout Padding="24" VerticalOptions="Center">
+        <Label Text="Вход выполнен. Экран расписания — потом." HorizontalOptions="Center" />
+    </VerticalStackLayout>
+</ContentPage>
