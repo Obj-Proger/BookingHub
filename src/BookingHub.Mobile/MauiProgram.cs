@@ -1,8 +1,11 @@
 ﻿using BookingHub.Mobile.Api;
 using BookingHub.Mobile.Services;
 using BookingHub.Mobile.ViewModels;
+using BookingHub.Mobile.Resources.Strings;
 using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
+using LocalizationResourceManager.Maui;
+using System.Globalization;
 
 namespace BookingHub.Mobile;
 
@@ -14,6 +17,12 @@ public static class MauiProgram
         builder
             .UseMauiApp<App>()
             .UseMauiCommunityToolkit()
+            .UseLocalizationResourceManager(settings =>
+            {
+                settings.AddResource(AppStrings.ResourceManager);
+                settings.RestoreLatestCulture(true);
+                settings.InitialCulture(new CultureInfo("en"));
+            })
             .ConfigureFonts(fonts =>
             {
                 fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");

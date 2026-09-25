@@ -1,35 +1,27 @@
-<?xml version="1.0" encoding="UTF-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:vm="clr-namespace:BookingHub.Mobile.ViewModels"
+             xmlns:localization="clr-namespace:LocalizationResourceManager.Maui;assembly=LocalizationResourceManager.Maui"
              x:Class="BookingHub.Mobile.Views.LoginPage"
              x:DataType="vm:LoginViewModel"
              Shell.NavBarIsVisible="False">
 
-    <ContentPage.Behaviors>
-        <toolkit:EventToCommandBehavior xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
-                                         EventName="Appearing" Command="{Binding TryResumeSessionCommand}" />
-    </ContentPage.Behaviors>
-
     <Grid Padding="24" RowDefinitions="*,Auto">
 
-        <!-- Step: Credentials -->
         <VerticalStackLayout Grid.Row="0" Spacing="16" VerticalOptions="Center"
                              IsVisible="{Binding IsCredentialsStepVisible}">
-            <Label Text="BookingHub" FontSize="32" FontAttributes="Bold" HorizontalOptions="Center" />
-            <Entry Placeholder="Email" Text="{Binding Email}" Keyboard="Email" />
-            <Entry Placeholder="Пароль" Text="{Binding Password}" IsPassword="True" />
-            <Button Text="Войти" Command="{Binding LoginCommand}" />
+            <Label Text="{localization:Translate Login_Title}" FontSize="32" FontAttributes="Bold" HorizontalOptions="Center" />
+            <Entry Placeholder="{localization:Translate Login_EmailPlaceholder}" Text="{Binding Email}" Keyboard="Email" />
+            <Entry Placeholder="{localization:Translate Login_PasswordPlaceholder}" Text="{Binding Password}" IsPassword="True" />
+            <Button Text="{localization:Translate Login_SignInButton}" Command="{Binding LoginCommand}" />
+            <Button Text="RU / EN" Command="{Binding ToggleLanguageCommand}" HorizontalOptions="Center" BackgroundColor="Transparent" TextColor="Gray" />
         </VerticalStackLayout>
 
-        <!-- Step: SelectOrganization -->
-        <VerticalStackLayout Grid.Row="0" Spacing="12"
-                             IsVisible="{Binding IsOrganizationStepVisible}">
-            <Label Text="Выберите организацию" FontSize="20" FontAttributes="Bold" />
-            <CollectionView ItemsSource="{Binding Organizations}"
-                             SelectionMode="None">
+        <VerticalStackLayout Grid.Row="0" Spacing="12" IsVisible="{Binding IsOrganizationStepVisible}">
+            <Label Text="{localization:Translate Login_SelectOrganizationTitle}" FontSize="20" FontAttributes="Bold" />
+            <CollectionView ItemsSource="{Binding Organizations}" SelectionMode="None">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="{x:Null}">
+                    <DataTemplate>
                         <Border Padding="16" Margin="0,4">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer
@@ -43,14 +35,11 @@
             </CollectionView>
         </VerticalStackLayout>
 
-        <!-- Step: SelectLocation -->
-        <VerticalStackLayout Grid.Row="0" Spacing="12"
-                             IsVisible="{Binding IsLocationStepVisible}">
-            <Label Text="Выберите локацию" FontSize="20" FontAttributes="Bold" />
-            <CollectionView ItemsSource="{Binding Locations}"
-                             SelectionMode="None">
+        <VerticalStackLayout Grid.Row="0" Spacing="12" IsVisible="{Binding IsLocationStepVisible}">
+            <Label Text="{localization:Translate Login_SelectLocationTitle}" FontSize="20" FontAttributes="Bold" />
+            <CollectionView ItemsSource="{Binding Locations}" SelectionMode="None">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="{x:Null}">
+                    <DataTemplate>
                         <Border Padding="16" Margin="0,4">
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer

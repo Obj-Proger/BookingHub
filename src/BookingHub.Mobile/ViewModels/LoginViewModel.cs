@@ -1,10 +1,12 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using BookingHub.Mobile.Api;
 using BookingHub.Mobile.Api.Contracts;
 using BookingHub.Mobile.Domain;
 using BookingHub.Mobile.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using LocalizationResourceManager.Maui;
 
 namespace BookingHub.Mobile.ViewModels;
 
@@ -16,7 +18,8 @@ public enum LoginStep
 }
 
 public sealed partial class LoginViewModel(
-    IAuthApiClient authApiClient, IMeApiClient meApiClient, ISecureTokenStore tokenStore, IAppSessionContext sessionContext)
+    IAuthApiClient authApiClient, IMeApiClient meApiClient, ISecureTokenStore tokenStore,
+    IAppSessionContext sessionContext, ILocalizationResourceManager localization)
     : BaseViewModel
 {
     [ObservableProperty]
@@ -39,6 +42,13 @@ public sealed partial class LoginViewModel(
     public ObservableCollection<EmployeeLocationResponse> Locations { get; } = [];
 
     private MyOrganizationMembershipResponse? _pendingOrganization;
+
+    [RelayCommand]
+    private void ToggleLanguage()
+    {
+        var newCultureCode = localization.CurrentCulture.TwoLetterISOLanguageName == "ru" ? "en" : "ru";
+        localization.CurrentCulture = new CultureInfo(newCultureCode);
+    }
 
     [RelayCommand]
     private async Task TryResumeSessionAsync()
@@ -69,7 +79,7 @@ public sealed partial class LoginViewModel(
             var authResult = await authApiClient.LoginAsync(Email, Password, CancellationToken.None);
             if (authResult is null)
             {
-                ErrorMessage = "Неверный email или пароль.";
+                ErrorMessage = localization["Login_Error_InvalidCredentials"];
                 return;
             }
 
@@ -80,7 +90,7 @@ public sealed partial class LoginViewModel(
 
             if (employeeOrganizations.Count == 0)
             {
-                ErrorMessage = "У вас нет ни одной организации, где вы числитесь сотрудником.";
+                ErrorMessage = localization["Login_Error_NoEmployeeMembership"];
                 return;
             }
 
@@ -114,7 +124,7 @@ public sealed partial class LoginViewModel(
             var locations = await meApiClient.GetMyLocationsAsync(organization.OrganizationId, CancellationToken.None);
             if (locations is null || locations.Count == 0)
             {
-                ErrorMessage = "Вы не назначены ни на одну локацию в этой организации.";
+                ErrorMessage = localization["Login_Error_NoLocationAssigned"];
                 return;
             }
 
