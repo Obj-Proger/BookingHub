@@ -12,7 +12,8 @@ public sealed record ScheduleBookingItem(
     Guid BookingId, string TimeRange, string ServiceName, string ClientDisplay, string StatusDisplay, EmployeeBookingResponse Raw);
 
 public sealed partial class ScheduleViewModel(
-    IBookingsApiClient bookingsApiClient, IAppSessionContext sessionContext, ILocalizationResourceManager localization)
+    IBookingsApiClient bookingsApiClient, IAuthApiClient authApiClient, ISecureTokenStore tokenStore,
+    IAppSessionContext sessionContext, ILocalizationResourceManager localization)
     : BaseViewModel
 {
     [ObservableProperty]
@@ -100,4 +101,34 @@ public sealed partial class ScheduleViewModel(
     [RelayCommand]
     private static async Task OpenBookingAsync(ScheduleBookingItem item) =>
         await Shell.Current.GoToAsync("bookingDetail", new Dictionary<string, object> { ["Booking"] = item.Raw });
+
+    [RelayCommand]
+    private async Task LogoutAsync()
+    {
+        IsBusy = true;
+        try
+        {
+            var refreshToken = await tokenStore.GetRefreshTokenAsync();
+            if (!string.IsNullOrEmpty(refreshToken))
+            {
+                try
+                {
+                    await authApiClient.LogoutAsync(refreshToken, CancellationToken.None);
+                }
+                catch (HttpRequestException)
+                {
+                    // Best-effort: server-side token revocation is nice to have, but local
+                    // logout must succeed even when there's no network at all.
+                }
+            }
+
+            await tokenStore.ClearAsync();
+            sessionContext.Clear();
+            await Shell.Current.GoToAsync("//login");
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
 }

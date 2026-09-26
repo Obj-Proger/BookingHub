@@ -183,6 +183,9 @@
   <data name="Schedule_Error_LoadFailed" xml:space="preserve">
     <value>Couldn't load the schedule. Pull to try again.</value>
   </data>
+  <data name="Schedule_LogoutButton" xml:space="preserve">
+    <value>Log out</value>
+  </data>
   <data name="Schedule_NoBookings" xml:space="preserve">
     <value>No bookings for this day</value>
   </data>

@@ -183,6 +183,9 @@
   <data name="Schedule_Error_LoadFailed" xml:space="preserve">
     <value>Не удалось загрузить расписание. Попробуйте ещё раз.</value>
   </data>
+  <data name="Schedule_LogoutButton" xml:space="preserve">
+    <value>Выйти</value>
+  </data>
   <data name="Schedule_NoBookings" xml:space="preserve">
     <value>На этот день записей нет</value>
   </data>

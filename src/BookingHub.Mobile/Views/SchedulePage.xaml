@@ -6,6 +6,10 @@
              x:DataType="vm:ScheduleViewModel"
              Title="{localization:Translate Schedule_Title}">
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="{localization:Translate Schedule_LogoutButton}" Command="{Binding LogoutCommand}" />
+    </ContentPage.ToolbarItems>
+
     <Grid Padding="24" RowDefinitions="Auto,*,Auto" RowSpacing="12">
 
         <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">

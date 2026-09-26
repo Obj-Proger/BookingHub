@@ -259,6 +259,15 @@ namespace BookingHub.Mobile.Resources.Strings {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Log out.
+        /// </summary>
+        internal static string Schedule_LogoutButton {
+            get {
+                return ResourceManager.GetString("Schedule_LogoutButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на No bookings for this day.
         /// </summary>
         internal static string Schedule_NoBookings {
