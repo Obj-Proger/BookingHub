@@ -1,13 +1,15 @@
-﻿using System.Collections.ObjectModel;
-using BookingHub.Mobile.Api;
+﻿using BookingHub.Mobile.Api;
+using BookingHub.Mobile.Api.Contracts;
 using BookingHub.Mobile.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using LocalizationResourceManager.Maui;
+using System.Collections.ObjectModel;
 
 namespace BookingHub.Mobile.ViewModels;
 
-public sealed record ScheduleBookingItem(Guid BookingId, string TimeRange, string ServiceName, string ClientDisplay, string StatusDisplay);
+public sealed record ScheduleBookingItem(
+    Guid BookingId, string TimeRange, string ServiceName, string ClientDisplay, string StatusDisplay, EmployeeBookingResponse Raw);
 
 public sealed partial class ScheduleViewModel(
     IBookingsApiClient bookingsApiClient, IAppSessionContext sessionContext, ILocalizationResourceManager localization)
@@ -49,7 +51,8 @@ public sealed partial class ScheduleViewModel(
                     $"{booking.StartUtc.ToLocalTime():HH:mm} – {booking.EndUtc.ToLocalTime():HH:mm}",
                     booking.ServiceName,
                     string.IsNullOrWhiteSpace(booking.ClientName) ? booking.ClientPhone : booking.ClientName,
-                    localization[$"BookingStatus_{booking.Status}"]));
+                    localization[$"BookingStatus_{booking.Status}"],
+                    booking));
             }
         }
         finally
@@ -67,9 +70,14 @@ public sealed partial class ScheduleViewModel(
     [RelayCommand]
     private Task GoToTodayAsync() => ChangeDateAsync(DateOnly.FromDateTime(DateTime.Now));
 
+    [RelayCommand]
+    private static async Task OpenBookingAsync(ScheduleBookingItem item) =>
+        await Shell.Current.GoToAsync("bookingDetail", new Dictionary<string, object> { ["Booking"] = item.Raw });
+    
     private Task ChangeDateAsync(DateOnly date)
     {
         SelectedDate = date;
         return LoadScheduleAsync();
     }
+
 }

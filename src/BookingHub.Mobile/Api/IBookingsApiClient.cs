@@ -6,4 +6,8 @@ public interface IBookingsApiClient
 {
     Task<IReadOnlyList<EmployeeBookingResponse>?> GetScheduleAsync(
         Guid organizationId, Guid locationId, Guid employeeId, DateOnly date, CancellationToken cancellationToken);
+
+    Task<bool> CompleteAsync(Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, CancellationToken cancellationToken);
+
+    Task<bool> MarkNoShowAsync(Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, CancellationToken cancellationToken);
 }

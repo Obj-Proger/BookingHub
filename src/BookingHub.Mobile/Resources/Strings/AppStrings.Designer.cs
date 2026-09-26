@@ -61,6 +61,51 @@ namespace BookingHub.Mobile.Resources.Strings {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Mark completed.
+        /// </summary>
+        internal static string BookingDetail_CompleteButton {
+            get {
+                return ResourceManager.GetString("BookingDetail_CompleteButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Couldn&apos;t update the booking..
+        /// </summary>
+        internal static string BookingDetail_Error_ActionFailed {
+            get {
+                return ResourceManager.GetString("BookingDetail_Error_ActionFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на No name provided.
+        /// </summary>
+        internal static string BookingDetail_NoClientName {
+            get {
+                return ResourceManager.GetString("BookingDetail_NoClientName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Mark no-show.
+        /// </summary>
+        internal static string BookingDetail_NoShowButton {
+            get {
+                return ResourceManager.GetString("BookingDetail_NoShowButton", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Booking.
+        /// </summary>
+        internal static string BookingDetail_Title {
+            get {
+                return ResourceManager.GetString("BookingDetail_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Awaiting review.
         /// </summary>
         internal static string BookingStatus_AwaitingReview {
@@ -106,7 +151,7 @@ namespace BookingHub.Mobile.Resources.Strings {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на  No-show.
+        ///   Ищет локализованную строку, похожую на No-show.
         /// </summary>
         internal static string BookingStatus_NoShow {
             get {

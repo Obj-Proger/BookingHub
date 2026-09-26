@@ -16,4 +16,20 @@ internal sealed class BookingsApiClient(HttpClient httpClient) : IBookingsApiCli
             ? await response.Content.ReadFromJsonAsync<IReadOnlyList<EmployeeBookingResponse>>(ApiJsonOptions.Default, cancellationToken)
             : null;
     }
+
+    public Task<bool> CompleteAsync(Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, CancellationToken cancellationToken) =>
+        PostActionAsync(organizationId, locationId, employeeId, bookingId, "complete", cancellationToken);
+
+    public Task<bool> MarkNoShowAsync(Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, CancellationToken cancellationToken) =>
+        PostActionAsync(organizationId, locationId, employeeId, bookingId, "no-show", cancellationToken);
+
+    private async Task<bool> PostActionAsync(
+        Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, string action, CancellationToken cancellationToken)
+    {
+        var response = await httpClient.PostAsync(
+            $"api/v1/organizations/{organizationId}/locations/{locationId}/employees/{employeeId}/bookings/{bookingId}/{action}",
+            content: null, cancellationToken);
+
+        return response.IsSuccessStatusCode;
+    }
 }

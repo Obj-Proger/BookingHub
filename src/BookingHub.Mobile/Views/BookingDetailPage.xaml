@@ -1,0 +1,25 @@
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BookingHub.Mobile.ViewModels"
+             xmlns:localization="clr-namespace:LocalizationResourceManager.Maui;assembly=LocalizationResourceManager.Maui"
+             x:Class="BookingHub.Mobile.Views.BookingDetailPage"
+             x:DataType="vm:BookingDetailViewModel"
+             Title="{localization:Translate BookingDetail_Title}">
+
+    <VerticalStackLayout Padding="24" Spacing="16">
+        <Label Text="{Binding TimeRange}" FontSize="20" FontAttributes="Bold" />
+        <Label Text="{Binding ServiceName}" FontSize="18" />
+        <Label Text="{Binding ClientName}" FontSize="16" />
+        <Label Text="{Binding ClientPhone}" FontSize="16" TextColor="Gray" />
+        <Label Text="{Binding StatusDisplay}" FontSize="14" />
+
+        <VerticalStackLayout Spacing="8" IsVisible="{Binding CanResolve}">
+            <Button Text="{localization:Translate BookingDetail_CompleteButton}" Command="{Binding CompleteCommand}" />
+            <Button Text="{localization:Translate BookingDetail_NoShowButton}" Command="{Binding MarkNoShowCommand}" BackgroundColor="IndianRed" />
+        </VerticalStackLayout>
+
+        <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+        <Label Text="{Binding ErrorMessage}" TextColor="Red"
+               IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}" />
+    </VerticalStackLayout>
+</ContentPage>

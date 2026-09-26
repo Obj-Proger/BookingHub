@@ -117,6 +117,21 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="BookingDetail_CompleteButton" xml:space="preserve">
+    <value>Mark completed</value>
+  </data>
+  <data name="BookingDetail_Error_ActionFailed" xml:space="preserve">
+    <value>Couldn't update the booking.</value>
+  </data>
+  <data name="BookingDetail_NoClientName" xml:space="preserve">
+    <value>No name provided</value>
+  </data>
+  <data name="BookingDetail_NoShowButton" xml:space="preserve">
+    <value>Mark no-show</value>
+  </data>
+  <data name="BookingDetail_Title" xml:space="preserve">
+    <value>Booking</value>
+  </data>
   <data name="BookingStatus_AwaitingReview" xml:space="preserve">
     <value>Awaiting review</value>
   </data>
@@ -133,7 +148,7 @@
     <value>Expired</value>
   </data>
   <data name="BookingStatus_NoShow" xml:space="preserve">
-    <value> No-show</value>
+    <value>No-show</value>
   </data>
   <data name="BookingStatus_Pending" xml:space="preserve">
     <value>Pending</value>
