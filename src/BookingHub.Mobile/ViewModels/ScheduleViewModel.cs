@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.Globalization;
 using BookingHub.Mobile.Api;
 using BookingHub.Mobile.Api.Contracts;
 using BookingHub.Mobile.Services;
@@ -130,5 +131,12 @@ public sealed partial class ScheduleViewModel(
         {
             IsBusy = false;
         }
+    }
+
+    [RelayCommand]
+    private void ToggleLanguage()
+    {
+        var newCultureCode = localization.CurrentCulture.TwoLetterISOLanguageName == "ru" ? "en" : "ru";
+        localization.CurrentCulture = new CultureInfo(newCultureCode);
     }
 }

@@ -7,6 +7,7 @@
              Title="{localization:Translate Schedule_Title}">
 
     <ContentPage.ToolbarItems>
+        <ToolbarItem Text="RU / EN" Command="{Binding ToggleLanguageCommand}" />
         <ToolbarItem Text="{localization:Translate Schedule_LogoutButton}" Command="{Binding LogoutCommand}" />
     </ContentPage.ToolbarItems>
 
