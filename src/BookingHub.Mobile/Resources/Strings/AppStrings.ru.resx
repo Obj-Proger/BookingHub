@@ -117,6 +117,27 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="BookingStatus_AwaitingReview" xml:space="preserve">
+    <value>Ожидает завершения</value>
+  </data>
+  <data name="BookingStatus_Cancelled" xml:space="preserve">
+    <value>Отменена</value>
+  </data>
+  <data name="BookingStatus_Completed" xml:space="preserve">
+    <value>Завершена</value>
+  </data>
+  <data name="BookingStatus_Confirmed" xml:space="preserve">
+    <value>Подтверждена</value>
+  </data>
+  <data name="BookingStatus_Expired" xml:space="preserve">
+    <value>Просрочена</value>
+  </data>
+  <data name="BookingStatus_NoShow" xml:space="preserve">
+    <value>Клиент не пришёл</value>
+  </data>
+  <data name="BookingStatus_Pending" xml:space="preserve">
+    <value>Ожидает подтверждения</value>
+  </data>
   <data name="Login_EmailPlaceholder" xml:space="preserve">
     <value>Email</value>
   </data>
@@ -144,7 +165,16 @@
   <data name="Login_Title" xml:space="preserve">
     <value>BookingHub</value>
   </data>
+  <data name="Schedule_Error_LoadFailed" xml:space="preserve">
+    <value>Не удалось загрузить расписание. Попробуйте ещё раз.</value>
+  </data>
+  <data name="Schedule_NoBookings" xml:space="preserve">
+    <value>На этот день записей нет</value>
+  </data>
   <data name="Schedule_Title" xml:space="preserve">
     <value>Расписание</value>
+  </data>
+  <data name="Schedule_TodayButton" xml:space="preserve">
+    <value>Сегодня</value>
   </data>
 </root>

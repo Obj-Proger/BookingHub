@@ -49,6 +49,7 @@ public static class MauiProgram
 
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<Views.LoginPage>();
+        builder.Services.AddTransient<ScheduleViewModel>();
         builder.Services.AddTransient<Views.SchedulePage>();
 
         return builder.Build();

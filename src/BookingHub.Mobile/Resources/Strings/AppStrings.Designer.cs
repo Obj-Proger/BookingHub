@@ -61,6 +61,69 @@ namespace BookingHub.Mobile.Resources.Strings {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Awaiting review.
+        /// </summary>
+        internal static string BookingStatus_AwaitingReview {
+            get {
+                return ResourceManager.GetString("BookingStatus_AwaitingReview", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Cancelled.
+        /// </summary>
+        internal static string BookingStatus_Cancelled {
+            get {
+                return ResourceManager.GetString("BookingStatus_Cancelled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Completed.
+        /// </summary>
+        internal static string BookingStatus_Completed {
+            get {
+                return ResourceManager.GetString("BookingStatus_Completed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Confirmed.
+        /// </summary>
+        internal static string BookingStatus_Confirmed {
+            get {
+                return ResourceManager.GetString("BookingStatus_Confirmed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Expired.
+        /// </summary>
+        internal static string BookingStatus_Expired {
+            get {
+                return ResourceManager.GetString("BookingStatus_Expired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на  No-show.
+        /// </summary>
+        internal static string BookingStatus_NoShow {
+            get {
+                return ResourceManager.GetString("BookingStatus_NoShow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Pending.
+        /// </summary>
+        internal static string BookingStatus_Pending {
+            get {
+                return ResourceManager.GetString("BookingStatus_Pending", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Email.
         /// </summary>
         internal static string Login_EmailPlaceholder {
@@ -142,11 +205,38 @@ namespace BookingHub.Mobile.Resources.Strings {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на Couldn&apos;t load the schedule. Pull to try again..
+        /// </summary>
+        internal static string Schedule_Error_LoadFailed {
+            get {
+                return ResourceManager.GetString("Schedule_Error_LoadFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на No bookings for this day.
+        /// </summary>
+        internal static string Schedule_NoBookings {
+            get {
+                return ResourceManager.GetString("Schedule_NoBookings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на Schedule.
         /// </summary>
         internal static string Schedule_Title {
             get {
                 return ResourceManager.GetString("Schedule_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на Today.
+        /// </summary>
+        internal static string Schedule_TodayButton {
+            get {
+                return ResourceManager.GetString("Schedule_TodayButton", resourceCulture);
             }
         }
     }

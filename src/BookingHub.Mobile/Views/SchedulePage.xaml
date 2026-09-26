@@ -1,9 +1,48 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:BookingHub.Mobile.ViewModels"
              xmlns:localization="clr-namespace:LocalizationResourceManager.Maui;assembly=LocalizationResourceManager.Maui"
              x:Class="BookingHub.Mobile.Views.SchedulePage"
+             x:DataType="vm:ScheduleViewModel"
              Title="{localization:Translate Schedule_Title}">
-    <VerticalStackLayout Padding="24" VerticalOptions="Center">
-        <Label Text="Вход выполнен. Экран расписания — потом." HorizontalOptions="Center" />
-    </VerticalStackLayout>
+
+    <Grid Padding="24" RowDefinitions="Auto,*,Auto" RowSpacing="12">
+
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+            <Button Grid.Column="0" Text="◀" Command="{Binding GoToPreviousDayCommand}" />
+            <Label Grid.Column="1" Text="{Binding SelectedDateDisplay}" FontSize="18" FontAttributes="Bold"
+                   HorizontalOptions="Center" VerticalOptions="Center" />
+            <Button Grid.Column="2" Text="▶" Command="{Binding GoToNextDayCommand}" />
+            <Button Grid.Column="3" Text="{localization:Translate Schedule_TodayButton}" Command="{Binding GoToTodayCommand}" />
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <CollectionView ItemsSource="{Binding Bookings}" SelectionMode="None">
+                <CollectionView.EmptyView>
+                    <Label Text="{localization:Translate Schedule_NoBookings}" HorizontalOptions="Center"
+                           VerticalOptions="Center" TextColor="Gray" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="vm:ScheduleBookingItem">
+                        <Border Padding="16" Margin="0,4">
+                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                <Label Grid.Column="0" Text="{Binding TimeRange}" FontAttributes="Bold" VerticalOptions="Center" />
+                                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                    <Label Text="{Binding ServiceName}" FontSize="16" />
+                                    <Label Text="{Binding ClientDisplay}" FontSize="14" TextColor="Gray" />
+                                </VerticalStackLayout>
+                                <Label Grid.Column="2" Text="{Binding StatusDisplay}" FontSize="12" VerticalOptions="Center" />
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+            <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
+        </Grid>
+
+        <VerticalStackLayout Grid.Row="2" Spacing="8">
+            <Label Text="{Binding ErrorMessage}" TextColor="Red"
+                   IsVisible="{Binding ErrorMessage, Converter={StaticResource StringNotEmptyConverter}}" />
+        </VerticalStackLayout>
+    </Grid>
 </ContentPage>
