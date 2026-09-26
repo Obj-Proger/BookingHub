@@ -35,6 +35,7 @@ public static class MauiProgram
 
         builder.Services.AddSingleton<ISecureTokenStore, SecureTokenStore>();
         builder.Services.AddSingleton<IAppSessionContext, AppSessionContext>();
+        builder.Services.AddSingleton<INavigationService, ShellNavigationService>();
 
         builder.Services.AddHttpClient<IAuthApiClient, AuthApiClient>(client =>
             client.BaseAddress = new Uri(ApiConstants.BaseUrl));

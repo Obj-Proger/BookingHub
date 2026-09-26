@@ -19,7 +19,7 @@ public enum LoginStep
 
 public sealed partial class LoginViewModel(
     IAuthApiClient authApiClient, IMeApiClient meApiClient, ISecureTokenStore tokenStore,
-    IAppSessionContext sessionContext, ILocalizationResourceManager localization)
+    IAppSessionContext sessionContext, INavigationService navigationService, ILocalizationResourceManager localization)
     : BaseViewModel
 {
     [ObservableProperty]
@@ -61,7 +61,7 @@ public sealed partial class LoginViewModel(
         {
             var organizations = await meApiClient.GetMyOrganizationsAsync(CancellationToken.None);
             if (organizations is not null)
-                await Shell.Current.GoToAsync("//schedule");
+                await navigationService.GoToAsync("//schedule");
         }
         finally
         {
@@ -131,7 +131,7 @@ public sealed partial class LoginViewModel(
             if (locations.Count == 1)
             {
                 CompleteLogin(organization, locations[0]);
-                await Shell.Current.GoToAsync("//schedule");
+                await navigationService.GoToAsync("//schedule");
                 return;
             }
 
@@ -154,7 +154,7 @@ public sealed partial class LoginViewModel(
             return;
 
         CompleteLogin(_pendingOrganization, location);
-        await Shell.Current.GoToAsync("//schedule");
+        await navigationService.GoToAsync("//schedule");
     }
 
     private void CompleteLogin(MyOrganizationMembershipResponse organization, EmployeeLocationResponse location) =>

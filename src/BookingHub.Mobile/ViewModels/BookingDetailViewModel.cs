@@ -9,7 +9,8 @@ using LocalizationResourceManager.Maui;
 namespace BookingHub.Mobile.ViewModels;
 
 public sealed partial class BookingDetailViewModel(
-    IBookingsApiClient bookingsApiClient, IAppSessionContext sessionContext, ILocalizationResourceManager localization)
+    IBookingsApiClient bookingsApiClient, IAppSessionContext sessionContext,
+    INavigationService navigationService, ILocalizationResourceManager localization)
     : BaseViewModel, IQueryAttributable
 {
     private Guid _bookingId;
@@ -71,7 +72,7 @@ public sealed partial class BookingDetailViewModel(
                 return;
             }
 
-            await Shell.Current.GoToAsync("..");
+            await navigationService.GoToAsync("..");
         }
         finally
         {

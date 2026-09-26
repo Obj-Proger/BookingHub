@@ -14,7 +14,7 @@ public sealed record ScheduleBookingItem(
 
 public sealed partial class ScheduleViewModel(
     IBookingsApiClient bookingsApiClient, IAuthApiClient authApiClient, ISecureTokenStore tokenStore,
-    IAppSessionContext sessionContext, ILocalizationResourceManager localization)
+    IAppSessionContext sessionContext, INavigationService navigationService, ILocalizationResourceManager localization)
     : BaseViewModel
 {
     [ObservableProperty]
@@ -100,8 +100,8 @@ public sealed partial class ScheduleViewModel(
     }
 
     [RelayCommand]
-    private static async Task OpenBookingAsync(ScheduleBookingItem item) =>
-        await Shell.Current.GoToAsync("bookingDetail", new Dictionary<string, object> { ["Booking"] = item.Raw });
+    private async Task OpenBookingAsync(ScheduleBookingItem item) =>
+        await navigationService.GoToAsync("bookingDetail", new Dictionary<string, object> { ["Booking"] = item.Raw });
 
     [RelayCommand]
     private async Task LogoutAsync()
@@ -125,7 +125,7 @@ public sealed partial class ScheduleViewModel(
 
             await tokenStore.ClearAsync();
             sessionContext.Clear();
-            await Shell.Current.GoToAsync("//login");
+            await navigationService.GoToAsync("//login");
         }
         finally
         {
