@@ -44,6 +44,9 @@ public static class MauiProgram
         builder.Services.AddHttpClient<IMeApiClient, MeApiClient>(client => client.BaseAddress = new Uri(ApiConstants.BaseUrl))
             .AddHttpMessageHandler<AuthTokenHandler>();
 
+        builder.Services.AddHttpClient<IBookingsApiClient, BookingsApiClient>(client => client.BaseAddress = new Uri(ApiConstants.BaseUrl))
+            .AddHttpMessageHandler<AuthTokenHandler>();
+
         builder.Services.AddTransient<LoginViewModel>();
         builder.Services.AddTransient<Views.LoginPage>();
         builder.Services.AddTransient<Views.SchedulePage>();
