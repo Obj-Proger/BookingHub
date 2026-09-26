@@ -17,31 +17,33 @@
         </Grid>
 
         <Grid Grid.Row="1">
-            <CollectionView ItemsSource="{Binding Bookings}" SelectionMode="None">
-                <CollectionView.EmptyView>
-                    <Label Text="{localization:Translate Schedule_NoBookings}" HorizontalOptions="Center"
-                           VerticalOptions="Center" TextColor="Gray" />
-                </CollectionView.EmptyView>
-                <CollectionView.ItemTemplate>
-                    <DataTemplate x:DataType="vm:ScheduleBookingItem">
-                        <Border Padding="16" Margin="0,4">
-                            <Border.GestureRecognizers>
-                                <TapGestureRecognizer
-                                    Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, Path=OpenBookingCommand}"
-                                    CommandParameter="{Binding .}" />
-                            </Border.GestureRecognizers>
-                            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
-                                <Label Grid.Column="0" Text="{Binding TimeRange}" FontAttributes="Bold" VerticalOptions="Center" />
-                                <VerticalStackLayout Grid.Column="1" Spacing="2">
-                                    <Label Text="{Binding ServiceName}" FontSize="16" />
-                                    <Label Text="{Binding ClientDisplay}" FontSize="14" TextColor="Gray" />
-                                </VerticalStackLayout>
-                                <Label Grid.Column="2" Text="{Binding StatusDisplay}" FontSize="12" VerticalOptions="Center" />
-                            </Grid>
-                        </Border>
-                    </DataTemplate>
-                </CollectionView.ItemTemplate>
-            </CollectionView>
+            <RefreshView IsRefreshing="{Binding IsRefreshing}" Command="{Binding RefreshCommand}">
+                <CollectionView ItemsSource="{Binding Bookings}" SelectionMode="None">
+                    <CollectionView.EmptyView>
+                        <Label Text="{localization:Translate Schedule_NoBookings}" HorizontalOptions="Center"
+                               VerticalOptions="Center" TextColor="Gray" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="vm:ScheduleBookingItem">
+                            <Border Padding="16" Margin="0,4">
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer
+                                        Command="{Binding Source={RelativeSource AncestorType={x:Type vm:ScheduleViewModel}}, Path=OpenBookingCommand}"
+                                        CommandParameter="{Binding .}" />
+                                </Border.GestureRecognizers>
+                                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                                    <Label Grid.Column="0" Text="{Binding TimeRange}" FontAttributes="Bold" VerticalOptions="Center" />
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2">
+                                        <Label Text="{Binding ServiceName}" FontSize="16" />
+                                        <Label Text="{Binding ClientDisplay}" FontSize="14" TextColor="Gray" />
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="2" Text="{Binding StatusDisplay}" FontSize="12" VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
             <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" />
         </Grid>
 
