@@ -1,0 +1,10 @@
+﻿global using System.Globalization;
+global using BookingHub.Mobile.Api;
+global using BookingHub.Mobile.Api.Contracts;
+global using BookingHub.Mobile.Domain;
+global using BookingHub.Mobile.Services;
+global using BookingHub.Mobile.ViewModels;
+global using AwesomeAssertions;
+global using NSubstitute;
+global using NSubstitute.ExceptionExtensions;
+global using Xunit;

@@ -5,7 +5,6 @@ using BookingHub.Mobile.Api.Contracts;
 using BookingHub.Mobile.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LocalizationResourceManager.Maui;
 
 namespace BookingHub.Mobile.ViewModels;
 
@@ -14,7 +13,7 @@ public sealed record ScheduleBookingItem(
 
 public sealed partial class ScheduleViewModel(
     IBookingsApiClient bookingsApiClient, IAuthApiClient authApiClient, ISecureTokenStore tokenStore,
-    IAppSessionContext sessionContext, INavigationService navigationService, ILocalizationResourceManager localization)
+    IAppSessionContext sessionContext, INavigationService navigationService, ILocalizationService localization)
     : BaseViewModel
 {
     [ObservableProperty]

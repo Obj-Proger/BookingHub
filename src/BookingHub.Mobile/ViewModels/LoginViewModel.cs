@@ -6,7 +6,6 @@ using BookingHub.Mobile.Domain;
 using BookingHub.Mobile.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LocalizationResourceManager.Maui;
 
 namespace BookingHub.Mobile.ViewModels;
 
@@ -19,7 +18,7 @@ public enum LoginStep
 
 public sealed partial class LoginViewModel(
     IAuthApiClient authApiClient, IMeApiClient meApiClient, ISecureTokenStore tokenStore,
-    IAppSessionContext sessionContext, INavigationService navigationService, ILocalizationResourceManager localization)
+    IAppSessionContext sessionContext, INavigationService navigationService, ILocalizationService localization)
     : BaseViewModel
 {
     [ObservableProperty]

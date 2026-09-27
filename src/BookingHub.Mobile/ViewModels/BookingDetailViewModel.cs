@@ -4,14 +4,13 @@ using BookingHub.Mobile.Domain;
 using BookingHub.Mobile.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using LocalizationResourceManager.Maui;
 
 namespace BookingHub.Mobile.ViewModels;
 
 public sealed partial class BookingDetailViewModel(
     IBookingsApiClient bookingsApiClient, IAppSessionContext sessionContext,
-    INavigationService navigationService, ILocalizationResourceManager localization)
-    : BaseViewModel, IQueryAttributable
+    INavigationService navigationService, ILocalizationService localization)
+    : BaseViewModel
 {
     private Guid _bookingId;
 
@@ -33,11 +32,8 @@ public sealed partial class BookingDetailViewModel(
     [ObservableProperty]
     public partial bool CanResolve { get; set; }
 
-    public void ApplyQueryAttributes(IDictionary<string, object> query)
+    public void Initialize(EmployeeBookingResponse booking)
     {
-        if (query["Booking"] is not EmployeeBookingResponse booking)
-            return;
-
         _bookingId = booking.BookingId;
         TimeRange = $"{booking.StartUtc.ToLocalTime():HH:mm} – {booking.EndUtc.ToLocalTime():HH:mm}";
         ServiceName = booking.ServiceName;

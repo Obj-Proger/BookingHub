@@ -71,4 +71,12 @@
     <PackageVersion Include="Testcontainers.PostgreSql" Version="4.15.0" />
     <PackageVersion Include="SSH.NET" Version="2026.0.0" />
   </ItemGroup>
+  <!-- BookingHub.Mobile.Tests -->
+  <ItemGroup Condition="'$(MSBuildProjectName)' == 'BookingHub.Mobile.Tests'">
+	<PackageVersion Include="xunit.v3" Version="4.0.1" />
+	<PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />
+	<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+	<PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
+	<PackageVersion Include="NSubstitute" Version="6.2.0" />
+  </ItemGroup>
 </Project>

@@ -11,5 +11,6 @@
     <Project Path="tests/BookingHub.Application.Tests/BookingHub.Application.Tests.csproj" />
     <Project Path="tests/BookingHub.Domain.Tests/BookingHub.Domain.Tests.csproj" />
     <Project Path="tests/BookingHub.Infrastructure.IntegrationTests/BookingHub.Infrastructure.IntegrationTests.csproj" />
+    <Project Path="tests/BookingHub.Mobile.Tests/BookingHub.Mobile.Tests.csproj" Id="316fc8cb-6472-4f09-af96-1195d9c19de8" />
   </Folder>
 </Solution>
