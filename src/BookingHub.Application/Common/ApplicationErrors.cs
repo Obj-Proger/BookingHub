@@ -11,6 +11,7 @@ public static class ApplicationErrors
     {
         public static readonly Error SlugAlreadyTaken = new("Organization.SlugAlreadyTaken", "This slug is already in use by another organization.", ErrorType.Conflict);
         public static readonly Error NotFound = new("Organization.NotFound", "Organization not found.", ErrorType.NotFound);
+        public static readonly Error OnlyOwnerCanDelete = new("Organization.OnlyOwnerCanDelete", "Only the organization's Owner can delete it.", ErrorType.Forbidden);
     }
 
     public static class Authorization

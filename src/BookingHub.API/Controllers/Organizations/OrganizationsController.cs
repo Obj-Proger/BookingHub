@@ -2,6 +2,7 @@
 using BookingHub.Application.Features.Organizations.Commands.AddOrganizationMember;
 using BookingHub.Application.Features.Organizations.Commands.ChangeOrganizationMemberRole;
 using BookingHub.Application.Features.Organizations.Commands.CreateOrganization;
+using BookingHub.Application.Features.Organizations.Commands.DeleteOrganization;
 using BookingHub.Application.Features.Organizations.Commands.RemoveOrganizationMember;
 using BookingHub.Application.Features.Organizations.Commands.RenameOrganization;
 using BookingHub.Application.Features.Organizations.Commands.SetOrganizationAdministratorFinancialAccess;
@@ -118,6 +119,13 @@ public sealed class OrganizationsController(IDispatcher dispatcher) : ApiControl
     {
         var result = await dispatcher.Send(
             new SetOrganizationAdministratorFinancialAccessCommand(organizationId, request.Enabled), cancellationToken);
+        return HandleResult(result);
+    }
+
+    [HttpDelete("{organizationId:guid}")]
+    public async Task<IActionResult> Delete(Guid organizationId, CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(new DeleteOrganizationCommand(organizationId), cancellationToken);
         return HandleResult(result);
     }
 }
