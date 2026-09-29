@@ -17,6 +17,7 @@
 
   <ItemGroup>
 	<InternalsVisibleTo Include="BookingHub.Application.Tests" />
+	<InternalsVisibleTo Include="BookingHub.Infrastructure.IntegrationTests" />
 	<InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
   </ItemGroup>
 

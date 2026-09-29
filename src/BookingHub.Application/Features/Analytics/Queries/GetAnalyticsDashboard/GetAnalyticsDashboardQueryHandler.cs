@@ -72,11 +72,15 @@ internal sealed class GetAnalyticsDashboardQueryHandler(
             .Take(10)
             .ToListAsync(cancellationToken);
 
-        var peakHours = await completed
-            .GroupBy(b => b.TimeSlot.StartUtc.Hour)
+        var completedHours = await completed
+            .Select(b => b.TimeSlot.StartUtc.Hour)
+            .ToListAsync(cancellationToken);
+
+        var peakHours = completedHours
+            .GroupBy(hour => hour)
             .Select(g => new PeakHourResponse(g.Key, g.Count()))
             .OrderBy(p => p.HourOfDay)
-            .ToListAsync(cancellationToken);
+            .ToList();
 
         return new AnalyticsDashboardResponse(totalRevenue, locationUtilization, employeeUtilization, popularServices, peakHours);
     }

@@ -148,6 +148,28 @@ namespace BookingHub.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "RefreshTokens",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TokenHash = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    ExpiresAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    RevokedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RefreshTokens", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_RefreshTokens_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Employees",
                 columns: table => new
                 {
@@ -594,6 +616,17 @@ namespace BookingHub.Infrastructure.Migrations
                 columns: new[] { "EmployeeLocationAssignmentId", "DayOfWeek" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_TokenHash",
+                table: "RefreshTokens",
+                column: "TokenHash",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RefreshTokens_UserId",
+                table: "RefreshTokens",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Reviews_BookingId",
                 table: "Reviews",
                 column: "BookingId",
@@ -701,9 +734,9 @@ namespace BookingHub.Infrastructure.Migrations
 
             migrationBuilder.Sql("""ALTER TABLE "Reviews" ENABLE ROW LEVEL SECURITY;""");
             migrationBuilder.Sql("""
-                CREATE POLICY tenant_isolation ON "Reviews"
+            CREATE POLICY tenant_isolation ON "Reviews"
                     USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
-                """);
+            """);
 
             migrationBuilder.Sql("""ALTER TABLE "EmployeeLocationAssignments" ENABLE ROW LEVEL SECURITY;""");
             migrationBuilder.Sql("""
@@ -747,11 +780,25 @@ namespace BookingHub.Infrastructure.Migrations
             migrationBuilder.Sql("""GRANT USAGE ON SCHEMA public TO bookinghub_app;""");
             migrationBuilder.Sql("""GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO bookinghub_app;""");
             migrationBuilder.Sql("""ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO bookinghub_app;""");
+            migrationBuilder.Sql("""
+                DO $$
+                BEGIN
+                    EXECUTE format('GRANT CREATE ON DATABASE %I TO bookinghub_app', current_database());
+                END
+                $$;
+                """);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("""
+                DO $$
+                BEGIN
+                    EXECUTE format('REVOKE CREATE ON DATABASE %I FROM bookinghub_app', current_database());
+                END
+                $$;
+                """);
             migrationBuilder.Sql("""ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE SELECT, INSERT, UPDATE, DELETE ON TABLES FROM bookinghub_app;""");
             migrationBuilder.Sql("""REVOKE ALL ON ALL TABLES IN SCHEMA public FROM bookinghub_app;""");
             migrationBuilder.Sql("""REVOKE USAGE ON SCHEMA public FROM bookinghub_app;""");
@@ -799,6 +846,9 @@ namespace BookingHub.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "RecurringSchedules");
+
+            migrationBuilder.DropTable(
+                name: "RefreshTokens");
 
             migrationBuilder.DropTable(
                 name: "Reviews");
