@@ -1,0 +1,38 @@
+﻿@page "/book/{OrganizationSlug}"
+@inject IPublicCatalogApiClient CatalogApiClient
+
+<PageTitle>Book an appointment</PageTitle>
+
+<h1>Choose a location</h1>
+
+@if (_locations is null)
+{
+    <p>Loading…</p>
+}
+else if (_locations.Count == 0)
+{
+    <p>No locations are available for booking right now.</p>
+}
+else
+{
+    <div class="card-list">
+        @foreach (var location in _locations)
+        {
+            <a class="card" href="@($"/book/{OrganizationSlug}/{location.LocationId}")">
+                <h2>@location.Name</h2>
+                <p>@location.Address</p>
+            </a>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public string OrganizationSlug { get; set; } = string.Empty;
+
+    private IReadOnlyList<PublicLocationResponse>? _locations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _locations = await CatalogApiClient.GetLocationsAsync(OrganizationSlug, CancellationToken.None) ?? [];
+    }
+}

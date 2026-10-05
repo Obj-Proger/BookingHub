@@ -5,7 +5,7 @@
   <!-- BookingHub.API -->
   <ItemGroup Condition="'$(MSBuildProjectName)' == 'BookingHub.API'">
     <PackageVersion Include="Microsoft.AspNetCore.OpenApi" Version="10.0.12" />
-    <PackageVersion Include="Scalar.AspNetCore" Version="2.17.9" />
+    <PackageVersion Include="Scalar.AspNetCore" Version="2.17.13" />
     <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="10.0.12" />
   </ItemGroup>
   <!-- BookingHub.Application -->
@@ -25,8 +25,8 @@
     <PackageVersion Include="Hangfire.PostgreSql" Version="1.21.1" />
     <PackageVersion Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageVersion Include="Serilog.Sinks.Seq" Version="9.1.0" />
-    <PackageVersion Include="MailKit" Version="4.18.0" />
-    <PackageVersion Include="Twilio" Version="8.0.1" />
+    <PackageVersion Include="MailKit" Version="4.18.1" />
+    <PackageVersion Include="Twilio" Version="8.0.2" />
   </ItemGroup>
   <!-- BookingHub.Mobile -->
   <ItemGroup Condition="'$(MSBuildProjectName)' == 'BookingHub.Mobile'">
@@ -34,7 +34,7 @@
     <PackageVersion Include="CommunityToolkit.Maui" Version="15.0.1" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.12" />
     <PackageVersion Include="Microsoft.Extensions.Logging.Debug" Version="10.0.12" />
-	<PackageVersion Include="LocalizationResourceManager.Maui" Version="1.2.6" />
+    <PackageVersion Include="LocalizationResourceManager.Maui" Version="1.2.6" />
   </ItemGroup>
   <!-- BookingHub.API.Tests -->
   <ItemGroup Condition="'$(MSBuildProjectName)' == 'BookingHub.API.Tests'">
@@ -73,10 +73,10 @@
   </ItemGroup>
   <!-- BookingHub.Mobile.Tests -->
   <ItemGroup Condition="'$(MSBuildProjectName)' == 'BookingHub.Mobile.Tests'">
-	<PackageVersion Include="xunit.v3" Version="4.0.1" />
-	<PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />
-	<PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
-	<PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
-	<PackageVersion Include="NSubstitute" Version="6.2.0" />
+    <PackageVersion Include="xunit.v3" Version="4.0.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="4.0.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageVersion Include="AwesomeAssertions" Version="9.6.0" />
+    <PackageVersion Include="NSubstitute" Version="6.2.0" />
   </ItemGroup>
 </Project>
