@@ -40,13 +40,13 @@ public class CreateRecurringBookingSeriesCommandHandlerTests(PostgreSqlFixture f
         await using var dbContext = fixture.CreateDbContext();
         var handler = new CreateRecurringBookingSeriesCommandHandler(
             dbContext, new ClientRepository(dbContext), new BookingRepository(dbContext),
-            new NoOpEmailService(), new NoOpSmsService(), new UnitOfWork(dbContext));
+            new NoOpEmailService(), new NoOpSmsService(), new FakeWebLinkBuilder(), new UnitOfWork(dbContext));
 
         var firstStart = DateTime.UtcNow.Date.AddDays(14).AddHours(10);
         var result = await handler.Handle(
             new CreateRecurringBookingSeriesCommand(
-                organization.Id, location.Id, employee.Id, service.Id, firstStart, IntervalWeeks: 1, OccurrenceCount: 3,
-                "+14155552680", "Jane Doe", null),
+                organization.Id, organization.Slug, location.Id, employee.Id, service.Id, firstStart,
+                IntervalWeeks: 1, OccurrenceCount: 3, Phone: "+14155552680", ClientName: "Jane Doe", ClientEmail: null),
             TestContext.Current.CancellationToken);
 
         result.IsSuccess.Should().BeTrue();
@@ -55,7 +55,7 @@ public class CreateRecurringBookingSeriesCommandHandlerTests(PostgreSqlFixture f
 
         await using var verifyContext = fixture.CreateDbContext();
         var clientIds = await Microsoft.EntityFrameworkCore.EntityFrameworkQueryableExtensions.ToListAsync(
-            verifyContext.Bookings
+        verifyContext.Bookings
             .Where(b => b.RecurringSeriesId == result.Value.RecurringSeriesId)
             .Select(b => b.ClientId),
             TestContext.Current.CancellationToken);
@@ -77,7 +77,6 @@ public class CreateRecurringBookingSeriesCommandHandlerTests(PostgreSqlFixture f
         var firstStart = DateTime.UtcNow.Date.AddDays(14).AddHours(10);
         var secondOccurrenceStart = firstStart.AddDays(7);
 
-        // A pre-existing Confirmed booking for the same employee, exactly at the second occurrence's slot.
         var conflictingBooking = Booking.CreatePending(
             organization.Id, location.Id, employee.Id, service.Id,
             ClientContact.Create(PhoneNumber.Create("+14155552681").Value),
@@ -100,12 +99,12 @@ public class CreateRecurringBookingSeriesCommandHandlerTests(PostgreSqlFixture f
         await using var dbContext = fixture.CreateDbContext();
         var handler = new CreateRecurringBookingSeriesCommandHandler(
             dbContext, new ClientRepository(dbContext), new BookingRepository(dbContext),
-            new NoOpEmailService(), new NoOpSmsService(), new UnitOfWork(dbContext));
+            new NoOpEmailService(), new NoOpSmsService(), new FakeWebLinkBuilder(), new UnitOfWork(dbContext));
 
         var result = await handler.Handle(
             new CreateRecurringBookingSeriesCommand(
-                organization.Id, location.Id, employee.Id, service.Id, firstStart, IntervalWeeks: 1, OccurrenceCount: 3,
-                "+14155552682", "Jane Doe", null),
+                organization.Id, organization.Slug, location.Id, employee.Id, service.Id, firstStart,
+                IntervalWeeks: 1, OccurrenceCount: 3, Phone: "+14155552682", ClientName: "Jane Doe", ClientEmail: null),
             TestContext.Current.CancellationToken);
 
         result.IsSuccess.Should().BeTrue();
@@ -118,7 +117,7 @@ public class CreateRecurringBookingSeriesCommandHandlerTests(PostgreSqlFixture f
     {
         var organization = Organization.Create("Acme", $"acme-{Guid.CreateVersion7()}").Value;
         var location = Location.Create(organization.Id, "Branch", Address.Create("1 First St").Value, "UTC", OpenAllWeek()).Value;
-        var employee = Employee.Create(organization.Id, "John Smith").Value; // never assigned to the location
+        var employee = Employee.Create(organization.Id, "John Smith").Value;
         var service = Service.Create(
             organization.Id, "Haircut", TimeSpan.FromMinutes(30), Money.Create(50m, "USD").Value, TimeSpan.Zero, TimeSpan.Zero, "#FF5733").Value;
 
@@ -134,12 +133,12 @@ public class CreateRecurringBookingSeriesCommandHandlerTests(PostgreSqlFixture f
         await using var dbContext = fixture.CreateDbContext();
         var handler = new CreateRecurringBookingSeriesCommandHandler(
             dbContext, new ClientRepository(dbContext), new BookingRepository(dbContext),
-            new NoOpEmailService(), new NoOpSmsService(), new UnitOfWork(dbContext));
+            new NoOpEmailService(), new NoOpSmsService(), new FakeWebLinkBuilder(), new UnitOfWork(dbContext));
 
         var result = await handler.Handle(
             new CreateRecurringBookingSeriesCommand(
-                organization.Id, location.Id, employee.Id, service.Id, DateTime.UtcNow.Date.AddDays(14).AddHours(10),
-                IntervalWeeks: 1, OccurrenceCount: 3, "+14155552683", "Jane Doe", null),
+                organization.Id, organization.Slug, location.Id, employee.Id, service.Id, DateTime.UtcNow.Date.AddDays(14).AddHours(10),
+                IntervalWeeks: 1, OccurrenceCount: 3, Phone: "+14155552683", ClientName: "Jane Doe", ClientEmail: null),
             TestContext.Current.CancellationToken);
 
         result.IsFailure.Should().BeTrue();

@@ -7,6 +7,7 @@ using BookingHub.Infrastructure.Notifications;
 using BookingHub.Infrastructure.Persistence;
 using BookingHub.Infrastructure.Persistence.Interceptors;
 using BookingHub.Infrastructure.Persistence.Repositories;
+using BookingHub.Infrastructure.Web;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -78,6 +79,9 @@ public static class DependencyInjection
         services.AddSingleton<ITwilioRestClient>(new TwilioRestClient(twilioOptions.AccountSid, twilioOptions.AuthToken));
 
         services.AddScoped<ISmsService, TwilioSmsService>();
+
+        services.Configure<WebAppOptions>(configuration.GetSection(WebAppOptions.SectionName));
+        services.AddSingleton<IWebLinkBuilder, WebLinkBuilder>();
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());
         services.AddScoped<IUnitOfWork, UnitOfWork>();

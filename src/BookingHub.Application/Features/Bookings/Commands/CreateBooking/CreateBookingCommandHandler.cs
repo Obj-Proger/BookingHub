@@ -14,6 +14,7 @@ internal sealed class CreateBookingCommandHandler(
     IBookingRepository bookingRepository,
     IEmailService emailService,
     ISmsService smsService,
+    IWebLinkBuilder linkBuilder,
     IUnitOfWork unitOfWork)
     : ICommandHandler<CreateBookingCommand, BookingCreatedResponse>
 {
@@ -62,14 +63,14 @@ internal sealed class CreateBookingCommandHandler(
         bookingRepository.Add(booking);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        await SendConfirmationAsync(booking, clientContact, cancellationToken);
+        await SendConfirmationAsync(booking, clientContact, command.OrganizationSlug, cancellationToken);
 
         return new BookingCreatedResponse(booking.Id, booking.TimeSlot.StartUtc, booking.TimeSlot.EndUtc, booking.Status);
     }
 
-    private async Task SendConfirmationAsync(Booking booking, ClientContact clientContact, CancellationToken cancellationToken)
+    private async Task SendConfirmationAsync(Booking booking, ClientContact clientContact, string organizationSlug, CancellationToken cancellationToken)
     {
-        var confirmationLink = $"/bookings/{booking.Id}/confirm?token={booking.ConfirmationToken.Value}";
+        var confirmationLink = linkBuilder.Build($"/book/{organizationSlug}/confirm/{booking.Id}?token={booking.ConfirmationToken.Value}");
 
         if (clientContact.Email is not null)
         {

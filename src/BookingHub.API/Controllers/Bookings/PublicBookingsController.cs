@@ -6,6 +6,7 @@ using BookingHub.Application.Features.Bookings.Commands.CreateBooking;
 using BookingHub.Application.Features.Bookings.Commands.CreateRecurringBookingSeries;
 using BookingHub.Application.Features.Bookings.Commands.RescheduleBooking;
 using BookingHub.Application.Features.Bookings.Queries.GetAvailableSlots;
+using BookingHub.Application.Features.Bookings.Queries.GetPublicBookingByToken;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -24,13 +25,21 @@ public sealed class PublicBookingsController(IDispatcher dispatcher, ICurrentTen
         return HandleResult(result);
     }
 
+    [EnableRateLimiting("public-read")]
+    [HttpGet("bookings/{bookingId:guid}")]
+    public async Task<IActionResult> Get(Guid bookingId, [FromQuery] string? token, CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(new GetPublicBookingByTokenQuery(bookingId, token), cancellationToken);
+        return HandleResult(result);
+    }
+
     [EnableRateLimiting("public-write")]
     [HttpPost("bookings")]
-    public async Task<IActionResult> Create(CreateBookingRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(string organizationSlug, CreateBookingRequest request, CancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(
             new CreateBookingCommand(
-                OrganizationId, request.LocationId, request.EmployeeId, request.ServiceId, request.StartUtc,
+                OrganizationId, organizationSlug, request.LocationId, request.EmployeeId, request.ServiceId, request.StartUtc,
                 request.Phone, request.ClientName, request.ClientEmail),
             cancellationToken);
         return HandleResult(result);
@@ -38,11 +47,11 @@ public sealed class PublicBookingsController(IDispatcher dispatcher, ICurrentTen
 
     [EnableRateLimiting("public-write")]
     [HttpPost("bookings/series")]
-    public async Task<IActionResult> CreateSeries(CreateRecurringBookingSeriesRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateSeries(string organizationSlug, CreateRecurringBookingSeriesRequest request, CancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(
             new CreateRecurringBookingSeriesCommand(
-                OrganizationId, request.LocationId, request.EmployeeId, request.ServiceId, request.FirstStartUtc,
+                OrganizationId, organizationSlug, request.LocationId, request.EmployeeId, request.ServiceId, request.FirstStartUtc,
                 request.IntervalWeeks, request.OccurrenceCount, request.Phone, request.ClientName, request.ClientEmail),
             cancellationToken);
         return HandleResult(result);
@@ -50,9 +59,9 @@ public sealed class PublicBookingsController(IDispatcher dispatcher, ICurrentTen
 
     [EnableRateLimiting("public-write")]
     [HttpPost("bookings/{bookingId:guid}/confirm")]
-    public async Task<IActionResult> Confirm(Guid bookingId, ConfirmBookingRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Confirm(string organizationSlug, Guid bookingId, ConfirmBookingRequest request, CancellationToken cancellationToken)
     {
-        var result = await dispatcher.Send(new ConfirmBookingCommand(bookingId, request.Token), cancellationToken);
+        var result = await dispatcher.Send(new ConfirmBookingCommand(bookingId, organizationSlug, request.Token), cancellationToken);
         return HandleResult(result);
     }
 

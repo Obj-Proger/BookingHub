@@ -15,6 +15,7 @@ internal sealed class CreateRecurringBookingSeriesCommandHandler(
     IBookingRepository bookingRepository,
     IEmailService emailService,
     ISmsService smsService,
+    IWebLinkBuilder linkBuilder,
     IUnitOfWork unitOfWork)
     : ICommandHandler<CreateRecurringBookingSeriesCommand, RecurringBookingSeriesCreatedResponse>
 {
@@ -80,7 +81,7 @@ internal sealed class CreateRecurringBookingSeriesCommandHandler(
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        await SendConfirmationAsync(createdBookings[0], clientContact, createdBookings.Count, cancellationToken);
+        await SendConfirmationAsync(createdBookings[0], clientContact, createdBookings.Count, command.OrganizationSlug, cancellationToken);
 
         return new RecurringBookingSeriesCreatedResponse(
             seriesId,
@@ -88,9 +89,10 @@ internal sealed class CreateRecurringBookingSeriesCommandHandler(
             skippedStarts);
     }
 
-    private async Task SendConfirmationAsync(Booking firstBooking, ClientContact clientContact, int occurrenceCount, CancellationToken cancellationToken)
+    private async Task SendConfirmationAsync(
+        Booking firstBooking, ClientContact clientContact, int occurrenceCount, string organizationSlug, CancellationToken cancellationToken)
     {
-        var confirmationLink = $"/bookings/{firstBooking.Id}/confirm?token={firstBooking.ConfirmationToken.Value}";
+        var confirmationLink = linkBuilder.Build($"/book/{organizationSlug}/confirm/{firstBooking.Id}?token={firstBooking.ConfirmationToken.Value}");
         var body = $"Confirm your {occurrenceCount}-visit series: {confirmationLink}";
 
         if (clientContact.Email is not null)

@@ -1,0 +1,120 @@
+﻿@page "/book/{OrganizationSlug}/manage/{BookingId:guid}"
+@inject IPublicBookingsApiClient BookingsApiClient
+
+<PageTitle>Manage your booking</PageTitle>
+
+@if (_booking is null)
+{
+    <p>@(_isLoading ? "Loading…" : "This link is invalid or has expired.")</p>
+}
+else if (_cancelled)
+{
+    <h1>Booking cancelled</h1>
+}
+else if (_rescheduled is not null)
+{
+    <h1>Booking rescheduled</h1>
+    <p>New time: @_rescheduled.StartUtc.ToLocalTime().ToString("f")</p>
+}
+else
+{
+    <h1>@_booking.ServiceName</h1>
+    <p>@_booking.StartUtc.ToLocalTime().ToString("f") — status: @_booking.Status</p>
+
+    <h2>Cancel</h2>
+    <input placeholder="Reason (optional)" @bind="_cancelReason" />
+    <button type="button" @onclick="CancelAsync" disabled="@_isBusy">Cancel booking</button>
+
+    <h2>Reschedule</h2>
+    <input type="date" @bind="_selectedDate" @bind:after="LoadSlotsAsync"
+           min="@DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")" />
+    @if (_slots is not null)
+    {
+        <div class="slot-grid">
+            @foreach (var slot in _slots)
+            {
+                <button type="button" class="@(slot == _selectedSlot ? "slot slot-selected" : "slot")"
+                        @onclick="() => _selectedSlot = slot">
+                    @slot.StartUtc.ToLocalTime().ToString("HH:mm")
+                </button>
+            }
+        </div>
+    }
+    @if (_selectedSlot is not null)
+    {
+        <button type="button" @onclick="RescheduleAsync" disabled="@_isBusy">Confirm new time</button>
+    }
+
+    @if (_errorMessage is not null)
+    {
+        <p class="error-text">@_errorMessage</p>
+    }
+}
+
+@code {
+    [Parameter] public string OrganizationSlug { get; set; } = string.Empty;
+    [Parameter] public Guid BookingId { get; set; }
+    [SupplyParameterFromQuery] public string? Token { get; set; }
+
+    private bool _isLoading = true;
+    private bool _isBusy;
+    private PublicBookingDetailsResponse? _booking;
+    private bool _cancelled;
+    private BookingCreatedResponse? _rescheduled;
+    private string? _cancelReason;
+    private DateOnly _selectedDate = DateOnly.FromDateTime(DateTime.Today);
+    private IReadOnlyList<AvailableSlotResponse>? _slots;
+    private AvailableSlotResponse? _selectedSlot;
+    private string? _errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _booking = await BookingsApiClient.GetBookingAsync(OrganizationSlug, BookingId, Token, CancellationToken.None);
+        _isLoading = false;
+    }
+
+    private async Task CancelAsync()
+    {
+        _isBusy = true;
+        _errorMessage = null;
+        try
+        {
+            _cancelled = await BookingsApiClient.CancelBookingAsync(OrganizationSlug, BookingId, Token, _cancelReason, CancellationToken.None);
+            if (!_cancelled)
+                _errorMessage = "Couldn't cancel this booking — it may be past the cancellation deadline.";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task LoadSlotsAsync()
+    {
+        if (_booking is null)
+            return;
+
+        _selectedSlot = null;
+        _slots = await BookingsApiClient.GetAvailableSlotsAsync(
+            OrganizationSlug, _booking.LocationId, _booking.EmployeeId, _booking.ServiceId, _selectedDate, CancellationToken.None) ?? [];
+    }
+
+    private async Task RescheduleAsync()
+    {
+        if (_selectedSlot is null)
+            return;
+
+        _isBusy = true;
+        _errorMessage = null;
+        try
+        {
+            _rescheduled = await BookingsApiClient.RescheduleBookingAsync(OrganizationSlug, BookingId, Token, _selectedSlot.StartUtc, CancellationToken.None);
+            if (_rescheduled is null)
+                _errorMessage = "That time is no longer available — pick another.";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}

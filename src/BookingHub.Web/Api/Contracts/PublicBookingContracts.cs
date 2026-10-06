@@ -17,3 +17,10 @@ public sealed record CreateBookingRequest(
     Guid LocationId, Guid EmployeeId, Guid ServiceId, DateTime StartUtc, string? Phone, string? ClientName, string? ClientEmail);
 
 public sealed record BookingCreatedResponse(Guid BookingId, DateTime StartUtc, DateTime EndUtc, BookingStatus Status);
+
+public sealed record PublicBookingDetailsResponse(
+    Guid BookingId, Guid LocationId, Guid EmployeeId, Guid ServiceId, string ServiceName,
+    DateTime StartUtc, DateTime EndUtc, BookingStatus Status);
+
+public sealed record CancelBookingRequest(string? Token, string? Reason);
+public sealed record RescheduleBookingRequest(string? Token, DateTime NewStartUtc);

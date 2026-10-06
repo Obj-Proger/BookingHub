@@ -7,6 +7,6 @@ namespace BookingHub.Application.Features.Bookings.Commands.CreateRecurringBooki
 /// <param name="IntervalWeeks">Weeks between occurrences, e.g. 2 for "every two weeks".</param>
 /// <param name="OccurrenceCount">Total visits in the series, including the first.</param>
 public sealed record CreateRecurringBookingSeriesCommand(
-    Guid OrganizationId, Guid LocationId, Guid EmployeeId, Guid ServiceId, DateTime FirstStartUtc,
+    Guid OrganizationId, string OrganizationSlug, Guid LocationId, Guid EmployeeId, Guid ServiceId, DateTime FirstStartUtc,
     int IntervalWeeks, int OccurrenceCount, string? Phone, string? ClientName, string? ClientEmail)
     : ICommand<RecurringBookingSeriesCreatedResponse>;

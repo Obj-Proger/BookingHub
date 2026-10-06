@@ -1,4 +1,5 @@
 ﻿using BookingHub.Application.Common;
+using BookingHub.Application.Common.Notifications;
 using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Bookings.Commands.ConfirmBooking;
 using BookingHub.Domain.Entities;
@@ -11,8 +12,13 @@ public class ConfirmBookingCommandHandlerTests
 {
     private readonly IBookingRepository _bookingRepository = Substitute.For<IBookingRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
+    private readonly IWebLinkBuilder _linkBuilder = Substitute.For<IWebLinkBuilder>();
+    private readonly IEmailService _emailService = Substitute.For<IEmailService>();
+    private readonly ISmsService _smsService = Substitute.For<ISmsService>();
 
-    private ConfirmBookingCommandHandler CreateSut() => new(_bookingRepository, _unitOfWork);
+    private const string OrganizationSlug = "acme";
+
+    private ConfirmBookingCommandHandler CreateSut() => new(_bookingRepository, _unitOfWork, _linkBuilder, _emailService, _smsService);
 
     private static Booking CreatePendingBooking(Guid? recurringSeriesId = null) => Booking.CreatePending(
         Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
@@ -27,7 +33,7 @@ public class ConfirmBookingCommandHandlerTests
         _bookingRepository.GetByIdAsync(booking.Id, Arg.Any<CancellationToken>()).Returns(booking);
         var sut = CreateSut();
 
-        var result = await sut.Handle(new ConfirmBookingCommand(booking.Id, booking.ConfirmationToken.Value), CancellationToken.None);
+        var result = await sut.Handle(new ConfirmBookingCommand(booking.Id, OrganizationSlug, booking.ConfirmationToken.Value), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         booking.Status.Should().Be(BookingStatus.Confirmed);
@@ -40,7 +46,7 @@ public class ConfirmBookingCommandHandlerTests
         _bookingRepository.GetByIdAsync(booking.Id, Arg.Any<CancellationToken>()).Returns(booking);
         var sut = CreateSut();
 
-        var result = await sut.Handle(new ConfirmBookingCommand(booking.Id, "wrong-token"), CancellationToken.None);
+        var result = await sut.Handle(new ConfirmBookingCommand(booking.Id, OrganizationSlug, "wrong-token"), CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(ApplicationErrors.Booking.InvalidConfirmationToken);
@@ -55,7 +61,7 @@ public class ConfirmBookingCommandHandlerTests
         _bookingRepository.GetByIdAsync(booking.Id, Arg.Any<CancellationToken>()).Returns(booking);
         var sut = CreateSut();
 
-        var result = await sut.Handle(new ConfirmBookingCommand(booking.Id, null), CancellationToken.None);
+        var result = await sut.Handle(new ConfirmBookingCommand(booking.Id, OrganizationSlug, null), CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(ApplicationErrors.Booking.InvalidConfirmationToken);
@@ -67,7 +73,7 @@ public class ConfirmBookingCommandHandlerTests
         _bookingRepository.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((Booking?)null);
         var sut = CreateSut();
 
-        var result = await sut.Handle(new ConfirmBookingCommand(Guid.CreateVersion7(), "any-token"), CancellationToken.None);
+        var result = await sut.Handle(new ConfirmBookingCommand(Guid.CreateVersion7(), OrganizationSlug, "any-token"), CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(ApplicationErrors.Booking.NotFound);
@@ -81,7 +87,7 @@ public class ConfirmBookingCommandHandlerTests
         _bookingRepository.GetByIdAsync(booking.Id, Arg.Any<CancellationToken>()).Returns(booking);
         var sut = CreateSut();
 
-        var result = await sut.Handle(new ConfirmBookingCommand(booking.Id, booking.ConfirmationToken.Value), CancellationToken.None);
+        var result = await sut.Handle(new ConfirmBookingCommand(booking.Id, OrganizationSlug, booking.ConfirmationToken.Value), CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(DomainErrors.Booking.CannotConfirm);
@@ -98,7 +104,7 @@ public class ConfirmBookingCommandHandlerTests
             .Returns([sibling]);
         var sut = CreateSut();
 
-        var result = await sut.Handle(new ConfirmBookingCommand(firstBooking.Id, firstBooking.ConfirmationToken.Value), CancellationToken.None);
+        var result = await sut.Handle(new ConfirmBookingCommand(firstBooking.Id, OrganizationSlug, firstBooking.ConfirmationToken.Value), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         sibling.Status.Should().Be(BookingStatus.Confirmed);
@@ -111,7 +117,7 @@ public class ConfirmBookingCommandHandlerTests
         _bookingRepository.GetByIdAsync(booking.Id, Arg.Any<CancellationToken>()).Returns(booking);
         var sut = CreateSut();
 
-        await sut.Handle(new ConfirmBookingCommand(booking.Id, booking.ConfirmationToken.Value), CancellationToken.None);
+        await sut.Handle(new ConfirmBookingCommand(booking.Id, OrganizationSlug, booking.ConfirmationToken.Value), CancellationToken.None);
 
         await _bookingRepository.DidNotReceive().GetPendingSiblingsInSeriesAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }

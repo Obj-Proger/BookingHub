@@ -7,7 +7,7 @@ public class CreateRecurringBookingSeriesCommandValidatorTests
     private readonly CreateRecurringBookingSeriesCommandValidator _validator = new();
 
     private static CreateRecurringBookingSeriesCommand ValidCommand(int intervalWeeks = 2, int occurrenceCount = 6) => new(
-        Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
+        Guid.CreateVersion7(), "acme", Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
         DateTime.UtcNow.AddDays(1), intervalWeeks, occurrenceCount, "+14155552671", "Jane Doe", null);
 
     [Fact]
