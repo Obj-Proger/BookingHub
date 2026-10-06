@@ -1,0 +1,41 @@
+﻿@page "/book/{OrganizationSlug}/{LocationId:guid}/{ServiceId:guid}"
+@inject IPublicCatalogApiClient CatalogApiClient
+
+<PageTitle>Choose a specialist</PageTitle>
+
+<h1>Choose a specialist</h1>
+
+@if (_employees is null)
+{
+    <p>Loading…</p>
+}
+else if (_employees.Count == 0)
+{
+    <p>No one is available to take this booking right now.</p>
+}
+else
+{
+    <div class="card-list">
+        @foreach (var employee in _employees)
+        {
+            <a class="card" href="@($"/book/{OrganizationSlug}/{LocationId}/{ServiceId}/{employee.EmployeeId}")">
+                <h2>@employee.FullName</h2>
+            </a>
+        }
+    </div>
+}
+
+<a class="back-link" href="@($"/book/{OrganizationSlug}/{LocationId}")">&larr; Back to services</a>
+
+@code {
+    [Parameter] public string OrganizationSlug { get; set; } = string.Empty;
+    [Parameter] public Guid LocationId { get; set; }
+    [Parameter] public Guid ServiceId { get; set; }
+
+    private IReadOnlyList<PublicEmployeeResponse>? _employees;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _employees = await CatalogApiClient.GetEmployeesAsync(OrganizationSlug, LocationId, CancellationToken.None) ?? [];
+    }
+}

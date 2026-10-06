@@ -11,6 +11,8 @@ var apiBaseUrl = builder.Configuration["Api:BaseUrl"]
 
 builder.Services.AddHttpClient<IPublicCatalogApiClient, PublicCatalogApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<IPublicBookingsApiClient, PublicBookingsApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
 
 var app = builder.Build();
 

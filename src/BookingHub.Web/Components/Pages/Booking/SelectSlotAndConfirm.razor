@@ -1,0 +1,129 @@
+﻿@page "/book/{OrganizationSlug}/{LocationId:guid}/{ServiceId:guid}/{EmployeeId:guid}"
+@inject IPublicBookingsApiClient BookingsApiClient
+
+<PageTitle>Pick a time</PageTitle>
+
+@if (_confirmedBooking is not null)
+{
+    <h1>Almost there</h1>
+    <p>Requested: @_confirmedBooking.StartUtc.ToLocalTime().ToString("f")</p>
+    <p>We've sent a confirmation code to your phone/email — you'll need it to confirm this booking.</p>
+}
+else
+{
+    <h1>Pick a time</h1>
+
+    <input type="date" @bind="_selectedDate" @bind:after="LoadSlotsAsync"
+           min="@DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")" />
+
+    @if (_slots is null)
+    {
+        <p>Loading…</p>
+    }
+    else if (_slots.Count == 0)
+    {
+        <p>No open times on this day. Try another date.</p>
+    }
+    else
+    {
+        <div class="slot-grid">
+            @foreach (var slot in _slots)
+            {
+                <button type="button" class="@(slot == _selectedSlot ? "slot slot-selected" : "slot")"
+                        @onclick="() => _selectedSlot = slot">
+                    @slot.StartUtc.ToLocalTime().ToString("HH:mm")
+                </button>
+            }
+        </div>
+    }
+
+    @if (_selectedSlot is not null)
+    {
+        <EditForm Model="_guestDetails" OnValidSubmit="SubmitAsync" FormName="guest-details">
+            <DataAnnotationsValidator />
+            <div class="form-field">
+                <label>Phone</label>
+                <InputText @bind-Value="_guestDetails.Phone" placeholder="+1 555 123 4567" />
+            </div>
+            <div class="form-field">
+                <label>Name (optional)</label>
+                <InputText @bind-Value="_guestDetails.Name" />
+            </div>
+            <div class="form-field">
+                <label>Email (optional)</label>
+                <InputText @bind-Value="_guestDetails.Email" />
+            </div>
+            <ValidationSummary />
+            @if (_errorMessage is not null)
+            {
+                <p class="error-text">@_errorMessage</p>
+            }
+            <button type="submit" disabled="@_isSubmitting">@(_isSubmitting ? "Booking…" : "Confirm booking")</button>
+        </EditForm>
+    }
+
+    <a class="back-link" href="@($"/book/{OrganizationSlug}/{LocationId}/{ServiceId}")">&larr; Back to specialists</a>
+}
+
+@code {
+    [Parameter] public string OrganizationSlug { get; set; } = string.Empty;
+    [Parameter] public Guid LocationId { get; set; }
+    [Parameter] public Guid ServiceId { get; set; }
+    [Parameter] public Guid EmployeeId { get; set; }
+
+    private DateOnly _selectedDate = DateOnly.FromDateTime(DateTime.Today);
+    private IReadOnlyList<AvailableSlotResponse>? _slots;
+    private AvailableSlotResponse? _selectedSlot;
+    private readonly GuestDetails _guestDetails = new();
+    private string? _errorMessage;
+    private bool _isSubmitting;
+    private BookingCreatedResponse? _confirmedBooking;
+
+    protected override Task OnInitializedAsync() => LoadSlotsAsync();
+
+    private async Task LoadSlotsAsync()
+    {
+        _selectedSlot = null;
+        _slots = await BookingsApiClient.GetAvailableSlotsAsync(OrganizationSlug, LocationId, EmployeeId, ServiceId, _selectedDate, CancellationToken.None) ?? [];
+    }
+
+    private async Task SubmitAsync()
+    {
+        if (_selectedSlot is null)
+            return;
+
+        _isSubmitting = true;
+        _errorMessage = null;
+        try
+        {
+            var booking = await BookingsApiClient.CreateBookingAsync(
+                OrganizationSlug,
+                new CreateBookingRequest(LocationId, EmployeeId, ServiceId, _selectedSlot.StartUtc, _guestDetails.Phone, _guestDetails.Name, _guestDetails.Email),
+                CancellationToken.None);
+
+            if (booking is null)
+            {
+                _errorMessage = "This time just became unavailable — please pick another slot.";
+                await LoadSlotsAsync();
+                return;
+            }
+
+            _confirmedBooking = booking;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private sealed class GuestDetails
+    {
+        [Required(ErrorMessage = "Phone number is required.")]
+        public string Phone { get; set; } = string.Empty;
+
+        public string? Name { get; set; }
+
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        public string? Email { get; set; }
+    }
+}

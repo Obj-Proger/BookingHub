@@ -47,3 +47,47 @@ body {
     color: #6b5bff;
     text-decoration: none;
 }
+
+.slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 0.5rem;
+    margin: 1rem 0;
+}
+
+.slot {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e3e3e6;
+    background: white;
+    cursor: pointer;
+}
+
+.slot-selected {
+    border-color: #6b5bff;
+    background: #ece9ff;
+    font-weight: 600;
+}
+
+.form-field {
+    margin-bottom: 0.75rem;
+}
+
+    .form-field label {
+        display: block;
+        font-size: 0.85rem;
+        margin-bottom: 0.25rem;
+        color: #6b6b73;
+    }
+
+    .form-field input {
+        width: 100%;
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e3e3e6;
+        box-sizing: border-box;
+    }
+
+.error-text {
+    color: #c0392b;
+}
