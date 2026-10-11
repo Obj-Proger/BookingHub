@@ -1,0 +1,64 @@
+﻿@page "/book/review/{BookingId:guid}"
+@inject IPublicReviewsApiClient ReviewsApiClient
+
+<PageTitle>Leave a review</PageTitle>
+
+@if (_submitted)
+{
+    <h1>Thanks for your feedback!</h1>
+}
+else
+{
+    <h1>How was your visit?</h1>
+
+    <div class="star-row">
+        @for (var i = 1; i <= 5; i++)
+        {
+            var value = i;
+            <button type="button" class="@(value <= _rating ? "star star-filled" : "star")" @onclick="() => _rating = value">★</button>
+        }
+    </div>
+
+    <textarea @bind="_comment" placeholder="Anything you'd like to add? (optional)" rows="4"></textarea>
+
+    @if (_errorMessage is not null)
+    {
+        <p class="error-text">@_errorMessage</p>
+    }
+
+    <button type="button" @onclick="SubmitAsync" disabled="@(_rating == 0 || _isSubmitting)">
+        @(_isSubmitting ? "Submitting…" : "Submit review")
+    </button>
+}
+
+@code {
+    [Parameter] public Guid BookingId { get; set; }
+    [SupplyParameterFromQuery] public string? Token { get; set; }
+
+    private int _rating;
+    private string? _comment;
+    private bool _isSubmitting;
+    private bool _submitted;
+    private string? _errorMessage;
+
+    private async Task SubmitAsync()
+    {
+        _isSubmitting = true;
+        _errorMessage = null;
+        try
+        {
+            var result = await ReviewsApiClient.SubmitReviewAsync(BookingId, Token, _rating, _comment, CancellationToken.None);
+            if (result is null)
+            {
+                _errorMessage = "Couldn't submit your review — this link may be invalid, expired, or already used.";
+                return;
+            }
+
+            _submitted = true;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+}

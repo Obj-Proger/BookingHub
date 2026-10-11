@@ -13,6 +13,8 @@ builder.Services.AddHttpClient<IPublicCatalogApiClient, PublicCatalogApiClient>(
     client.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddHttpClient<IPublicBookingsApiClient, PublicBookingsApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<IPublicReviewsApiClient, PublicReviewsApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
 
 var app = builder.Build();
 

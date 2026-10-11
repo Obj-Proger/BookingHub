@@ -1,4 +1,5 @@
 ﻿using BookingHub.Application.Common;
+using BookingHub.Application.Common.Notifications;
 using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Bookings.Commands.MarkCompleted;
 using BookingHub.Application.Features.Bookings.Commands.MarkNoShow;
@@ -12,6 +13,9 @@ public class MarkCompletedAndNoShowCommandHandlerTests
 {
     private readonly IBookingRepository _bookingRepository = Substitute.For<IBookingRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
+    private readonly IWebLinkBuilder _linkBuilder = Substitute.For<IWebLinkBuilder>();
+    private readonly IEmailService _emailService = Substitute.For<IEmailService>();
+    private readonly ISmsService _smsService = Substitute.For<ISmsService>();
     private static readonly Guid OrganizationId = Guid.CreateVersion7();
     private static readonly Guid LocationId = Guid.CreateVersion7();
     private static readonly Guid EmployeeId = Guid.CreateVersion7();
@@ -34,7 +38,7 @@ public class MarkCompletedAndNoShowCommandHandlerTests
     {
         _bookingRepository.GetByIdAsync(OrganizationId, LocationId, EmployeeId, BookingId, Arg.Any<CancellationToken>())
             .Returns(CreateAwaitingReviewBooking());
-        var sut = new MarkCompletedCommandHandler(_bookingRepository, _unitOfWork);
+        var sut = new MarkCompletedCommandHandler(_bookingRepository, _unitOfWork, _linkBuilder, _emailService, _smsService);
 
         var result = await sut.Handle(new MarkCompletedCommand(OrganizationId, LocationId, EmployeeId, BookingId), CancellationToken.None);
 
@@ -49,7 +53,7 @@ public class MarkCompletedAndNoShowCommandHandlerTests
         // indistinguishable here by design — this test only needs to cover the null result.
         _bookingRepository.GetByIdAsync(OrganizationId, LocationId, EmployeeId, BookingId, Arg.Any<CancellationToken>())
             .Returns((Booking?)null);
-        var sut = new MarkCompletedCommandHandler(_bookingRepository, _unitOfWork);
+        var sut = new MarkCompletedCommandHandler(_bookingRepository, _unitOfWork, _linkBuilder, _emailService, _smsService);
 
         var result = await sut.Handle(new MarkCompletedCommand(OrganizationId, LocationId, EmployeeId, BookingId), CancellationToken.None);
 

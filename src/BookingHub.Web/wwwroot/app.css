@@ -91,3 +91,30 @@ body {
 .error-text {
     color: #c0392b;
 }
+
+.star-row {
+    font-size: 2rem;
+    margin: 1rem 0;
+}
+
+.star {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #d8d8dc;
+    padding: 0 0.1rem;
+}
+
+.star-filled {
+    color: #f5b301;
+}
+
+textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e3e3e6;
+    box-sizing: border-box;
+    font-family: inherit;
+    margin-bottom: 1rem;
+}
