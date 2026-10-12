@@ -15,6 +15,8 @@ builder.Services.AddHttpClient<IPublicBookingsApiClient, PublicBookingsApiClient
     client.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddHttpClient<IPublicReviewsApiClient, PublicReviewsApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<IPublicWaitlistApiClient, PublicWaitlistApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
 
 var app = builder.Build();
 

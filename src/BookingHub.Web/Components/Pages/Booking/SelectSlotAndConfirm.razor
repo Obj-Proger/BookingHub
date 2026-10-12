@@ -1,5 +1,6 @@
 ﻿@page "/book/{OrganizationSlug}/{LocationId:guid}/{ServiceId:guid}/{EmployeeId:guid}"
 @inject IPublicBookingsApiClient BookingsApiClient
+@inject IPublicWaitlistApiClient WaitlistApiClient
 
 <PageTitle>Pick a time</PageTitle>
 
@@ -22,7 +23,37 @@ else
     }
     else if (_slots.Count == 0)
     {
-        <p>No open times on this day. Try another date.</p>
+        <p>No open times on this day.</p>
+
+        @if (_waitlistJoined)
+        {
+            <p>You're on the waitlist — we'll text/email you if a spot opens up.</p>
+        }
+        else
+        {
+            <button type="button" @onclick="() => _showWaitlistForm = true">Join the waitlist for this day instead</button>
+
+            @if (_showWaitlistForm)
+            {
+                <EditForm Model="_guestDetails" OnValidSubmit="JoinWaitlistAsync" FormName="waitlist-details">
+                    <DataAnnotationsValidator />
+                    <div class="form-field">
+                        <label>Phone</label>
+                        <InputText @bind-Value="_guestDetails.Phone" placeholder="+1 555 123 4567" />
+                    </div>
+                    <div class="form-field">
+                        <label>Name (optional)</label>
+                        <InputText @bind-Value="_guestDetails.Name" />
+                    </div>
+                    <ValidationSummary />
+                    @if (_errorMessage is not null)
+                    {
+                        <p class="error-text">@_errorMessage</p>
+                    }
+                    <button type="submit" disabled="@_isSubmitting">@(_isSubmitting ? "Joining…" : "Join waitlist")</button>
+                </EditForm>
+            }
+        }
     }
     else
     {
@@ -78,12 +109,16 @@ else
     private string? _errorMessage;
     private bool _isSubmitting;
     private BookingCreatedResponse? _confirmedBooking;
+    private bool _showWaitlistForm;
+    private bool _waitlistJoined;
 
     protected override Task OnInitializedAsync() => LoadSlotsAsync();
 
     private async Task LoadSlotsAsync()
     {
         _selectedSlot = null;
+        _showWaitlistForm = false;
+        _waitlistJoined = false;
         _slots = await BookingsApiClient.GetAvailableSlotsAsync(OrganizationSlug, LocationId, EmployeeId, ServiceId, _selectedDate, CancellationToken.None) ?? [];
     }
 
@@ -109,6 +144,34 @@ else
             }
 
             _confirmedBooking = booking;
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private async Task JoinWaitlistAsync()
+    {
+        _isSubmitting = true;
+        _errorMessage = null;
+        try
+        {
+            var dayStart = DateTime.SpecifyKind(_selectedDate.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+            var dayEnd = DateTime.SpecifyKind(_selectedDate.ToDateTime(new TimeOnly(23, 59)), DateTimeKind.Utc);
+
+            var entry = await WaitlistApiClient.JoinAsync(
+                OrganizationSlug,
+                new JoinWaitlistRequest(LocationId, EmployeeId, ServiceId, dayStart, dayEnd, _guestDetails.Phone, _guestDetails.Name, null),
+                CancellationToken.None);
+
+            if (entry is null)
+            {
+                _errorMessage = "Couldn't join the waitlist — check your phone number and try again.";
+                return;
+            }
+
+            _waitlistJoined = true;
         }
         finally
         {

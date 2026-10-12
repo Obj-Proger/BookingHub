@@ -1,0 +1,65 @@
+﻿@page "/book/waitlist/{WaitlistEntryId:guid}"
+@inject IPublicWaitlistApiClient WaitlistApiClient
+
+<PageTitle>A spot opened up</PageTitle>
+
+@if (_outcome is not null)
+{
+    <h1>@_outcome</h1>
+}
+else
+{
+    <h1>A spot opened up</h1>
+    <p>Would you like to take this slot, or stay on the waitlist for something else?</p>
+
+    <button type="button" @onclick="ConfirmAsync" disabled="@_isBusy">Take this slot</button>
+    <button type="button" @onclick="LeaveAsync" disabled="@_isBusy">Leave the waitlist</button>
+
+    @if (_errorMessage is not null)
+    {
+        <p class="error-text">@_errorMessage</p>
+    }
+}
+
+@code {
+    [Parameter] public Guid WaitlistEntryId { get; set; }
+    [SupplyParameterFromQuery] public string? Token { get; set; }
+
+    private bool _isBusy;
+    private string? _outcome;
+    private string? _errorMessage;
+
+    private async Task ConfirmAsync()
+    {
+        _isBusy = true;
+        _errorMessage = null;
+        try
+        {
+            var succeeded = await WaitlistApiClient.ConfirmOfferAsync(WaitlistEntryId, Token, CancellationToken.None);
+            _outcome = succeeded ? "Booked! See you then." : null;
+            if (!succeeded)
+                _errorMessage = "This offer may have expired or already been taken.";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task LeaveAsync()
+    {
+        _isBusy = true;
+        _errorMessage = null;
+        try
+        {
+            var succeeded = await WaitlistApiClient.LeaveAsync(WaitlistEntryId, Token, CancellationToken.None);
+            _outcome = succeeded ? "You've been removed from the waitlist." : null;
+            if (!succeeded)
+                _errorMessage = "Couldn't update your waitlist entry — this link may be invalid.";
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}
