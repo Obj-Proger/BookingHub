@@ -7,23 +7,26 @@ internal sealed class PublicWaitlistApiClient(HttpClient httpClient) : IPublicWa
 {
     public async Task<WaitlistEntryCreatedResponse?> JoinAsync(string organizationSlug, JoinWaitlistRequest request, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PostAsJsonAsync($"api/v1/public/{organizationSlug}/waitlist", request, cancellationToken);
+        var response = await httpClient.PostAsJsonAsync(
+            $"api/v1/public/{organizationSlug}/waitlist", request, ApiJsonOptions.Default, cancellationToken);
         return response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync<WaitlistEntryCreatedResponse>(cancellationToken: cancellationToken)
+            ? await response.Content.ReadFromJsonAsync<WaitlistEntryCreatedResponse>(ApiJsonOptions.Default, cancellationToken)
             : null;
     }
 
     public async Task<bool> ConfirmOfferAsync(Guid waitlistEntryId, string? token, CancellationToken cancellationToken)
     {
         var response = await httpClient.PostAsJsonAsync(
-            $"api/v1/public/waitlist/{waitlistEntryId}/confirm", new ConfirmWaitlistOfferRequest(token), cancellationToken);
+            $"api/v1/public/waitlist/{waitlistEntryId}/confirm",
+            new ConfirmWaitlistOfferRequest(token), ApiJsonOptions.Default, cancellationToken);
         return response.IsSuccessStatusCode;
     }
 
     public async Task<bool> LeaveAsync(Guid waitlistEntryId, string? token, CancellationToken cancellationToken)
     {
         var response = await httpClient.PostAsJsonAsync(
-            $"api/v1/public/waitlist/{waitlistEntryId}/leave", new LeaveWaitlistRequest(token), cancellationToken);
+            $"api/v1/public/waitlist/{waitlistEntryId}/leave",
+            new LeaveWaitlistRequest(token), ApiJsonOptions.Default, cancellationToken);
         return response.IsSuccessStatusCode;
     }
 }

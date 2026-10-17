@@ -13,16 +13,17 @@ internal sealed class PublicBookingsApiClient(HttpClient httpClient) : IPublicBo
             cancellationToken);
 
         return response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync<IReadOnlyList<AvailableSlotResponse>>(cancellationToken: cancellationToken)
+            ? await response.Content.ReadFromJsonAsync<IReadOnlyList<AvailableSlotResponse>>(ApiJsonOptions.Default, cancellationToken)
             : null;
     }
 
     public async Task<BookingCreatedResponse?> CreateBookingAsync(
         string organizationSlug, CreateBookingRequest request, CancellationToken cancellationToken)
     {
-        var response = await httpClient.PostAsJsonAsync($"api/v1/public/{organizationSlug}/bookings", request, cancellationToken);
+        var response = await httpClient.PostAsJsonAsync(
+            $"api/v1/public/{organizationSlug}/bookings", request, ApiJsonOptions.Default, cancellationToken);
         return response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync<BookingCreatedResponse>(cancellationToken: cancellationToken)
+            ? await response.Content.ReadFromJsonAsync<BookingCreatedResponse>(ApiJsonOptions.Default, cancellationToken)
             : null;
     }
 
@@ -30,23 +31,25 @@ internal sealed class PublicBookingsApiClient(HttpClient httpClient) : IPublicBo
     {
         var response = await httpClient.GetAsync($"api/v1/public/{organizationSlug}/bookings/{bookingId}?token={token}", cancellationToken);
         return response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync<PublicBookingDetailsResponse>(cancellationToken: cancellationToken)
+            ? await response.Content.ReadFromJsonAsync<PublicBookingDetailsResponse>(ApiJsonOptions.Default, cancellationToken)
             : null;
     }
 
     public async Task<bool> CancelBookingAsync(string organizationSlug, Guid bookingId, string? token, string? reason, CancellationToken cancellationToken)
     {
         var response = await httpClient.PostAsJsonAsync(
-            $"api/v1/public/{organizationSlug}/bookings/{bookingId}/cancel", new CancelBookingRequest(token, reason), cancellationToken);
+            $"api/v1/public/{organizationSlug}/bookings/{bookingId}/cancel",
+            new CancelBookingRequest(token, reason), ApiJsonOptions.Default, cancellationToken);
         return response.IsSuccessStatusCode;
     }
 
     public async Task<BookingCreatedResponse?> RescheduleBookingAsync(string organizationSlug, Guid bookingId, string? token, DateTime newStartUtc, CancellationToken cancellationToken)
     {
         var response = await httpClient.PostAsJsonAsync(
-            $"api/v1/public/{organizationSlug}/bookings/{bookingId}/reschedule", new RescheduleBookingRequest(token, newStartUtc), cancellationToken);
+            $"api/v1/public/{organizationSlug}/bookings/{bookingId}/reschedule",
+            new RescheduleBookingRequest(token, newStartUtc), ApiJsonOptions.Default, cancellationToken);
         return response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync<BookingCreatedResponse>(cancellationToken: cancellationToken)
+            ? await response.Content.ReadFromJsonAsync<BookingCreatedResponse>(ApiJsonOptions.Default, cancellationToken)
             : null;
     }
 }

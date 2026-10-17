@@ -8,9 +8,10 @@ internal sealed class PublicReviewsApiClient(HttpClient httpClient) : IPublicRev
     public async Task<ReviewSubmittedResponse?> SubmitReviewAsync(Guid bookingId, string? token, int rating, string? comment, CancellationToken cancellationToken)
     {
         var response = await httpClient.PostAsJsonAsync(
-            $"api/v1/public/bookings/{bookingId}/review", new SubmitReviewRequest(token, rating, comment), cancellationToken);
+            $"api/v1/public/bookings/{bookingId}/review",
+            new SubmitReviewRequest(token, rating, comment), ApiJsonOptions.Default, cancellationToken);
         return response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync<ReviewSubmittedResponse>(cancellationToken: cancellationToken)
+            ? await response.Content.ReadFromJsonAsync<ReviewSubmittedResponse>(ApiJsonOptions.Default, cancellationToken)
             : null;
     }
 }

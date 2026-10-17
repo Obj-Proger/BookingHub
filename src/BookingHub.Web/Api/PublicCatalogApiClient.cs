@@ -9,7 +9,7 @@ internal sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCat
     {
         var response = await httpClient.GetAsync($"api/v1/public/{organizationSlug}/locations", cancellationToken);
         return response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync<IReadOnlyList<PublicLocationResponse>>(cancellationToken: cancellationToken)
+            ? await response.Content.ReadFromJsonAsync<IReadOnlyList<PublicLocationResponse>>(ApiJsonOptions.Default, cancellationToken)
             : null;
     }
 
@@ -17,7 +17,7 @@ internal sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCat
     {
         var response = await httpClient.GetAsync($"api/v1/public/{organizationSlug}/locations/{locationId}/services", cancellationToken);
         return response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync<IReadOnlyList<PublicServiceResponse>>(cancellationToken: cancellationToken)
+            ? await response.Content.ReadFromJsonAsync<IReadOnlyList<PublicServiceResponse>>(ApiJsonOptions.Default, cancellationToken)
             : null;
     }
 
@@ -25,7 +25,7 @@ internal sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCat
     {
         var response = await httpClient.GetAsync($"api/v1/public/{organizationSlug}/locations/{locationId}/employees", cancellationToken);
         return response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync<IReadOnlyList<PublicEmployeeResponse>>(cancellationToken: cancellationToken)
+            ? await response.Content.ReadFromJsonAsync<IReadOnlyList<PublicEmployeeResponse>>(ApiJsonOptions.Default, cancellationToken)
             : null;
     }
 }
