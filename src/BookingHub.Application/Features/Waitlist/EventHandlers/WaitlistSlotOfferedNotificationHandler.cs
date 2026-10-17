@@ -6,7 +6,10 @@ using BookingHub.Domain.Events;
 namespace BookingHub.Application.Features.Waitlist.EventHandlers;
 
 internal sealed class WaitlistSlotOfferedNotificationHandler(
-    IWaitlistEntryRepository waitlistEntryRepository, IEmailService emailService, ISmsService smsService)
+    IWaitlistEntryRepository waitlistEntryRepository,
+    IWebLinkBuilder linkBuilder,
+    IEmailService emailService,
+    ISmsService smsService)
     : IDomainEventHandler<WaitlistSlotOfferedEvent>
 {
     public async Task Handle(WaitlistSlotOfferedEvent domainEvent, CancellationToken cancellationToken)
@@ -15,7 +18,7 @@ internal sealed class WaitlistSlotOfferedNotificationHandler(
         if (entry is null)
             return;
 
-        var link = $"/waitlist/{entry.Id}/confirm?token={entry.ManagementToken.Value}";
+        var link = linkBuilder.Build($"/book/waitlist/{entry.Id}?token={entry.ManagementToken.Value}");
         var body = $"A slot opened up: {domainEvent.OfferedSlot.StartUtc:u}. Confirm by {domainEvent.OfferExpiresAtUtc:u}: {link}";
 
         if (domainEvent.ClientContact.Email is not null)
