@@ -13,6 +13,13 @@ internal sealed class PublicCatalogApiClient(HttpClient httpClient) : IPublicCat
             : null;
     }
 
+    /// <summary>Resolved from the public location list — the API has no single-location endpoint.</summary>
+    public async Task<PublicLocationResponse?> GetLocationAsync(string organizationSlug, Guid locationId, CancellationToken cancellationToken)
+    {
+        var locations = await GetLocationsAsync(organizationSlug, cancellationToken);
+        return locations?.FirstOrDefault(location => location.LocationId == locationId);
+    }
+
     public async Task<IReadOnlyList<PublicServiceResponse>?> GetServicesAsync(string organizationSlug, Guid locationId, CancellationToken cancellationToken)
     {
         var response = await httpClient.GetAsync($"api/v1/public/{organizationSlug}/locations/{locationId}/services", cancellationToken);

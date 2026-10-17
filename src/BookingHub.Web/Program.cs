@@ -1,10 +1,13 @@
 using BookingHub.Web.Api;
 using BookingHub.Web.Components;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.TryAddSingleton(TimeProvider.System);
 
 var apiBaseUrl = builder.Configuration["Api:BaseUrl"]
     ?? throw new InvalidOperationException("Api:BaseUrl is not configured.");

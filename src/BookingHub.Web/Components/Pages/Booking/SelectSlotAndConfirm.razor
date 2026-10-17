@@ -1,21 +1,33 @@
 ﻿@page "/book/{OrganizationSlug}/{LocationId:guid}/{ServiceId:guid}/{EmployeeId:guid}"
+@inject IPublicCatalogApiClient CatalogApiClient
 @inject IPublicBookingsApiClient BookingsApiClient
 @inject IPublicWaitlistApiClient WaitlistApiClient
+@inject TimeProvider Clock
 
 <PageTitle>Pick a time</PageTitle>
 
-@if (_confirmedBooking is not null)
+@if (_locationNotFound)
+{
+    <p>This location isn't available for booking.</p>
+    <a class="back-link" href="@($"/book/{OrganizationSlug}")">&larr; Back to locations</a>
+}
+else if (_locationTime is null)
+{
+    <p>Loading…</p>
+}
+else if (_confirmedBooking is not null)
 {
     <h1>Almost there</h1>
-    <p>Requested: @_confirmedBooking.StartUtc.ToLocalTime().ToString("f")</p>
-    <p>We've sent a confirmation code to your phone/email — you'll need it to confirm this booking.</p>
+    <p>Requested: @_locationTime.ToLocal(_confirmedBooking.StartUtc).ToString("f")</p>
+    <p>We've sent a confirmation link to your phone/email — open it to confirm this booking. Until then the time is not reserved for you.</p>
 }
 else
 {
     <h1>Pick a time</h1>
 
     <input type="date" @bind="_selectedDate" @bind:after="LoadSlotsAsync"
-           min="@DateOnly.FromDateTime(DateTime.Today).ToString("yyyy-MM-dd")" />
+           min="@_locationTime.Today(Clock).ToString("yyyy-MM-dd")" />
+    <p>Times are shown in the location's time zone (@_locationTime.ZoneId).</p>
 
     @if (_slots is null)
     {
@@ -62,7 +74,7 @@ else
             {
                 <button type="button" class="@(slot == _selectedSlot ? "slot slot-selected" : "slot")"
                         @onclick="() => _selectedSlot = slot">
-                    @slot.StartUtc.ToLocalTime().ToString("HH:mm")
+                    @_locationTime.ToLocal(slot.StartUtc).ToString("HH:mm")
                 </button>
             }
         </div>
@@ -102,7 +114,9 @@ else
     [Parameter] public Guid ServiceId { get; set; }
     [Parameter] public Guid EmployeeId { get; set; }
 
-    private DateOnly _selectedDate = DateOnly.FromDateTime(DateTime.Today);
+    private LocationTime? _locationTime;
+    private bool _locationNotFound;
+    private DateOnly _selectedDate;
     private IReadOnlyList<AvailableSlotResponse>? _slots;
     private AvailableSlotResponse? _selectedSlot;
     private readonly GuestDetails _guestDetails = new();
@@ -112,7 +126,19 @@ else
     private bool _showWaitlistForm;
     private bool _waitlistJoined;
 
-    protected override Task OnInitializedAsync() => LoadSlotsAsync();
+    protected override async Task OnInitializedAsync()
+    {
+        var location = await CatalogApiClient.GetLocationAsync(OrganizationSlug, LocationId, CancellationToken.None);
+        if (location is null)
+        {
+            _locationNotFound = true;
+            return;
+        }
+
+        _locationTime = LocationTime.FromZoneId(location.TimeZone);
+        _selectedDate = _locationTime.Today(Clock);
+        await LoadSlotsAsync();
+    }
 
     private async Task LoadSlotsAsync()
     {
@@ -153,16 +179,18 @@ else
 
     private async Task JoinWaitlistAsync()
     {
+        if (_locationTime is null)
+            return;
+
         _isSubmitting = true;
         _errorMessage = null;
         try
         {
-            var dayStart = DateTime.SpecifyKind(_selectedDate.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
-            var dayEnd = DateTime.SpecifyKind(_selectedDate.ToDateTime(new TimeOnly(23, 59)), DateTimeKind.Utc);
+            var (windowStartUtc, windowEndUtc) = _locationTime.GetRemainingDayWindowUtc(_selectedDate, Clock);
 
             var entry = await WaitlistApiClient.JoinAsync(
                 OrganizationSlug,
-                new JoinWaitlistRequest(LocationId, EmployeeId, ServiceId, dayStart, dayEnd, _guestDetails.Phone, _guestDetails.Name, null),
+                new JoinWaitlistRequest(LocationId, EmployeeId, ServiceId, windowStartUtc, windowEndUtc, _guestDetails.Phone, _guestDetails.Name, null),
                 CancellationToken.None);
 
             if (entry is null)
