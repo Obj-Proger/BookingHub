@@ -16,7 +16,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Hangfire;
 using Hangfire.PostgreSql;
-using Twilio.Clients;
 using System.Text;
 
 namespace BookingHub.Infrastructure;
@@ -69,16 +68,7 @@ public static class DependencyInjection
             };
         });
 
-        services.Configure<SmtpOptions>(configuration.GetSection(SmtpOptions.SectionName));
-        services.AddScoped<IEmailService, SmtpEmailService>();
-
-        services.Configure<TwilioOptions>(configuration.GetSection(TwilioOptions.SectionName));
-
-        var twilioOptions = configuration.GetSection(TwilioOptions.SectionName).Get<TwilioOptions>()
-            ?? throw new InvalidOperationException("The \"Twilio\" configuration section is missing.");
-        services.AddSingleton<ITwilioRestClient>(new TwilioRestClient(twilioOptions.AccountSid, twilioOptions.AuthToken));
-
-        services.AddScoped<ISmsService, TwilioSmsService>();
+        services.AddNotifications(configuration);
 
         services.Configure<WebAppOptions>(configuration.GetSection(WebAppOptions.SectionName));
         services.AddSingleton<IWebLinkBuilder, WebLinkBuilder>();
