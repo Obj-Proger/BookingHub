@@ -1,4 +1,5 @@
 using BookingHub.Web.Api;
+using BookingHub.Web.Auth;
 using BookingHub.Web.Components;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -8,6 +9,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.TryAddSingleton(TimeProvider.System);
+builder.Services.AddStaffAuthentication();
 
 var apiBaseUrl = builder.Configuration["Api:BaseUrl"]
     ?? throw new InvalidOperationException("Api:BaseUrl is not configured.");
@@ -20,6 +22,13 @@ builder.Services.AddHttpClient<IPublicReviewsApiClient, PublicReviewsApiClient>(
     client.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddHttpClient<IPublicWaitlistApiClient, PublicWaitlistApiClient>(client =>
     client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddHttpClient<IAuthApiClient, AuthApiClient>(client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
+
+builder.Services.AddHttpClient(AuthorizedApiClient.HttpClientName, client =>
+    client.BaseAddress = new Uri(apiBaseUrl));
+builder.Services.AddScoped<AuthorizedApiClient>();
+builder.Services.AddScoped<IMeApiClient, MeApiClient>();
 
 var app = builder.Build();
 
@@ -30,9 +39,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseAntiforgery();
 app.MapStaticAssets();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseAntiforgery();
 
+app.MapStaffLogout();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

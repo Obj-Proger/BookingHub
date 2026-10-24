@@ -1,0 +1,72 @@
+﻿@page "/login"
+@attribute [ExcludeFromInteractiveRouting]
+@inject IAuthApiClient AuthApiClient
+@inject StaffSessionManager SessionManager
+@inject NavigationManager Navigation
+
+<PageTitle>Sign in</PageTitle>
+
+<h1>Sign in</h1>
+
+<EditForm Model="Input" FormName="login" OnValidSubmit="SignInAsync" method="post">
+    <DataAnnotationsValidator />
+    <div class="form-field">
+        <label>Email</label>
+        <InputText type="email" @bind-Value="Input!.Email" autocomplete="username" />
+    </div>
+    <div class="form-field">
+        <label>Password</label>
+        <InputText type="password" @bind-Value="Input!.Password" autocomplete="current-password" />
+    </div>
+    <ValidationSummary />
+    @if (_errorMessage is not null)
+    {
+        <p class="error-text">@_errorMessage</p>
+    }
+    <button type="submit">Sign in</button>
+</EditForm>
+
+@code {
+    [CascadingParameter] private HttpContext HttpContext { get; set; } = default!;
+    [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
+    [SupplyParameterFromForm] private LoginInput? Input { get; set; }
+
+    private string? _errorMessage;
+
+    protected override void OnInitialized() => Input ??= new();
+
+    private async Task SignInAsync()
+    {
+        var email = Input!.Email.Trim();
+        var result = await AuthApiClient.LoginAsync(email, Input.Password, CancellationToken.None);
+
+        if (result.Outcome != LoginOutcome.Success)
+        {
+            _errorMessage = result.Outcome switch
+            {
+                LoginOutcome.InvalidCredentials => "Invalid email or password.",
+                LoginOutcome.TooManyRequests => "Too many attempts. Please wait a minute and try again.",
+                _ => "The service is temporarily unavailable. Please try again."
+            };
+            return;
+        }
+
+        if (!await SessionManager.SignInAsync(HttpContext, email, result.Tokens!, CancellationToken.None))
+        {
+            _errorMessage = "Sign-in failed. Please try again.";
+            return;
+        }
+
+        Navigation.NavigateTo(LocalUrl.OrDefault(ReturnUrl, "/app"), forceLoad: true);
+    }
+
+    private sealed class LoginInput
+    {
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        public string Email { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Password is required.")]
+        public string Password { get; set; } = string.Empty;
+    }
+}

@@ -1,0 +1,53 @@
+﻿@page "/app"
+@attribute [Authorize]
+@layout StaffLayout
+@inject IMeApiClient MeApiClient
+
+<PageTitle>Your organizations</PageTitle>
+
+<h1>Your organizations</h1>
+
+@if (_isLoading)
+{
+    <p>Loading…</p>
+}
+else if (_memberships is null)
+{
+    <p class="error-text">
+        Couldn't load your organizations. Your session may have expired —
+        <a href="@("/login?returnUrl=" + Uri.EscapeDataString("/app"))">sign in again</a>.
+    </p>
+}
+else if (_memberships.Count == 0)
+{
+    <p>You don't belong to any organization yet.</p>
+}
+else
+{
+    <div class="card-list">
+        @foreach (var membership in _memberships)
+        {
+            <div class="card">
+                <h2>@membership.OrganizationName</h2>
+                <p>@membership.Role</p>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private bool _isLoading = true;
+    private IReadOnlyList<MyOrganizationMembershipResponse>? _memberships;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _memberships = await MeApiClient.GetMyOrganizationsAsync(CancellationToken.None);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+}

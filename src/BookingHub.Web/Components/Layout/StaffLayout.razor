@@ -1,0 +1,20 @@
+﻿@inherits LayoutComponentBase
+
+<header class="staff-header">
+    <span class="staff-brand">BookingHub</span>
+    <AuthorizeView>
+        <div class="staff-user">
+            <span>@context.User.Identity?.Name</span>
+            <form method="post" action="/logout">
+                <AntiforgeryToken />
+                <button type="submit" class="link-button">Sign out</button>
+            </form>
+        </div>
+    </AuthorizeView>
+</header>
+
+<div class="page">
+    <main>
+        @Body
+    </main>
+</div>
