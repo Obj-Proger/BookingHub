@@ -1,6 +1,7 @@
 using BookingHub.Web.Api;
 using BookingHub.Web.Auth;
 using BookingHub.Web.Components;
+using BookingHub.Web.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -29,6 +30,8 @@ builder.Services.AddHttpClient(AuthorizedApiClient.HttpClientName, client =>
     client.BaseAddress = new Uri(apiBaseUrl));
 builder.Services.AddScoped<AuthorizedApiClient>();
 builder.Services.AddScoped<IMeApiClient, MeApiClient>();
+builder.Services.AddScoped<IOrganizationsApiClient, OrganizationsApiClient>();
+builder.Services.AddScoped<MembershipCache>();
 
 var app = builder.Build();
 

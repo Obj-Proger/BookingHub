@@ -10,7 +10,7 @@ namespace BookingHub.Web.Auth;
 /// Sends API requests on behalf of the signed-in user. Must stay scoped (one per circuit):
 /// it reads the user's session from the scoped <see cref="AuthenticationStateProvider"/>,
 /// which a typed client or a message handler could not reach.
-/// A missing or unrefreshable session is reported as a 401 response.
+/// A missing or unrefreshable session is reported as a 401 response, an unreachable API as a 503.
 /// </summary>
 internal sealed class AuthorizedApiClient(
     IHttpClientFactory httpClientFactory,
@@ -25,6 +25,22 @@ internal sealed class AuthorizedApiClient(
     /// and a 401 is retried once after refreshing the tokens.
     /// </param>
     public async Task<HttpResponseMessage> SendAsync(Func<HttpRequestMessage> createRequest, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await SendWithRefreshAsync(createRequest, cancellationToken);
+        }
+        catch (HttpRequestException)
+        {
+            return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+        }
+        catch (TaskCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
+        }
+    }
+
+    private async Task<HttpResponseMessage> SendWithRefreshAsync(Func<HttpRequestMessage> createRequest, CancellationToken cancellationToken)
     {
         var authenticationState = await authenticationStateProvider.GetAuthenticationStateAsync();
         var sessionId = authenticationState.User.GetSessionId();

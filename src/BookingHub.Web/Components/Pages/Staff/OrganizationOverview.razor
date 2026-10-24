@@ -1,0 +1,13 @@
+﻿@page "/app/{OrganizationId:guid}"
+@attribute [Authorize]
+@layout OrganizationLayout
+
+<PageTitle>@Membership.OrganizationName</PageTitle>
+
+<h1>@Membership.OrganizationName</h1>
+<p>You're signed in as <strong>@Membership.Role</strong>.</p>
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+}

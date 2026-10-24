@@ -1,7 +1,7 @@
 ﻿@inherits LayoutComponentBase
 
 <header class="staff-header">
-    <span class="staff-brand">BookingHub</span>
+    <a class="staff-brand" href="/app">BookingHub</a>
     <AuthorizeView>
         <div class="staff-user">
             <span>@context.User.Identity?.Name</span>
@@ -13,7 +13,7 @@
     </AuthorizeView>
 </header>
 
-<div class="page">
+<div class="page staff-page">
     <main>
         @Body
     </main>

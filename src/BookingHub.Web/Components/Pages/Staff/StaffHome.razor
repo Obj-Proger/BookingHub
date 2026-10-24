@@ -1,53 +1,63 @@
 ﻿@page "/app"
 @attribute [Authorize]
 @layout StaffLayout
-@inject IMeApiClient MeApiClient
+@inject MembershipCache Memberships
+@inject NavigationManager Navigation
 
 <PageTitle>Your organizations</PageTitle>
 
 <h1>Your organizations</h1>
 
-@if (_isLoading)
+@if (_error is not null)
 {
-    <p>Loading…</p>
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
 }
 else if (_memberships is null)
 {
-    <p class="error-text">
-        Couldn't load your organizations. Your session may have expired —
-        <a href="@("/login?returnUrl=" + Uri.EscapeDataString("/app"))">sign in again</a>.
-    </p>
-}
-else if (_memberships.Count == 0)
-{
-    <p>You don't belong to any organization yet.</p>
+    <LoadingState />
 }
 else
 {
     <div class="card-list">
         @foreach (var membership in _memberships)
         {
-            <div class="card">
+            <a class="card" href="@StaffRoutes.Organization(membership.OrganizationId)">
                 <h2>@membership.OrganizationName</h2>
                 <p>@membership.Role</p>
-            </div>
+            </a>
         }
     </div>
+    <a class="back-link" href="@StaffRoutes.NewOrganization">Create a new organization</a>
 }
 
 @code {
-    private bool _isLoading = true;
     private IReadOnlyList<MyOrganizationMembershipResponse>? _memberships;
+    private ApiError? _error;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
     {
-        try
+        _error = null;
+
+        var result = await Memberships.GetAsync(CancellationToken.None);
+        if (!result.IsSuccess)
         {
-            _memberships = await MeApiClient.GetMyOrganizationsAsync(CancellationToken.None);
+            _error = result.Error;
+            return;
         }
-        finally
+
+        switch (result.Value)
         {
-            _isLoading = false;
+            case []:
+                Navigation.NavigateTo(StaffRoutes.NewOrganization, replace: true);
+                break;
+            case [var only]:
+                Navigation.NavigateTo(StaffRoutes.Organization(only.OrganizationId), replace: true);
+                break;
+            default:
+                _memberships = result.Value;
+                break;
         }
     }
 }

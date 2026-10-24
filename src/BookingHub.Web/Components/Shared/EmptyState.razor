@@ -1,0 +1,14 @@
+﻿<div class="state-panel">
+    <h2>@Title</h2>
+    @if (Description is not null)
+    {
+        <p>@Description</p>
+    }
+    @ChildContent
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Description { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

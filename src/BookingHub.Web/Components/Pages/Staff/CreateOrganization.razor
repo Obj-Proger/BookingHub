@@ -1,0 +1,80 @@
+﻿@page "/app/new"
+@attribute [Authorize]
+@layout StaffLayout
+@inject IOrganizationsApiClient OrganizationsApiClient
+@inject MembershipCache Memberships
+@inject NavigationManager Navigation
+
+<PageTitle>New organization</PageTitle>
+
+<h1>Create an organization</h1>
+
+<EditForm Model="_input" OnValidSubmit="SubmitAsync" FormName="create-organization">
+    <DataAnnotationsValidator />
+    <div class="form-field">
+        <label>Name</label>
+        <InputText @bind-Value="_input.Name" @bind-Value:after="SuggestSlug" />
+    </div>
+    <div class="form-field">
+        <label>Address</label>
+        <InputText @bind-Value="_input.Slug" @bind-Value:after="MarkSlugEdited" />
+    </div>
+    <p class="hint">
+        Guests will book online at <code>/book/@(string.IsNullOrWhiteSpace(_input.Slug) ? "your-address" : _input.Slug)</code>.
+        Use lowercase letters, digits and hyphens.
+    </p>
+    <ValidationSummary />
+    @if (_error is not null)
+    {
+        <ErrorState Error="_error" />
+    }
+    <button type="submit" disabled="@_isSubmitting">@(_isSubmitting ? "Creating…" : "Create organization")</button>
+</EditForm>
+
+<a class="back-link" href="@StaffRoutes.Home">&larr; Back</a>
+
+@code {
+    private readonly OrganizationInput _input = new();
+    private ApiError? _error;
+    private bool _isSubmitting;
+    private bool _slugEdited;
+
+    private void SuggestSlug()
+    {
+        if (!_slugEdited)
+            _input.Slug = SlugSuggestion.FromName(_input.Name);
+    }
+
+    private void MarkSlugEdited() => _slugEdited = true;
+
+    private async Task SubmitAsync()
+    {
+        _isSubmitting = true;
+        _error = null;
+        try
+        {
+            var result = await OrganizationsApiClient.CreateAsync(_input.Name.Trim(), _input.Slug.Trim(), CancellationToken.None);
+            if (!result.IsSuccess)
+            {
+                _error = result.Error;
+                return;
+            }
+
+            Memberships.Invalidate();
+            Navigation.NavigateTo(StaffRoutes.Organization(result.Value.OrganizationId));
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private sealed class OrganizationInput
+    {
+        [Required(ErrorMessage = "Name is required.")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Address is required.")]
+        public string Slug { get; set; } = string.Empty;
+    }
+}

@@ -1,0 +1,91 @@
+﻿@inherits LayoutComponentBase
+@layout StaffLayout
+@implements IDisposable
+@inject NavigationManager Navigation
+@inject MembershipCache Memberships
+
+@if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_memberships is null)
+{
+    <LoadingState />
+}
+else if (_membership is null)
+{
+    <EmptyState Title="Organization not found"
+                Description="You're not a member of this organization, or it no longer exists.">
+        <a class="back-link" href="@StaffRoutes.Home">Back to your organizations</a>
+    </EmptyState>
+}
+else
+{
+    <div class="org-shell">
+        <nav class="org-nav" aria-label="Organization">
+            <div class="org-nav-title">
+                <strong>@_membership.OrganizationName</strong>
+                <span>@_membership.Role</span>
+            </div>
+            @foreach (var item in StaffNavigation.ItemsFor(_membership.Role))
+            {
+                <NavLink href="@StaffNavigation.Href(_membership.OrganizationId, item)"
+                         Match="@(item.Segment.Length == 0 ? NavLinkMatch.All : NavLinkMatch.Prefix)">
+                    @item.Title
+                </NavLink>
+            }
+            <div class="org-nav-secondary">
+                @if (_memberships.Count > 1)
+                {
+                    <a href="@StaffRoutes.Home">Switch organization</a>
+                }
+                <a href="@StaffRoutes.NewOrganization">New organization</a>
+            </div>
+        </nav>
+        <section class="org-content">
+            <CascadingValue Value="_membership">
+                @Body
+            </CascadingValue>
+        </section>
+    </div>
+}
+
+@code {
+    private IReadOnlyList<MyOrganizationMembershipResponse>? _memberships;
+    private MyOrganizationMembershipResponse? _membership;
+    private ApiError? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var result = await Memberships.GetAsync(CancellationToken.None);
+        if (!result.IsSuccess)
+        {
+            _error = result.Error;
+            return;
+        }
+
+        _memberships = result.Value;
+        ResolveMembership();
+    }
+
+    private void ResolveMembership() =>
+        _membership = _memberships is not null && StaffRoutes.TryGetOrganizationId(Navigation.Uri, out var organizationId)
+            ? _memberships.FirstOrDefault(membership => membership.OrganizationId == organizationId)
+            : null;
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        ResolveMembership();
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+}
