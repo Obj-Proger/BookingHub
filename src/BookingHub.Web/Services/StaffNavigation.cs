@@ -12,7 +12,8 @@ internal static class StaffNavigation
 
     private static readonly StaffNavItem[] Items =
     [
-        new("Overview", "", AllRoles)
+        new("Overview", "", AllRoles),
+        new("Settings", "settings", OrganizationRoles.Management)
     ];
 
     public static IEnumerable<StaffNavItem> ItemsFor(OrganizationRole role) =>

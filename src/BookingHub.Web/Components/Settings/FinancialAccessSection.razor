@@ -1,0 +1,50 @@
+﻿@inject IOrganizationsApiClient OrganizationsApiClient
+
+<section class="settings-section">
+    <h2>Financial access</h2>
+    <label class="checkbox-row">
+        <input type="checkbox" checked="@_enabled" disabled="@_isSaving" @onchange="ToggleAsync" />
+        <span>Administrators can view financial data (such as revenue)</span>
+    </label>
+    <p class="hint">Owners always have access. Only owners can change this setting.</p>
+    <SaveStatus Saved="_saved" Error="_error" />
+</section>
+
+@code {
+    [Parameter, EditorRequired] public OrganizationResponse Organization { get; set; } = default!;
+
+    private bool _enabled;
+    private ApiError? _error;
+    private bool _saved;
+    private bool _isSaving;
+
+    protected override void OnInitialized() => _enabled = Organization.CanAdministratorsViewFinancials;
+
+    private async Task ToggleAsync(ChangeEventArgs e)
+    {
+        var requested = e.Value is true;
+
+        _isSaving = true;
+        _saved = false;
+        _error = null;
+        try
+        {
+            var result = await OrganizationsApiClient.SetAdministratorFinancialAccessAsync(
+                Organization.OrganizationId, requested, CancellationToken.None);
+
+            if (result.IsSuccess)
+            {
+                _enabled = requested;
+                _saved = true;
+            }
+            else
+            {
+                _error = result.Error;
+            }
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+}

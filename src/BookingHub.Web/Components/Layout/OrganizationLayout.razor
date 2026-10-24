@@ -58,6 +58,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         Navigation.LocationChanged += OnLocationChanged;
+        Memberships.Changed += OnMembershipsChanged;
         await LoadAsync();
     }
 
@@ -87,5 +88,16 @@ else
         InvokeAsync(StateHasChanged);
     }
 
-    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+    private void OnMembershipsChanged() =>
+        InvokeAsync(async () =>
+        {
+            await LoadAsync();
+            StateHasChanged();
+        });
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+        Memberships.Changed -= OnMembershipsChanged;
+    }
 }

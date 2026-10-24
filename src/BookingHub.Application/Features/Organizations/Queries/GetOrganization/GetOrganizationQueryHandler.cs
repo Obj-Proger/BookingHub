@@ -15,7 +15,8 @@ internal sealed class GetOrganizationQueryHandler(IApplicationDbContext dbContex
             .Where(o => o.Id == query.OrganizationId)
             .Select(o => new OrganizationResponse(
                 o.Id, o.Name, o.Slug, o.CancellationDeadline,
-                o.PendingConfirmationWindow, o.AutoCompleteWindow, o.WaitlistOfferWindow))
+                o.PendingConfirmationWindow, o.AutoCompleteWindow, o.WaitlistOfferWindow,
+                o.CanAdministratorsViewFinancials))
             .FirstOrDefaultAsync(cancellationToken);
 
         return response is not null

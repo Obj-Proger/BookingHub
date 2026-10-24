@@ -7,6 +7,19 @@ public sealed record ApiError(HttpStatusCode StatusCode, string Message)
     public bool IsUnauthorized => StatusCode == HttpStatusCode.Unauthorized;
 }
 
+public sealed class ApiResult
+{
+    private ApiResult(ApiError? error) => Error = error;
+
+    public bool IsSuccess => Error is null;
+
+    public ApiError? Error { get; }
+
+    public static ApiResult Success() => new(null);
+
+    public static ApiResult Failure(ApiError error) => new(error);
+}
+
 public sealed class ApiResult<T>
 {
     private readonly T? _value;

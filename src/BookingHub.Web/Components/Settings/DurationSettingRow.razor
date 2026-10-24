@@ -1,0 +1,82 @@
+﻿<div class="duration-row">
+    <div>
+        <strong>@Label</strong>
+        @if (Description is not null)
+        {
+            <p class="hint">@Description</p>
+        }
+    </div>
+    <div class="duration-inputs">
+        <input type="number" min="0" @bind="_amount" />
+        <select @bind="_unit">
+            @foreach (var unit in Enum.GetValues<DurationUnit>())
+            {
+                <option value="@unit">@unit.ToString().ToLowerInvariant()</option>
+            }
+        </select>
+        <button type="button" disabled="@_isSaving" @onclick="SaveAsync">@(_isSaving ? "Saving…" : "Save")</button>
+    </div>
+    <SaveStatus Saved="_saved" Error="_error" />
+</div>
+
+@code {
+    private const int MaxAmount = 99_999;
+
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter] public string? Description { get; set; }
+    [Parameter, EditorRequired] public TimeSpan Value { get; set; }
+    [Parameter, EditorRequired] public Func<TimeSpan, Task<ApiResult>> Save { get; set; } = default!;
+
+    private enum DurationUnit { Minutes, Hours, Days }
+
+    private int _amount;
+    private DurationUnit _unit;
+    private ApiError? _error;
+    private bool _saved;
+    private bool _isSaving;
+
+    protected override void OnInitialized() => (_amount, _unit) = Split(Value);
+
+    /// <summary>Shows the value in the largest unit that represents it exactly; sub-minute remainders are rounded.</summary>
+    private static (int Amount, DurationUnit Unit) Split(TimeSpan value)
+    {
+        if (value >= TimeSpan.FromDays(1) && value.Ticks % TimeSpan.TicksPerDay == 0)
+            return ((int)value.TotalDays, DurationUnit.Days);
+
+        if (value >= TimeSpan.FromHours(1) && value.Ticks % TimeSpan.TicksPerHour == 0)
+            return ((int)value.TotalHours, DurationUnit.Hours);
+
+        return ((int)Math.Round(value.TotalMinutes), DurationUnit.Minutes);
+    }
+
+    private TimeSpan ToTimeSpan() => _unit switch
+    {
+        DurationUnit.Days => TimeSpan.FromDays(_amount),
+        DurationUnit.Hours => TimeSpan.FromHours(_amount),
+        _ => TimeSpan.FromMinutes(_amount)
+    };
+
+    private async Task SaveAsync()
+    {
+        _saved = false;
+        _error = null;
+
+        if (_amount is < 0 or > MaxAmount)
+        {
+            _error = new ApiError(System.Net.HttpStatusCode.BadRequest, $"Enter a value between 0 and {MaxAmount}.");
+            return;
+        }
+
+        _isSaving = true;
+        try
+        {
+            var result = await Save(ToTimeSpan());
+            _error = result.Error;
+            _saved = result.IsSuccess;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+}

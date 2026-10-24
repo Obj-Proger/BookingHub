@@ -1,0 +1,33 @@
+﻿@inject IOrganizationsApiClient OrganizationsApiClient
+
+<section class="settings-section">
+    <h2>Timing</h2>
+
+    <DurationSettingRow Label="Cancellation deadline"
+                        Description="Guests can no longer cancel or reschedule an appointment that starts sooner than this."
+                        Value="Organization.CancellationDeadline"
+                        Save="@(value => OrganizationsApiClient.UpdateCancellationDeadlineAsync(
+                            Organization.OrganizationId, value, CancellationToken.None))" />
+
+    <DurationSettingRow Label="Confirmation window"
+                        Description="How long a guest has to confirm a new booking before it expires."
+                        Value="Organization.PendingConfirmationWindow"
+                        Save="@(value => OrganizationsApiClient.UpdateSchedulingWindowAsync(
+                            Organization.OrganizationId, SchedulingWindow.PendingConfirmation, value, CancellationToken.None))" />
+
+    <DurationSettingRow Label="Auto-complete window"
+                        Description="How long after the appointment time an unmarked booking is completed automatically."
+                        Value="Organization.AutoCompleteWindow"
+                        Save="@(value => OrganizationsApiClient.UpdateSchedulingWindowAsync(
+                            Organization.OrganizationId, SchedulingWindow.AutoComplete, value, CancellationToken.None))" />
+
+    <DurationSettingRow Label="Waitlist offer window"
+                        Description="How long a waitlisted guest has to accept an offered slot."
+                        Value="Organization.WaitlistOfferWindow"
+                        Save="@(value => OrganizationsApiClient.UpdateSchedulingWindowAsync(
+                            Organization.OrganizationId, SchedulingWindow.WaitlistOffer, value, CancellationToken.None))" />
+</section>
+
+@code {
+    [Parameter, EditorRequired] public OrganizationResponse Organization { get; set; } = default!;
+}

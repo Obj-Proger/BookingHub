@@ -1,0 +1,13 @@
+﻿@if (Error is not null)
+{
+    <ErrorState Error="Error" />
+}
+else if (Saved)
+{
+    <p class="success-text" role="status">Saved.</p>
+}
+
+@code {
+    [Parameter] public bool Saved { get; set; }
+    [Parameter] public ApiError? Error { get; set; }
+}

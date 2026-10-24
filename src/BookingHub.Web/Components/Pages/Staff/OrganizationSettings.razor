@@ -1,0 +1,58 @@
+﻿@page "/app/{OrganizationId:guid}/settings"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject IOrganizationsApiClient OrganizationsApiClient
+
+<PageTitle>Settings</PageTitle>
+
+<h1>Settings</h1>
+
+@if (!OrganizationRoles.CanManage(Membership.Role))
+{
+    <EmptyState Title="Settings are not available"
+                Description="Only owners and administrators can change organization settings." />
+}
+else if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_organization is null)
+{
+    <LoadingState />
+}
+else
+{
+    <RenameOrganizationSection Organization="_organization" />
+    <SchedulingSettingsSection Organization="_organization" />
+
+    @if (Membership.Role == OrganizationRole.Owner)
+    {
+        <FinancialAccessSection Organization="_organization" />
+        <DeleteOrganizationSection Organization="_organization" />
+    }
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private OrganizationResponse? _organization;
+    private ApiError? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (OrganizationRoles.CanManage(Membership.Role))
+            await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var result = await OrganizationsApiClient.GetAsync(OrganizationId, CancellationToken.None);
+        if (result.IsSuccess)
+            _organization = result.Value;
+        else
+            _error = result.Error;
+    }
+}

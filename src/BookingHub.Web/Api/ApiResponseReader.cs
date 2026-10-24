@@ -6,6 +6,15 @@ namespace BookingHub.Web.Api;
 
 internal static class ApiResponseReader
 {
+    public static async Task<ApiResult> ReadAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    {
+        if (response.IsSuccessStatusCode)
+            return ApiResult.Success();
+
+        var message = await ReadProblemMessageAsync(response, cancellationToken);
+        return ApiResult.Failure(new ApiError(response.StatusCode, message));
+    }
+
     public static async Task<ApiResult<T>> ReadAsync<T>(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         if (!response.IsSuccessStatusCode)

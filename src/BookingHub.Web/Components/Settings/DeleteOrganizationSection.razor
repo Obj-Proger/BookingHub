@@ -1,0 +1,51 @@
+﻿@inject IOrganizationsApiClient OrganizationsApiClient
+@inject MembershipCache Memberships
+@inject NavigationManager Navigation
+
+<section class="settings-section danger-zone">
+    <h2>Delete organization</h2>
+    <p>
+        This permanently deletes <strong>@Organization.Name</strong> together with its locations, employees,
+        services and bookings. This cannot be undone.
+    </p>
+    <div class="form-field">
+        <label>Type the organization name to confirm</label>
+        <input @bind="_confirmation" @bind:event="oninput" autocomplete="off" />
+    </div>
+    <SaveStatus Error="_error" />
+    <button type="button" class="btn-danger" disabled="@(!IsConfirmed || _isDeleting)" @onclick="DeleteAsync">
+        @(_isDeleting ? "Deleting…" : "Delete organization")
+    </button>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public OrganizationResponse Organization { get; set; } = default!;
+
+    private string _confirmation = string.Empty;
+    private ApiError? _error;
+    private bool _isDeleting;
+
+    private bool IsConfirmed => string.Equals(_confirmation.Trim(), Organization.Name, StringComparison.Ordinal);
+
+    private async Task DeleteAsync()
+    {
+        _isDeleting = true;
+        _error = null;
+        try
+        {
+            var result = await OrganizationsApiClient.DeleteAsync(Organization.OrganizationId, CancellationToken.None);
+            if (!result.IsSuccess)
+            {
+                _error = result.Error;
+                return;
+            }
+
+            Memberships.Invalidate();
+            Navigation.NavigateTo(StaffRoutes.Home);
+        }
+        finally
+        {
+            _isDeleting = false;
+        }
+    }
+}

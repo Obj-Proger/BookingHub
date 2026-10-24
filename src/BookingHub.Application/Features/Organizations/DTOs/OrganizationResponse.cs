@@ -1,5 +1,6 @@
 ﻿namespace BookingHub.Application.Features.Organizations.DTOs;
 
 public sealed record OrganizationResponse(
-    Guid OrganizationId, string Name, string Slug, TimeSpan CancellationDeadline, 
-    TimeSpan PendingConfirmationWindow, TimeSpan AutoCompleteWindow, TimeSpan WaitlistOfferWindow);
+    Guid OrganizationId, string Name, string Slug, TimeSpan CancellationDeadline,
+    TimeSpan PendingConfirmationWindow, TimeSpan AutoCompleteWindow, TimeSpan WaitlistOfferWindow,
+    bool CanAdministratorsViewFinancials);
