@@ -1,0 +1,99 @@
+﻿@inject IServicesApiClient ServicesApiClient
+
+<div class="price-row">
+    <div class="price-row-header">
+        <strong><span class="color-dot" style="background-color: @Service.Color"></span>@Service.Name</strong>
+        <span class="hint">Base price: @DisplayFormat.Price(Service.BasePriceAmount, Service.BasePriceCurrency)</span>
+    </div>
+
+    @if (_override is not null)
+    {
+        <PriceSettingRow Label="Price at this location"
+                         Amount="_override.OverridePriceAmount"
+                         Currency="@_override.OverridePriceCurrency"
+                         ReadOnly="ReadOnly"
+                         Save="@UpdateAsync" />
+        @if (!ReadOnly)
+        {
+            <SaveStatus Error="_removeError" />
+            <button type="button" class="link-button" disabled="@_isRemoving" @onclick="RemoveAsync">
+                Use the base price instead
+            </button>
+        }
+    }
+    else if (_isEditing)
+    {
+        <PriceSettingRow Label="Price at this location"
+                         Amount="Service.BasePriceAmount"
+                         Currency="@Service.BasePriceCurrency"
+                         Save="@CreateAsync" />
+    }
+    else if (!ReadOnly)
+    {
+        <button type="button" class="link-button" @onclick="() => _isEditing = true">Set a location price</button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Guid OrganizationId { get; set; }
+    [Parameter, EditorRequired] public Guid LocationId { get; set; }
+    [Parameter, EditorRequired] public ServiceResponse Service { get; set; } = default!;
+    [Parameter] public LocationServiceOverrideResponse? Override { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private LocationServiceOverrideResponse? _override;
+    private bool _isEditing;
+    private bool _isRemoving;
+    private ApiError? _removeError;
+
+    protected override void OnInitialized() => _override = Override;
+
+    private async Task<ApiResult> CreateAsync(decimal amount, string currency)
+    {
+        var result = await ServicesApiClient.CreateLocationOverrideAsync(
+            OrganizationId, LocationId, Service.ServiceId, amount, currency, CancellationToken.None);
+
+        if (result.IsSuccess)
+        {
+            _override = new LocationServiceOverrideResponse(
+                result.Value.OverrideId, Service.ServiceId, result.Value.OverridePriceAmount, result.Value.OverridePriceCurrency);
+        }
+
+        return result.WithoutValue();
+    }
+
+    private async Task<ApiResult> UpdateAsync(decimal amount, string currency)
+    {
+        var result = await ServicesApiClient.UpdateLocationOverridePriceAsync(
+            OrganizationId, LocationId, _override!.OverrideId, amount, currency, CancellationToken.None);
+
+        if (result.IsSuccess)
+            _override = _override with { OverridePriceAmount = amount, OverridePriceCurrency = currency.ToUpperInvariant() };
+
+        return result;
+    }
+
+    private async Task RemoveAsync()
+    {
+        _isRemoving = true;
+        _removeError = null;
+        try
+        {
+            var result = await ServicesApiClient.DeleteLocationOverrideAsync(
+                OrganizationId, LocationId, _override!.OverrideId, CancellationToken.None);
+
+            if (!result.IsSuccess)
+            {
+                _removeError = result.Error;
+                return;
+            }
+
+            _override = null;
+            _isEditing = false;
+        }
+        finally
+        {
+            _isRemoving = false;
+        }
+    }
+}

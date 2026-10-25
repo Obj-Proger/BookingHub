@@ -1,0 +1,74 @@
+﻿@inject IServicesApiClient ServicesApiClient
+
+<section class="settings-section">
+    <h2>Service prices</h2>
+
+    @if (_error is not null)
+    {
+        <ErrorState Error="_error" OnRetry="LoadAsync" />
+    }
+    else if (_services is null || _overridesByService is null)
+    {
+        <LoadingState />
+    }
+    else if (_services.Count == 0)
+    {
+        <p class="hint">
+            There are no services yet. <a href="@StaffRoutes.Services(OrganizationId)">Add a service</a> to set its price here.
+        </p>
+    }
+    else
+    {
+        <p class="hint">
+            Every location charges a service's base price unless a price is set for it here.
+        </p>
+        @foreach (var service in _services)
+        {
+            <LocationServicePriceRow @key="service.ServiceId"
+                                     OrganizationId="OrganizationId"
+                                     LocationId="LocationId"
+                                     Service="service"
+                                     Override="@_overridesByService.GetValueOrDefault(service.ServiceId)"
+                                     ReadOnly="ReadOnly" />
+        }
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public Guid OrganizationId { get; set; }
+    [Parameter, EditorRequired] public Guid LocationId { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private IReadOnlyList<ServiceResponse>? _services;
+    private Dictionary<Guid, LocationServiceOverrideResponse>? _overridesByService;
+    private ApiError? _error;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var servicesTask = ServicesApiClient.GetAllAsync(OrganizationId, CancellationToken.None);
+        var overridesTask = ServicesApiClient.GetLocationOverridesAsync(OrganizationId, LocationId, CancellationToken.None);
+        await Task.WhenAll(servicesTask, overridesTask);
+
+        var services = await servicesTask;
+        var overrides = await overridesTask;
+
+        if (!services.IsSuccess)
+        {
+            _error = services.Error;
+            return;
+        }
+
+        if (!overrides.IsSuccess)
+        {
+            _error = overrides.Error;
+            return;
+        }
+
+        _services = services.Value;
+        _overridesByService = overrides.Value.ToDictionary(o => o.ServiceId);
+    }
+}

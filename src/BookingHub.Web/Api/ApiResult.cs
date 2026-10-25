@@ -41,4 +41,7 @@ public sealed class ApiResult<T>
     public static ApiResult<T> Success(T value) => new(value, null);
 
     public static ApiResult<T> Failure(ApiError error) => new(default, error);
+
+    /// <summary>The same outcome without the value, for callers that only need to know whether the call succeeded.</summary>
+    public ApiResult WithoutValue() => IsSuccess ? ApiResult.Success() : ApiResult.Failure(Error!);
 }

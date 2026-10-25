@@ -8,6 +8,7 @@ using BookingHub.Application.Features.Services.Commands.UpdateServiceBuffers;
 using BookingHub.Application.Features.Services.Commands.UpdateServiceColor;
 using BookingHub.Application.Features.Services.Commands.UpdateServiceDuration;
 using BookingHub.Application.Features.Services.Commands.UpdateServicePricing;
+using BookingHub.Application.Features.Services.Queries.GetLocationServiceOverrides;
 using BookingHub.Application.Features.Services.Queries.GetService;
 using BookingHub.Application.Features.Services.Queries.GetServices;
 using Microsoft.AspNetCore.Authorization;
@@ -88,6 +89,13 @@ public sealed class ServicesController(IDispatcher dispatcher) : ApiControllerBa
     }
 
     // Location-specific price overrides (location-scoped)
+
+    [HttpGet("locations/{locationId:guid}/service-overrides")]
+    public async Task<IActionResult> GetOverrides(Guid organizationId, Guid locationId, CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(new GetLocationServiceOverridesQuery(organizationId, locationId), cancellationToken);
+        return HandleResult(result);
+    }
 
     [HttpPost("locations/{locationId:guid}/service-overrides")]
     public async Task<IActionResult> CreateOverride(

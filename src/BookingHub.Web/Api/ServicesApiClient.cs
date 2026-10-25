@@ -7,6 +7,9 @@ internal sealed class ServicesApiClient(AuthorizedApiClient authorizedClient) : 
 {
     private static string BasePath(Guid organizationId) => $"api/v1/organizations/{organizationId}/services";
 
+    private static string OverridesPath(Guid organizationId, Guid locationId) =>
+        $"api/v1/organizations/{organizationId}/locations/{locationId}/service-overrides";
+
     public Task<ApiResult<IReadOnlyList<ServiceResponse>>> GetAllAsync(Guid organizationId, CancellationToken cancellationToken) =>
         authorizedClient.GetJsonAsync<IReadOnlyList<ServiceResponse>>(BasePath(organizationId), cancellationToken);
 
@@ -45,4 +48,26 @@ internal sealed class ServicesApiClient(AuthorizedApiClient authorizedClient) : 
     public Task<ApiResult> UpdateColorAsync(Guid organizationId, Guid serviceId, string? color, CancellationToken cancellationToken) =>
         authorizedClient.SendJsonAsync(
             HttpMethod.Put, $"{BasePath(organizationId)}/{serviceId}/color", new UpdateServiceColorRequest(color), cancellationToken);
+
+    public Task<ApiResult<IReadOnlyList<LocationServiceOverrideResponse>>> GetLocationOverridesAsync(
+        Guid organizationId, Guid locationId, CancellationToken cancellationToken) =>
+        authorizedClient.GetJsonAsync<IReadOnlyList<LocationServiceOverrideResponse>>(
+            OverridesPath(organizationId, locationId), cancellationToken);
+
+    public Task<ApiResult<LocationServiceOverrideCreatedResponse>> CreateLocationOverrideAsync(
+        Guid organizationId, Guid locationId, Guid serviceId, decimal amount, string? currency, CancellationToken cancellationToken) =>
+        authorizedClient.SendJsonAsync<LocationServiceOverrideCreatedResponse>(
+            HttpMethod.Post, OverridesPath(organizationId, locationId),
+            new CreateLocationServiceOverrideRequest(serviceId, amount, currency), cancellationToken);
+
+    public Task<ApiResult> UpdateLocationOverridePriceAsync(
+        Guid organizationId, Guid locationId, Guid overrideId, decimal amount, string? currency, CancellationToken cancellationToken) =>
+        authorizedClient.SendJsonAsync(
+            HttpMethod.Put, $"{OverridesPath(organizationId, locationId)}/{overrideId}",
+            new UpdateLocationServiceOverridePriceRequest(amount, currency), cancellationToken);
+
+    public Task<ApiResult> DeleteLocationOverrideAsync(
+        Guid organizationId, Guid locationId, Guid overrideId, CancellationToken cancellationToken) =>
+        authorizedClient.SendJsonAsync(
+            HttpMethod.Delete, $"{OverridesPath(organizationId, locationId)}/{overrideId}", body: null, cancellationToken);
 }

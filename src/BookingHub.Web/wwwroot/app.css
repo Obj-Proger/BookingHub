@@ -124,3 +124,20 @@ a.card {
     .duration-input input {
         width: 6rem;
     }
+
+.price-row {
+    padding: 0.75rem 0;
+    border-top: 1px solid #f0f0f2;
+}
+
+    .price-row:first-of-type {
+        border-top: none;
+    }
+
+.price-row-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
