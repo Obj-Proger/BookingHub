@@ -1,0 +1,135 @@
+﻿@page "/app/{OrganizationId:guid}/services/{ServiceId:guid}"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject IServicesApiClient ServicesApiClient
+
+<PageTitle>@(_service?.Name ?? "Service")</PageTitle>
+
+<a class="back-link" href="@StaffRoutes.Services(OrganizationId)">&larr; Services</a>
+
+@if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_service is null)
+{
+    <LoadingState />
+}
+else
+{
+    <h1><span class="color-dot" style="background-color: @_service.Color"></span>@_service.Name</h1>
+
+    <section class="settings-section">
+        <h2>Details</h2>
+        <TextSettingRow Label="Name" Value="@_service.Name" ReadOnly="ReadOnly" Save="@SaveNameAsync" />
+        <TextSettingRow Label="Color" Value="@_service.Color" InputType="color" ReadOnly="ReadOnly" Save="@SaveColorAsync" />
+    </section>
+
+    <section class="settings-section">
+        <h2>Price</h2>
+        <PriceSettingRow Label="Base price"
+                         Amount="_service.BasePriceAmount"
+                         Currency="@_service.BasePriceCurrency"
+                         ReadOnly="ReadOnly"
+                         Save="@SavePriceAsync" />
+        <p class="hint">Individual locations can charge a different price.</p>
+    </section>
+
+    <section class="settings-section">
+        <h2>Timing</h2>
+        <DurationSettingRow Label="Duration"
+                            Value="_service.Duration"
+                            ReadOnly="ReadOnly"
+                            Save="@SaveDurationAsync" />
+        <DurationSettingRow Label="Buffer before"
+                            Description="Extra time blocked before each appointment."
+                            Value="_service.BufferBefore"
+                            ReadOnly="ReadOnly"
+                            Save="@SaveBufferBeforeAsync" />
+        <DurationSettingRow Label="Buffer after"
+                            Description="Extra time blocked after each appointment."
+                            Value="_service.BufferAfter"
+                            ReadOnly="ReadOnly"
+                            Save="@SaveBufferAfterAsync" />
+    </section>
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [Parameter] public Guid ServiceId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private ServiceResponse? _service;
+    private ApiError? _error;
+
+    private bool ReadOnly => !OrganizationRoles.CanManage(Membership.Role);
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var result = await ServicesApiClient.GetAsync(OrganizationId, ServiceId, CancellationToken.None);
+        if (result.IsSuccess)
+            _service = result.Value;
+        else
+            _error = result.Error;
+    }
+
+    private async Task<ApiResult> SaveNameAsync(string newName)
+    {
+        var result = await ServicesApiClient.RenameAsync(OrganizationId, ServiceId, newName, CancellationToken.None);
+        if (result.IsSuccess)
+            _service = _service! with { Name = newName };
+
+        return result;
+    }
+
+    private async Task<ApiResult> SaveColorAsync(string newColor)
+    {
+        var result = await ServicesApiClient.UpdateColorAsync(OrganizationId, ServiceId, newColor, CancellationToken.None);
+        if (result.IsSuccess)
+            _service = _service! with { Color = newColor };
+
+        return result;
+    }
+
+    private async Task<ApiResult> SavePriceAsync(decimal amount, string currency)
+    {
+        var result = await ServicesApiClient.UpdatePricingAsync(OrganizationId, ServiceId, amount, currency, CancellationToken.None);
+        if (result.IsSuccess)
+            _service = _service! with { BasePriceAmount = amount, BasePriceCurrency = currency.ToUpperInvariant() };
+
+        return result;
+    }
+
+    private async Task<ApiResult> SaveDurationAsync(TimeSpan duration)
+    {
+        var result = await ServicesApiClient.UpdateDurationAsync(OrganizationId, ServiceId, duration, CancellationToken.None);
+        if (result.IsSuccess)
+            _service = _service! with { Duration = duration };
+
+        return result;
+    }
+
+    private async Task<ApiResult> SaveBufferBeforeAsync(TimeSpan bufferBefore)
+    {
+        var result = await ServicesApiClient.UpdateBuffersAsync(
+            OrganizationId, ServiceId, bufferBefore, _service!.BufferAfter, CancellationToken.None);
+        if (result.IsSuccess)
+            _service = _service with { BufferBefore = bufferBefore };
+
+        return result;
+    }
+
+    private async Task<ApiResult> SaveBufferAfterAsync(TimeSpan bufferAfter)
+    {
+        var result = await ServicesApiClient.UpdateBuffersAsync(
+            OrganizationId, ServiceId, _service!.BufferBefore, bufferAfter, CancellationToken.None);
+        if (result.IsSuccess)
+            _service = _service with { BufferAfter = bufferAfter };
+
+        return result;
+    }
+}

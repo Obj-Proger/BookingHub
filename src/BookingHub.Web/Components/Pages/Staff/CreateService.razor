@@ -1,0 +1,106 @@
+﻿@page "/app/{OrganizationId:guid}/services/new"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject IServicesApiClient ServicesApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>New service</PageTitle>
+
+<a class="back-link" href="@StaffRoutes.Services(OrganizationId)">&larr; Services</a>
+
+<h1>Add a service</h1>
+
+@if (!OrganizationRoles.CanManage(Membership.Role))
+{
+    <EmptyState Title="Not available"
+                Description="Only owners and administrators can add services." />
+}
+else
+{
+    <EditForm Model="_input" OnValidSubmit="SubmitAsync">
+        <DataAnnotationsValidator />
+        <div class="form-field">
+            <label>Name</label>
+            <InputText @bind-Value="_input.Name" />
+        </div>
+        <div class="form-field">
+            <label>Duration</label>
+            <DurationInput @bind-Value="_duration" />
+        </div>
+        <div class="form-field">
+            <label>Price</label>
+            <div class="price-inputs">
+                <InputNumber @bind-Value="_input.Amount" min="0" step="0.01" />
+                <InputText class="currency-input" maxlength="3" @bind-Value="_input.Currency" />
+            </div>
+        </div>
+        <div class="form-field">
+            <label>Buffer before</label>
+            <DurationInput @bind-Value="_bufferBefore" />
+        </div>
+        <div class="form-field">
+            <label>Buffer after</label>
+            <DurationInput @bind-Value="_bufferAfter" />
+        </div>
+        <div class="form-field">
+            <label>Color</label>
+            <InputText type="color" @bind-Value="_input.Color" />
+        </div>
+        <ValidationSummary />
+        @if (_error is not null)
+        {
+            <ErrorState Error="_error" />
+        }
+        <button type="submit" disabled="@_isSubmitting">@(_isSubmitting ? "Creating…" : "Create service")</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private readonly ServiceInput _input = new();
+    private TimeSpan _duration = TimeSpan.FromMinutes(30);
+    private TimeSpan _bufferBefore = TimeSpan.Zero;
+    private TimeSpan _bufferAfter = TimeSpan.Zero;
+    private ApiError? _error;
+    private bool _isSubmitting;
+
+    private async Task SubmitAsync()
+    {
+        _isSubmitting = true;
+        _error = null;
+        try
+        {
+            var result = await ServicesApiClient.CreateAsync(
+                OrganizationId, _input.Name.Trim(), _duration, _input.Amount, _input.Currency.Trim(),
+                _bufferBefore, _bufferAfter, _input.Color, CancellationToken.None);
+
+            if (!result.IsSuccess)
+            {
+                _error = result.Error;
+                return;
+            }
+
+            Navigation.NavigateTo(StaffRoutes.Service(OrganizationId, result.Value.ServiceId));
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private sealed class ServiceInput
+    {
+        [Required(ErrorMessage = "Name is required.")]
+        public string Name { get; set; } = string.Empty;
+
+        [Range(0, 1_000_000, ErrorMessage = "Enter a price of zero or more.")]
+        public decimal Amount { get; set; }
+
+        [Required(ErrorMessage = "Currency is required.")]
+        public string Currency { get; set; } = "USD";
+
+        public string Color { get; set; } = "#6b5bff";
+    }
+}

@@ -9,6 +9,7 @@ using BookingHub.Application.Features.Services.Commands.UpdateServiceColor;
 using BookingHub.Application.Features.Services.Commands.UpdateServiceDuration;
 using BookingHub.Application.Features.Services.Commands.UpdateServicePricing;
 using BookingHub.Application.Features.Services.Queries.GetService;
+using BookingHub.Application.Features.Services.Queries.GetServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -28,6 +29,13 @@ public sealed class ServicesController(IDispatcher dispatcher) : ApiControllerBa
                 organizationId, request.Name, request.Duration, request.BasePriceAmount, request.BasePriceCurrency,
                 request.BufferBefore, request.BufferAfter, request.Color),
             cancellationToken);
+        return HandleResult(result);
+    }
+
+    [HttpGet("services")]
+    public async Task<IActionResult> GetAll(Guid organizationId, CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(new GetServicesQuery(organizationId), cancellationToken);
         return HandleResult(result);
     }
 

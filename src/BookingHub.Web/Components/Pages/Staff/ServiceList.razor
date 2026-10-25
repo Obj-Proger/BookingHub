@@ -1,0 +1,67 @@
+﻿@page "/app/{OrganizationId:guid}/services"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject IServicesApiClient ServicesApiClient
+
+<PageTitle>Services</PageTitle>
+
+<h1>Services</h1>
+
+@if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_services is null)
+{
+    <LoadingState />
+}
+else if (_services.Count == 0)
+{
+    <EmptyState Title="No services yet"
+                Description="Services are what guests book — for example a haircut or a consultation.">
+        @if (CanCreate)
+        {
+            <a class="button-link" href="@StaffRoutes.NewService(OrganizationId)">Add a service</a>
+        }
+    </EmptyState>
+}
+else
+{
+    <div class="card-list">
+        @foreach (var service in _services)
+        {
+            <a class="card" href="@StaffRoutes.Service(OrganizationId, service.ServiceId)">
+                <h2><span class="color-dot" style="background-color: @service.Color"></span>@service.Name</h2>
+                <p>@DisplayFormat.Duration(service.Duration) · @DisplayFormat.Price(service.BasePriceAmount, service.BasePriceCurrency)</p>
+            </a>
+        }
+    </div>
+
+    @if (CanCreate)
+    {
+        <a class="button-link" href="@StaffRoutes.NewService(OrganizationId)">Add a service</a>
+    }
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private IReadOnlyList<ServiceResponse>? _services;
+    private ApiError? _error;
+
+    private bool CanCreate => OrganizationRoles.CanManage(Membership.Role);
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var result = await ServicesApiClient.GetAllAsync(OrganizationId, CancellationToken.None);
+        if (result.IsSuccess)
+            _services = result.Value;
+        else
+            _error = result.Error;
+    }
+}

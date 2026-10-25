@@ -1,0 +1,49 @@
+﻿<span class="duration-input">
+    <input type="number" min="0" max="@MaxAmount" @bind="_amount" @bind:after="OnChangedAsync" disabled="@ReadOnly" />
+    <select @bind="_unit" @bind:after="OnChangedAsync" disabled="@ReadOnly">
+        @foreach (var unit in Enum.GetValues<DurationUnit>())
+        {
+            <option value="@unit">@unit.ToString().ToLowerInvariant()</option>
+        }
+    </select>
+</span>
+
+@code {
+    private const int MaxAmount = 99_999;
+
+    [Parameter] public TimeSpan Value { get; set; }
+    [Parameter] public EventCallback<TimeSpan> ValueChanged { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private enum DurationUnit { Minutes, Hours, Days }
+
+    private int _amount;
+    private DurationUnit _unit;
+
+    protected override void OnInitialized() => (_amount, _unit) = Split(Value);
+
+    /// <summary>Shows the value in the largest unit that represents it exactly; sub-minute remainders are rounded.</summary>
+    private static (int Amount, DurationUnit Unit) Split(TimeSpan value)
+    {
+        if (value >= TimeSpan.FromDays(1) && value.Ticks % TimeSpan.TicksPerDay == 0)
+            return ((int)value.TotalDays, DurationUnit.Days);
+
+        if (value >= TimeSpan.FromHours(1) && value.Ticks % TimeSpan.TicksPerHour == 0)
+            return ((int)value.TotalHours, DurationUnit.Hours);
+
+        return ((int)Math.Round(value.TotalMinutes), DurationUnit.Minutes);
+    }
+
+    private TimeSpan ToTimeSpan() => _unit switch
+    {
+        DurationUnit.Days => TimeSpan.FromDays(_amount),
+        DurationUnit.Hours => TimeSpan.FromHours(_amount),
+        _ => TimeSpan.FromMinutes(_amount)
+    };
+
+    private async Task OnChangedAsync()
+    {
+        _amount = Math.Clamp(_amount, 0, MaxAmount);
+        await ValueChanged.InvokeAsync(ToTimeSpan());
+    }
+}

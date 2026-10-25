@@ -13,6 +13,12 @@ internal static class StaffRoutes
 
     public static string Location(Guid organizationId, Guid locationId) => $"{Locations(organizationId)}/{locationId}";
 
+    public static string Services(Guid organizationId) => $"{Organization(organizationId)}/services";
+
+    public static string NewService(Guid organizationId) => $"{Services(organizationId)}/new";
+
+    public static string Service(Guid organizationId, Guid serviceId) => $"{Services(organizationId)}/{serviceId}";
+
     /// <summary>Extracts the organization id from a URI shaped like /app/{organizationId}/…</summary>
     public static bool TryGetOrganizationId(string uri, out Guid organizationId)
     {

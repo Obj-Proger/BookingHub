@@ -1,0 +1,52 @@
+﻿<div class="form-field">
+    <label>@Label</label>
+    <div class="price-inputs">
+        <input type="number" min="0" step="0.01" @bind="_amount" disabled="@ReadOnly" />
+        <input class="currency-input" maxlength="3" @bind="_currency" disabled="@ReadOnly" />
+        @if (!ReadOnly)
+        {
+            <button type="button" disabled="@_isSaving" @onclick="SaveAsync">@(_isSaving ? "Saving…" : "Save")</button>
+        }
+    </div>
+</div>
+@if (!ReadOnly)
+{
+    <SaveStatus Saved="_saved" Error="_error" />
+}
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public decimal Amount { get; set; }
+    [Parameter, EditorRequired] public string Currency { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public Func<decimal, string, Task<ApiResult>> Save { get; set; } = default!;
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private decimal _amount;
+    private string _currency = string.Empty;
+    private ApiError? _error;
+    private bool _saved;
+    private bool _isSaving;
+
+    protected override void OnInitialized()
+    {
+        _amount = Amount;
+        _currency = Currency;
+    }
+
+    private async Task SaveAsync()
+    {
+        _isSaving = true;
+        _saved = false;
+        _error = null;
+        try
+        {
+            var result = await Save(_amount, _currency.Trim());
+            _error = result.Error;
+            _saved = result.IsSuccess;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+}

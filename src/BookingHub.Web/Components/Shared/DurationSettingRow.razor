@@ -1,0 +1,52 @@
+﻿<div class="duration-row">
+    <div>
+        <strong>@Label</strong>
+        @if (Description is not null)
+        {
+            <p class="hint">@Description</p>
+        }
+    </div>
+    <div class="duration-inputs">
+        <DurationInput @bind-Value="_value" ReadOnly="ReadOnly" />
+        @if (!ReadOnly)
+        {
+            <button type="button" disabled="@_isSaving" @onclick="SaveAsync">@(_isSaving ? "Saving…" : "Save")</button>
+        }
+    </div>
+    @if (!ReadOnly)
+    {
+        <SaveStatus Saved="_saved" Error="_error" />
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter] public string? Description { get; set; }
+    [Parameter, EditorRequired] public TimeSpan Value { get; set; }
+    [Parameter, EditorRequired] public Func<TimeSpan, Task<ApiResult>> Save { get; set; } = default!;
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private TimeSpan _value;
+    private ApiError? _error;
+    private bool _saved;
+    private bool _isSaving;
+
+    protected override void OnInitialized() => _value = Value;
+
+    private async Task SaveAsync()
+    {
+        _isSaving = true;
+        _saved = false;
+        _error = null;
+        try
+        {
+            var result = await Save(_value);
+            _error = result.Error;
+            _saved = result.IsSuccess;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+}

@@ -91,3 +91,36 @@ a.card {
     .hours-table td {
         padding: 0.35rem 1rem 0.35rem 0;
     }
+
+.color-dot {
+    display: inline-block;
+    width: 0.8rem;
+    height: 0.8rem;
+    margin-right: 0.5rem;
+    border-radius: 50%;
+}
+
+.price-inputs {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+    .price-inputs input {
+        width: 8rem;
+    }
+
+    .price-inputs .currency-input {
+        width: 4rem;
+        text-transform: uppercase;
+    }
+
+.duration-input {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+    .duration-input input {
+        width: 6rem;
+    }

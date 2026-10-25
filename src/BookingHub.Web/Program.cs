@@ -32,6 +32,7 @@ builder.Services.AddScoped<AuthorizedApiClient>();
 builder.Services.AddScoped<IMeApiClient, MeApiClient>();
 builder.Services.AddScoped<IOrganizationsApiClient, OrganizationsApiClient>();
 builder.Services.AddScoped<ILocationsApiClient, LocationsApiClient>();
+builder.Services.AddScoped<IServicesApiClient, ServicesApiClient>();
 builder.Services.AddScoped<MembershipCache>();
 
 var app = builder.Build();
