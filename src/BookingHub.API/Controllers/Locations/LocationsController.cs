@@ -4,6 +4,7 @@ using BookingHub.Application.Features.Locations.Commands.RenameLocation;
 using BookingHub.Application.Features.Locations.Commands.UpdateLocationAddress;
 using BookingHub.Application.Features.Locations.Commands.UpdateLocationWorkingHours;
 using BookingHub.Application.Features.Locations.Queries.GetLocation;
+using BookingHub.Application.Features.Locations.Queries.GetLocations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,6 +19,13 @@ public sealed class LocationsController(IDispatcher dispatcher) : ApiControllerB
     {
         var result = await dispatcher.Send(
             new CreateLocationCommand(organizationId, request.Name, request.Address, request.TimeZone, request.WorkingHours), cancellationToken);
+        return HandleResult(result);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAll(Guid organizationId, CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(new GetLocationsQuery(organizationId), cancellationToken);
         return HandleResult(result);
     }
 

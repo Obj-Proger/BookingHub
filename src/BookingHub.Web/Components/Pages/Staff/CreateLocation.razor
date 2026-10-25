@@ -1,0 +1,102 @@
+﻿@page "/app/{OrganizationId:guid}/locations/new"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject ILocationsApiClient LocationsApiClient
+@inject NavigationManager Navigation
+@inject TimeProvider Clock
+
+<PageTitle>New location</PageTitle>
+
+<a class="back-link" href="@StaffRoutes.Locations(OrganizationId)">&larr; Locations</a>
+
+<h1>Add a location</h1>
+
+@if (!OrganizationRoles.CanManage(Membership.Role))
+{
+    <EmptyState Title="Not available"
+                Description="Only owners and administrators can add locations." />
+}
+else
+{
+    <EditForm Model="_input" OnValidSubmit="SubmitAsync">
+        <DataAnnotationsValidator />
+        <div class="form-field">
+            <label>Name</label>
+            <InputText @bind-Value="_input.Name" />
+        </div>
+        <div class="form-field">
+            <label>Address</label>
+            <InputText @bind-Value="_input.Address" />
+        </div>
+        <div class="form-field">
+            <label>Time zone</label>
+            <InputSelect @bind-Value="_input.TimeZone">
+                <option value="">Select a time zone…</option>
+                @foreach (var option in _timeZones)
+                {
+                    <option value="@option.Id">@option.Label</option>
+                }
+            </InputSelect>
+        </div>
+        <p class="hint">The time zone cannot be changed later.</p>
+
+        <h2>Working hours</h2>
+        <WorkingHoursEditor Rows="_rows" />
+
+        <ValidationSummary />
+        @if (_error is not null)
+        {
+            <ErrorState Error="_error" />
+        }
+        <button type="submit" disabled="@_isSubmitting">@(_isSubmitting ? "Creating…" : "Create location")</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private readonly LocationInput _input = new();
+    private readonly List<WorkingHoursRow> _rows = WorkingHoursRows.CreateDefault();
+    private IReadOnlyList<TimeZoneOption> _timeZones = [];
+    private ApiError? _error;
+    private bool _isSubmitting;
+
+    protected override void OnInitialized() => _timeZones = TimeZoneCatalog.GetOptions(Clock.GetUtcNow());
+
+    private async Task SubmitAsync()
+    {
+        _isSubmitting = true;
+        _error = null;
+        try
+        {
+            var result = await LocationsApiClient.CreateAsync(
+                OrganizationId, _input.Name.Trim(), _input.Address.Trim(), _input.TimeZone,
+                WorkingHoursRows.ToDtos(_rows), CancellationToken.None);
+
+            if (!result.IsSuccess)
+            {
+                _error = result.Error;
+                return;
+            }
+
+            Navigation.NavigateTo(StaffRoutes.Location(OrganizationId, result.Value.LocationId));
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private sealed class LocationInput
+    {
+        [Required(ErrorMessage = "Name is required.")]
+        public string Name { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Address is required.")]
+        public string Address { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "Select a time zone.")]
+        public string TimeZone { get; set; } = string.Empty;
+    }
+}

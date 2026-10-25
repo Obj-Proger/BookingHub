@@ -1,0 +1,63 @@
+﻿@page "/app/{OrganizationId:guid}/locations/{LocationId:guid}"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject ILocationsApiClient LocationsApiClient
+
+<PageTitle>@(_location?.Name ?? "Location")</PageTitle>
+
+<a class="back-link" href="@StaffRoutes.Locations(OrganizationId)">&larr; Locations</a>
+
+@if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_location is null)
+{
+    <LoadingState />
+}
+else
+{
+    <h1>@_location.Name</h1>
+
+    <section class="settings-section">
+        <h2>Details</h2>
+        <TextSettingRow Label="Name"
+                        Value="@_location.Name"
+                        ReadOnly="!CanEdit"
+                        Save="@(newName => LocationsApiClient.RenameAsync(OrganizationId, LocationId, newName, CancellationToken.None))"
+                        OnSaved="OnRenamed" />
+        <TextSettingRow Label="Address"
+                        Value="@_location.Address"
+                        ReadOnly="!CanEdit"
+                        Save="@(newAddress => LocationsApiClient.UpdateAddressAsync(OrganizationId, LocationId, newAddress, CancellationToken.None))" />
+        <p class="hint">Time zone: <strong>@_location.TimeZone</strong> (cannot be changed)</p>
+    </section>
+
+    <WorkingHoursSection OrganizationId="OrganizationId" Location="_location" ReadOnly="!CanEdit" />
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [Parameter] public Guid LocationId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private LocationResponse? _location;
+    private ApiError? _error;
+
+    private bool CanEdit => OrganizationRoles.CanManageLocation(Membership, LocationId);
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var result = await LocationsApiClient.GetAsync(OrganizationId, LocationId, CancellationToken.None);
+        if (result.IsSuccess)
+            _location = result.Value;
+        else
+            _error = result.Error;
+    }
+
+    private void OnRenamed(string newName) => _location = _location! with { Name = newName };
+}

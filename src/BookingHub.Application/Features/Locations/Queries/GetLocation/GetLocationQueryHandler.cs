@@ -11,11 +11,12 @@ internal sealed class GetLocationQueryHandler(IApplicationDbContext dbContext)
 {
     public async Task<Result<LocationResponse>> Handle(GetLocationQuery query, CancellationToken cancellationToken)
     {
-        var response = await dbContext.Locations
-            .Where(l => l.Id == query.LocationId && l.OrganizationId == query.OrganizationId)
-            .Select(l => new LocationResponse(l.Id, l.Name, l.Address.Value, l.TimeZone))
-            .FirstOrDefaultAsync(cancellationToken);
+        var location = await dbContext.Locations
+            .AsNoTracking()
+            .FirstOrDefaultAsync(l => l.Id == query.LocationId && l.OrganizationId == query.OrganizationId, cancellationToken);
 
-        return response is not null ? response : Result.Failure<LocationResponse>(ApplicationErrors.Location.NotFound);
+        return location is not null
+            ? LocationResponseMapper.ToResponse(location)
+            : Result.Failure<LocationResponse>(ApplicationErrors.Location.NotFound);
     }
 }

@@ -1,0 +1,68 @@
+﻿@page "/app/{OrganizationId:guid}/locations"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject ILocationsApiClient LocationsApiClient
+
+<PageTitle>Locations</PageTitle>
+
+<h1>Locations</h1>
+
+@if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_locations is null)
+{
+    <LoadingState />
+}
+else if (_locations.Count == 0)
+{
+    <EmptyState Title="No locations yet"
+                Description="A location is a place where your team works. Add one to start setting up services and employees.">
+        @if (CanCreate)
+        {
+            <a class="button-link" href="@StaffRoutes.NewLocation(OrganizationId)">Add a location</a>
+        }
+    </EmptyState>
+}
+else
+{
+    <div class="card-list">
+        @foreach (var location in _locations)
+        {
+            <a class="card" href="@StaffRoutes.Location(OrganizationId, location.LocationId)">
+                <h2>@location.Name</h2>
+                <p>@location.Address</p>
+                <p class="hint">@location.TimeZone</p>
+            </a>
+        }
+    </div>
+
+    @if (CanCreate)
+    {
+        <a class="button-link" href="@StaffRoutes.NewLocation(OrganizationId)">Add a location</a>
+    }
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private IReadOnlyList<LocationResponse>? _locations;
+    private ApiError? _error;
+
+    private bool CanCreate => OrganizationRoles.CanManage(Membership.Role);
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var result = await LocationsApiClient.GetAllAsync(OrganizationId, CancellationToken.None);
+        if (result.IsSuccess)
+            _locations = result.Value;
+        else
+            _error = result.Error;
+    }
+}

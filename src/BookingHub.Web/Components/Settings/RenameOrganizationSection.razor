@@ -3,57 +3,15 @@
 
 <section class="settings-section">
     <h2>General</h2>
-    <EditForm Model="_input" OnValidSubmit="SaveAsync" FormName="rename-organization">
-        <DataAnnotationsValidator />
-        <div class="form-field">
-            <label>Name</label>
-            <InputText @bind-Value="_input.Name" />
-        </div>
-        <ValidationSummary />
-        <SaveStatus Saved="_saved" Error="_error" />
-        <button type="submit" disabled="@_isSaving">@(_isSaving ? "Saving…" : "Save")</button>
-    </EditForm>
+    <TextSettingRow Label="Name"
+                    Value="@Organization.Name"
+                    Save="@(newName => OrganizationsApiClient.RenameAsync(Organization.OrganizationId, newName, CancellationToken.None))"
+                    OnSaved="OnRenamed" />
     <p class="hint">Booking address: <code>/book/@Organization.Slug</code></p>
 </section>
 
 @code {
     [Parameter, EditorRequired] public OrganizationResponse Organization { get; set; } = default!;
 
-    private readonly NameInput _input = new();
-    private ApiError? _error;
-    private bool _saved;
-    private bool _isSaving;
-
-    protected override void OnInitialized() => _input.Name = Organization.Name;
-
-    private async Task SaveAsync()
-    {
-        _isSaving = true;
-        _saved = false;
-        _error = null;
-        try
-        {
-            var newName = _input.Name.Trim();
-            var result = await OrganizationsApiClient.RenameAsync(Organization.OrganizationId, newName, CancellationToken.None);
-            if (!result.IsSuccess)
-            {
-                _error = result.Error;
-                return;
-            }
-
-            _input.Name = newName;
-            Memberships.RenameOrganization(Organization.OrganizationId, newName);
-            _saved = true;
-        }
-        finally
-        {
-            _isSaving = false;
-        }
-    }
-
-    private sealed class NameInput
-    {
-        [Required(ErrorMessage = "Name is required.")]
-        public string Name { get; set; } = string.Empty;
-    }
+    private void OnRenamed(string newName) => Memberships.RenameOrganization(Organization.OrganizationId, newName);
 }

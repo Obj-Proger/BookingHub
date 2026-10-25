@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using BookingHub.Web.Api;
 using BookingHub.Web.Api.Contracts;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -20,6 +21,23 @@ internal sealed class AuthorizedApiClient(
 {
     public const string HttpClientName = "api-authorized";
 
+    public Task<ApiResult<T>> GetJsonAsync<T>(string uri, CancellationToken cancellationToken) =>
+        SendJsonAsync<T>(HttpMethod.Get, uri, body: null, cancellationToken);
+
+    /// <summary>Sends <paramref name="body"/> as JSON (if any) and reads the JSON response as <typeparamref name="T"/>.</summary>
+    public async Task<ApiResult<T>> SendJsonAsync<T>(HttpMethod method, string uri, object? body, CancellationToken cancellationToken)
+    {
+        using var response = await SendAsync(() => CreateJsonRequest(method, uri, body), cancellationToken);
+        return await ApiResponseReader.ReadAsync<T>(response, cancellationToken);
+    }
+
+    /// <summary>Sends <paramref name="body"/> as JSON (if any) to an endpoint that answers without a body.</summary>
+    public async Task<ApiResult> SendJsonAsync(HttpMethod method, string uri, object? body, CancellationToken cancellationToken)
+    {
+        using var response = await SendAsync(() => CreateJsonRequest(method, uri, body), cancellationToken);
+        return await ApiResponseReader.ReadAsync(response, cancellationToken);
+    }
+
     /// <param name="createRequest">
     /// A factory rather than a request: an <see cref="HttpRequestMessage"/> cannot be sent twice,
     /// and a 401 is retried once after refreshing the tokens.
@@ -39,6 +57,12 @@ internal sealed class AuthorizedApiClient(
             return new HttpResponseMessage(HttpStatusCode.ServiceUnavailable);
         }
     }
+
+    private static HttpRequestMessage CreateJsonRequest(HttpMethod method, string uri, object? body) =>
+        new(method, uri)
+        {
+            Content = body is null ? null : JsonContent.Create(body, body.GetType(), options: ApiJsonOptions.Default)
+        };
 
     private async Task<HttpResponseMessage> SendWithRefreshAsync(Func<HttpRequestMessage> createRequest, CancellationToken cancellationToken)
     {

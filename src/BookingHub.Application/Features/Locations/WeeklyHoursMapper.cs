@@ -3,7 +3,7 @@ using BookingHub.Domain.ValueObjects;
 
 namespace BookingHub.Application.Features.Locations;
 
-/// <summary>Converts the wire-friendly <see cref="DailyHoursDto"/> list into a validated <see cref="WeeklyHours"/>.</summary>
+/// <summary>Converts between the wire-friendly <see cref="DailyHoursDto"/> list and a validated <see cref="WeeklyHours"/>.</summary>
 internal static class WeeklyHoursMapper
 {
     public static Result<WeeklyHours> ToDomain(IReadOnlyList<DailyHoursDto> workingHours)
@@ -27,4 +27,7 @@ internal static class WeeklyHoursMapper
 
         return WeeklyHours.Create(dailyHours);
     }
+
+    public static IReadOnlyList<DailyHoursDto> ToDtos(WeeklyHours weeklyHours) =>
+        [.. weeklyHours.Days.Select(day => new DailyHoursDto(day.DayOfWeek, day.OpenTime, day.CloseTime))];
 }

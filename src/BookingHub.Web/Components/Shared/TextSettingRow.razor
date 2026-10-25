@@ -1,0 +1,59 @@
+﻿<EditForm Model="_input" OnValidSubmit="SaveAsync">
+    <DataAnnotationsValidator />
+    <div class="form-field">
+        <label>@Label</label>
+        <InputText @bind-Value="_input.Value" disabled="@ReadOnly" />
+    </div>
+    <ValidationSummary />
+    @if (!ReadOnly)
+    {
+        <SaveStatus Saved="_saved" Error="_error" />
+        <button type="submit" disabled="@_isSaving">@(_isSaving ? "Saving…" : "Save")</button>
+    }
+</EditForm>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public string Value { get; set; } = string.Empty;
+    [Parameter, EditorRequired] public Func<string, Task<ApiResult>> Save { get; set; } = default!;
+    [Parameter] public EventCallback<string> OnSaved { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private readonly TextInput _input = new();
+    private ApiError? _error;
+    private bool _saved;
+    private bool _isSaving;
+
+    protected override void OnInitialized() => _input.Value = Value;
+
+    private async Task SaveAsync()
+    {
+        _isSaving = true;
+        _saved = false;
+        _error = null;
+        try
+        {
+            var trimmed = _input.Value.Trim();
+            var result = await Save(trimmed);
+            if (!result.IsSuccess)
+            {
+                _error = result.Error;
+                return;
+            }
+
+            _input.Value = trimmed;
+            _saved = true;
+            await OnSaved.InvokeAsync(trimmed);
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+
+    private sealed class TextInput
+    {
+        [Required(ErrorMessage = "A value is required.")]
+        public string Value { get; set; } = string.Empty;
+    }
+}

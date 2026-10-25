@@ -1,0 +1,43 @@
+﻿@inject ILocationsApiClient LocationsApiClient
+
+<section class="settings-section">
+    <h2>Working hours</h2>
+    <WorkingHoursEditor Rows="_rows" ReadOnly="ReadOnly" />
+    @if (!ReadOnly)
+    {
+        <SaveStatus Saved="_saved" Error="_error" />
+        <button type="button" disabled="@_isSaving" @onclick="SaveAsync">@(_isSaving ? "Saving…" : "Save")</button>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public Guid OrganizationId { get; set; }
+    [Parameter, EditorRequired] public LocationResponse Location { get; set; } = default!;
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private List<WorkingHoursRow> _rows = [];
+    private ApiError? _error;
+    private bool _saved;
+    private bool _isSaving;
+
+    protected override void OnInitialized() => _rows = WorkingHoursRows.FromDtos(Location.WorkingHours);
+
+    private async Task SaveAsync()
+    {
+        _isSaving = true;
+        _saved = false;
+        _error = null;
+        try
+        {
+            var result = await LocationsApiClient.UpdateWorkingHoursAsync(
+                OrganizationId, Location.LocationId, WorkingHoursRows.ToDtos(_rows), CancellationToken.None);
+
+            _error = result.Error;
+            _saved = result.IsSuccess;
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+}

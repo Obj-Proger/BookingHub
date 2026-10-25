@@ -1,0 +1,33 @@
+﻿<table class="hours-table">
+    <tbody>
+        @foreach (var row in Rows)
+        {
+            <tr>
+                <td>@row.Day</td>
+                <td>
+                    <label class="checkbox-row">
+                        <input type="checkbox" @bind="row.IsOpen" disabled="@ReadOnly" />
+                        <span>Open</span>
+                    </label>
+                </td>
+                <td>
+                    @if (row.IsOpen)
+                    {
+                        <input type="time" @bind="row.OpenTime" disabled="@ReadOnly" />
+                        <span>–</span>
+                        <input type="time" @bind="row.CloseTime" disabled="@ReadOnly" />
+                    }
+                    else
+                    {
+                        <span class="hint">Closed</span>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<WorkingHoursRow> Rows { get; set; } = default!;
+    [Parameter] public bool ReadOnly { get; set; }
+}

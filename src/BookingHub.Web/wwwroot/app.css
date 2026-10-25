@@ -62,3 +62,32 @@
         opacity: 0.5;
         cursor: not-allowed;
     }
+
+
+a.card {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+}
+
+    a.card:hover {
+        border-color: #6b5bff;
+    }
+
+.button-link {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: #6b5bff;
+    color: white;
+    border-radius: 0.5rem;
+    text-decoration: none;
+}
+
+.hours-table {
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+}
+
+    .hours-table td {
+        padding: 0.35rem 1rem 0.35rem 0;
+    }
