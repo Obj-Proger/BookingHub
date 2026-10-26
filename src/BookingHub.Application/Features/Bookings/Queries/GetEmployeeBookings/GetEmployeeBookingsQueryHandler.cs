@@ -19,9 +19,7 @@ internal sealed class GetEmployeeBookingsQueryHandler(IApplicationDbContext dbCo
         if (locationTimeZoneId is null)
             return Result.Failure<IReadOnlyList<EmployeeBookingResponse>>(ApplicationErrors.Location.NotFound);
 
-        var timeZone = TimeZoneInfo.FindSystemTimeZoneById(locationTimeZoneId);
-        var dayStartUtc = TimeZoneInfo.ConvertTimeToUtc(query.Date.ToDateTime(TimeOnly.MinValue), timeZone);
-        var dayEndUtc = TimeZoneInfo.ConvertTimeToUtc(query.Date.AddDays(1).ToDateTime(TimeOnly.MinValue), timeZone);
+        var (dayStartUtc, dayEndUtc) = LocationDayRange.ToUtc(locationTimeZoneId, query.Date);
 
         var bookings = await (
             from b in dbContext.Bookings

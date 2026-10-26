@@ -4,7 +4,7 @@
 /// Converts between UTC instants and the wall-clock time of a single location.
 /// The Web host runs on the server, so its own local time zone is never the guest's or the location's.
 /// </summary>
-internal sealed class LocationTime
+public sealed class LocationTime
 {
     // The API rejects a waitlist window that starts before its own "now", so the window
     // never starts earlier than this margin ahead of the Web host's clock.

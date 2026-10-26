@@ -13,6 +13,7 @@ internal static class StaffNavigation
     private static readonly StaffNavItem[] Items =
     [
         new("Overview", "", AllRoles),
+        new("Bookings", "bookings", AllRoles),
         new("Locations", "locations", OrganizationRoles.LocationManagement),
         new("Services", "services", OrganizationRoles.LocationManagement),
         new("Employees", "employees", OrganizationRoles.LocationManagement),

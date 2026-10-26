@@ -1,0 +1,17 @@
+﻿<span class="status-badge status-@Status.ToString().ToLowerInvariant()">@Label</span>
+
+@code {
+    [Parameter, EditorRequired] public BookingStatus Status { get; set; }
+
+    private string Label => Status switch
+    {
+        BookingStatus.Pending => "Awaiting confirmation",
+        BookingStatus.Confirmed => "Confirmed",
+        BookingStatus.AwaitingReview => "Needs review",
+        BookingStatus.Completed => "Completed",
+        BookingStatus.NoShow => "No-show",
+        BookingStatus.Cancelled => "Cancelled",
+        BookingStatus.Expired => "Expired",
+        _ => Status.ToString()
+    };
+}

@@ -203,3 +203,72 @@ a.card {
     align-items: center;
     gap: 0.4rem;
 }
+
+.booking-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.booking-row {
+    display: grid;
+    grid-template-columns: 8rem 1fr auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.5rem;
+    background: white;
+    border: 1px solid #e3e3e6;
+    border-radius: 0.75rem;
+}
+
+.booking-needs-review {
+    border-color: #e0b04a;
+}
+
+.booking-time {
+    font-weight: 600;
+}
+
+.booking-main {
+    display: flex;
+    flex-direction: column;
+}
+
+.booking-side {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-badge {
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    background: #eceef1;
+    color: #424752;
+}
+
+.status-confirmed {
+    background: #e3f3e6;
+    color: #226a33;
+}
+
+.status-awaitingreview {
+    background: #fff0cf;
+    color: #8a5a00;
+}
+
+.status-completed {
+    background: #dfeeff;
+    color: #1b5dab;
+}
+
+.status-noshow,
+.status-cancelled,
+.status-expired {
+    background: #f4e4e4;
+    color: #8a2f2f;
+}

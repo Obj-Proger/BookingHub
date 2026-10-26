@@ -1,0 +1,221 @@
+﻿@page "/app/{OrganizationId:guid}/bookings"
+@attribute [Authorize]
+@layout OrganizationLayout
+@using System.Globalization
+@inject ILocationsApiClient LocationsApiClient
+@inject IMeApiClient MeApiClient
+@inject IStaffBookingsApiClient BookingsApiClient
+@inject TimeProvider Clock
+
+<PageTitle>Bookings</PageTitle>
+
+<h1>Bookings</h1>
+
+@if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="InitializeAsync" />
+}
+else if (_locations is null)
+{
+    <LoadingState />
+}
+else if (_locations.Count == 0)
+{
+    <EmptyState Title="No bookings to show"
+                Description="There are no locations whose bookings you can see yet." />
+}
+else
+{
+    <div class="booking-toolbar">
+        @if (_locations.Count > 1)
+        {
+            <select value="@_locationId" @onchange="OnLocationChanged">
+                @foreach (var location in _locations)
+                {
+                    <option value="@location.LocationId">@location.Name</option>
+                }
+            </select>
+        }
+        else
+        {
+            <strong>@_locations[0].Name</strong>
+        }
+
+        <button type="button" @onclick="() => ShiftDayAsync(-1)" aria-label="Previous day">&lsaquo;</button>
+        <input type="date" value="@DateText" @onchange="OnDateChanged" />
+        <button type="button" @onclick="() => ShiftDayAsync(1)" aria-label="Next day">&rsaquo;</button>
+        <button type="button" class="link-button" @onclick="GoToTodayAsync">Today</button>
+    </div>
+
+    <p class="hint">Times are local to @_zone!.ZoneId</p>
+
+    @if (_bookingError is not null)
+    {
+        <ErrorState Error="_bookingError" OnRetry="LoadBookingsAsync" />
+    }
+    else if (_bookings is null)
+    {
+        <LoadingState />
+    }
+    else if (_bookings.Count == 0)
+    {
+        <p class="hint">No bookings on this day.</p>
+    }
+    else
+    {
+        @foreach (var booking in _bookings)
+        {
+            <BookingRow @key="booking.BookingId"
+                        OrganizationId="OrganizationId"
+                        LocationId="_locationId"
+                        Booking="booking"
+                        Zone="_zone"
+                        OnChanged="OnBookingChanged" />
+        }
+    }
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private IReadOnlyList<LocationResponse>? _locations;
+    private LocationTime? _zone;
+    private Guid _locationId;
+    private DateOnly _date;
+    private List<StaffBooking>? _bookings;
+    private ApiError? _error;
+    private ApiError? _bookingError;
+    private int _loadVersion;
+
+    private bool IsEmployeeView => Membership.Role == OrganizationRole.Employee;
+
+    private string DateText => _date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    protected override Task OnInitializedAsync() => InitializeAsync();
+
+    private async Task InitializeAsync()
+    {
+        _error = null;
+
+        if (IsEmployeeView && Membership.EmployeeId is null)
+        {
+            _locations = [];
+            return;
+        }
+
+        var locationsTask = LocationsApiClient.GetAllAsync(OrganizationId, CancellationToken.None);
+        var locations = await locationsTask;
+        if (!locations.IsSuccess)
+        {
+            _error = locations.Error;
+            return;
+        }
+
+        IReadOnlyList<LocationResponse> visible;
+        if (IsEmployeeView)
+        {
+            var myLocations = await MeApiClient.GetMyEmployeeLocationsAsync(OrganizationId, CancellationToken.None);
+            if (!myLocations.IsSuccess)
+            {
+                _error = myLocations.Error;
+                return;
+            }
+
+            var myLocationIds = myLocations.Value.Select(l => l.LocationId).ToHashSet();
+            visible = [.. locations.Value.Where(l => myLocationIds.Contains(l.LocationId))];
+        }
+        else
+        {
+            visible = [.. locations.Value.Where(l => OrganizationRoles.CanManageLocation(Membership, l.LocationId))];
+        }
+
+        _locations = visible;
+        if (visible.Count == 0)
+            return;
+
+        SelectLocation(visible[0].LocationId);
+        _date = _zone!.Today(Clock);
+        await LoadBookingsAsync();
+    }
+
+    private void SelectLocation(Guid locationId)
+    {
+        _locationId = locationId;
+        _zone = LocationTime.FromZoneId(_locations!.First(l => l.LocationId == locationId).TimeZone);
+    }
+
+    private async Task OnLocationChanged(ChangeEventArgs e)
+    {
+        if (!Guid.TryParse(e.Value?.ToString(), out var locationId))
+            return;
+
+        SelectLocation(locationId);
+        await LoadBookingsAsync();
+    }
+
+    private async Task OnDateChanged(ChangeEventArgs e)
+    {
+        if (!DateOnly.TryParseExact(e.Value?.ToString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            return;
+
+        _date = date;
+        await LoadBookingsAsync();
+    }
+
+    private Task ShiftDayAsync(int days)
+    {
+        _date = _date.AddDays(days);
+        return LoadBookingsAsync();
+    }
+
+    private Task GoToTodayAsync()
+    {
+        _date = _zone!.Today(Clock);
+        return LoadBookingsAsync();
+    }
+
+    private async Task LoadBookingsAsync()
+    {
+        var version = ++_loadVersion;
+        _bookings = null;
+        _bookingError = null;
+
+        List<StaffBooking> bookings;
+
+        if (IsEmployeeView)
+        {
+            var employeeId = Membership.EmployeeId!.Value;
+            var result = await BookingsApiClient.GetEmployeeDayAsync(OrganizationId, _locationId, employeeId, _date, CancellationToken.None);
+            if (version != _loadVersion)
+                return;
+
+            if (!result.IsSuccess)
+            {
+                _bookingError = result.Error;
+                return;
+            }
+
+            bookings = [.. result.Value.Select(booking => StaffBookings.From(booking, employeeId))];
+        }
+        else
+        {
+            var result = await BookingsApiClient.GetLocationDayAsync(OrganizationId, _locationId, _date, CancellationToken.None);
+            if (version != _loadVersion)
+                return;
+
+            if (!result.IsSuccess)
+            {
+                _bookingError = result.Error;
+                return;
+            }
+
+            bookings = [.. result.Value.Select(StaffBookings.From)];
+        }
+
+        _bookings = bookings;
+    }
+
+    private void OnBookingChanged(StaffBooking changed) =>
+        _bookings = [.. _bookings!.Select(booking => booking.BookingId == changed.BookingId ? changed : booking)];
+}

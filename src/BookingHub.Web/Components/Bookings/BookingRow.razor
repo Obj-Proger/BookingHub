@@ -1,0 +1,68 @@
+﻿@inject IStaffBookingsApiClient BookingsApiClient
+
+<div class="@RowClass">
+    <div class="booking-time">@Time(Booking.StartUtc)–@Time(Booking.EndUtc)</div>
+    <div class="booking-main">
+        <strong>@Booking.ServiceName</strong>
+        <span>@(Booking.ClientName ?? "Guest") · @Booking.ClientPhone</span>
+        @if (Booking.EmployeeName is not null)
+        {
+            <span class="hint">with @Booking.EmployeeName</span>
+        }
+    </div>
+    <div class="booking-side">
+        <StatusBadge Status="Booking.Status" />
+        @if (Booking.Status == BookingStatus.AwaitingReview)
+        {
+            <button type="button" disabled="@_isBusy" @onclick="MarkCompletedAsync">Completed</button>
+            <button type="button" class="link-button" disabled="@_isBusy" @onclick="MarkNoShowAsync">No-show</button>
+        }
+    </div>
+    <SaveStatus Error="_error" />
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Guid OrganizationId { get; set; }
+    [Parameter, EditorRequired] public Guid LocationId { get; set; }
+    [Parameter, EditorRequired] public StaffBooking Booking { get; set; } = default!;
+    [Parameter, EditorRequired] public LocationTime Zone { get; set; } = default!;
+    [Parameter] public EventCallback<StaffBooking> OnChanged { get; set; }
+
+    private ApiError? _error;
+    private bool _isBusy;
+
+    private string RowClass => Booking.Status == BookingStatus.AwaitingReview ? "booking-row booking-needs-review" : "booking-row";
+
+    private string Time(DateTime utc) => DisplayFormat.Time(TimeOnly.FromDateTime(Zone.ToLocal(utc)));
+
+    private Task MarkCompletedAsync() => ResolveAsync(
+        () => BookingsApiClient.MarkCompletedAsync(
+            OrganizationId, LocationId, Booking.EmployeeId, Booking.BookingId, CancellationToken.None),
+        BookingStatus.Completed);
+
+    private Task MarkNoShowAsync() => ResolveAsync(
+        () => BookingsApiClient.MarkNoShowAsync(
+            OrganizationId, LocationId, Booking.EmployeeId, Booking.BookingId, CancellationToken.None),
+        BookingStatus.NoShow);
+
+    private async Task ResolveAsync(Func<Task<ApiResult>> action, BookingStatus newStatus)
+    {
+        _isBusy = true;
+        _error = null;
+        try
+        {
+            var result = await action();
+            if (!result.IsSuccess)
+            {
+                _error = result.Error;
+                return;
+            }
+
+            await OnChanged.InvokeAsync(Booking with { Status = newStatus });
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}
