@@ -141,3 +141,35 @@ a.card {
     gap: 1rem;
     margin-bottom: 0.5rem;
 }
+
+.avatar {
+    width: 4rem;
+    height: 4rem;
+    margin-bottom: 1rem;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.plain-list {
+    margin: 0 0 1rem;
+    padding: 0;
+    list-style: none;
+}
+
+.assignment-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    border-top: 1px solid #f0f0f2;
+}
+
+    .assignment-row:first-child {
+        border-top: none;
+    }
+
+.assign-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}

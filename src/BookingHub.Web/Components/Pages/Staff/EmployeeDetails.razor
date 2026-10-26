@@ -1,0 +1,100 @@
+﻿@page "/app/{OrganizationId:guid}/employees/{EmployeeId:guid}"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject IEmployeesApiClient EmployeesApiClient
+
+<PageTitle>@(_employee?.FullName ?? "Employee")</PageTitle>
+
+<a class="back-link" href="@StaffRoutes.Employees(OrganizationId)">&larr; Employees</a>
+
+@if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_employee is null)
+{
+    <LoadingState />
+}
+else
+{
+    <h1>@_employee.FullName</h1>
+
+    <section class="settings-section">
+        <h2>Profile</h2>
+        @if (HasPhotoPreview)
+        {
+            <img class="avatar" src="@_employee.PhotoUrl" alt="" />
+        }
+        <TextSettingRow Label="Full name"
+                        Value="@_employee.FullName"
+                        ReadOnly="ReadOnly"
+                        Save="@SaveNameAsync" />
+        <TextSettingRow Label="Photo URL"
+                        Value="@(_employee.PhotoUrl ?? string.Empty)"
+                        Required="false"
+                        ReadOnly="ReadOnly"
+                        Save="@SavePhotoAsync" />
+        <ToggleSettingRow Label="Guests can choose this employee when booking online"
+                          Value="_employee.IsBookable"
+                          ReadOnly="ReadOnly"
+                          Save="@SaveBookableAsync" />
+    </section>
+
+    <EmployeeLocationsSection OrganizationId="OrganizationId" EmployeeId="EmployeeId" />
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [Parameter] public Guid EmployeeId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private EmployeeResponse? _employee;
+    private ApiError? _error;
+
+    private bool ReadOnly => !OrganizationRoles.CanManage(Membership.Role);
+
+    private bool HasPhotoPreview =>
+        Uri.TryCreate(_employee?.PhotoUrl, UriKind.Absolute, out var uri) && uri.Scheme is "http" or "https";
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var result = await EmployeesApiClient.GetAsync(OrganizationId, EmployeeId, CancellationToken.None);
+        if (result.IsSuccess)
+            _employee = result.Value;
+        else
+            _error = result.Error;
+    }
+
+    private async Task<ApiResult> SaveNameAsync(string fullName)
+    {
+        var result = await EmployeesApiClient.RenameAsync(OrganizationId, EmployeeId, fullName, CancellationToken.None);
+        if (result.IsSuccess)
+            _employee = _employee! with { FullName = fullName };
+
+        return result;
+    }
+
+    private async Task<ApiResult> SavePhotoAsync(string photoUrl)
+    {
+        var newPhotoUrl = photoUrl.Length == 0 ? null : photoUrl;
+
+        var result = await EmployeesApiClient.UpdatePhotoAsync(OrganizationId, EmployeeId, newPhotoUrl, CancellationToken.None);
+        if (result.IsSuccess)
+            _employee = _employee! with { PhotoUrl = newPhotoUrl };
+
+        return result;
+    }
+
+    private async Task<ApiResult> SaveBookableAsync(bool isBookable)
+    {
+        var result = await EmployeesApiClient.SetBookableAsync(OrganizationId, EmployeeId, isBookable, CancellationToken.None);
+        if (result.IsSuccess)
+            _employee = _employee! with { IsBookable = isBookable };
+
+        return result;
+    }
+}

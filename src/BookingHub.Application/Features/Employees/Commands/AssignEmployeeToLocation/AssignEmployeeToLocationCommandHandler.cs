@@ -23,6 +23,19 @@ internal sealed class AssignEmployeeToLocationCommandHandler(
         if (employee is null)
             return Result.Failure<EmployeeAssignmentCreatedResponse>(ApplicationErrors.Employee.NotFound);
 
+        // The (employee, location) pair is unique even after an unassignment, so an inactive assignment is reactivated.
+        var existing = await assignmentRepository.GetByEmployeeAndLocationAsync(employee.Id, location.Id, cancellationToken);
+        if (existing is not null)
+        {
+            if (existing.IsActive)
+                return Result.Failure<EmployeeAssignmentCreatedResponse>(ApplicationErrors.EmployeeLocationAssignment.AlreadyAssigned);
+
+            existing.Reactivate();
+            await unitOfWork.SaveChangesAsync(cancellationToken);
+
+            return new EmployeeAssignmentCreatedResponse(existing.Id, employee.Id, location.Id);
+        }
+
         var assignmentResult = EmployeeLocationAssignment.Create(employee.Id, location.Id);
         if (assignmentResult.IsFailure)
             return Result.Failure<EmployeeAssignmentCreatedResponse>(assignmentResult.Error);

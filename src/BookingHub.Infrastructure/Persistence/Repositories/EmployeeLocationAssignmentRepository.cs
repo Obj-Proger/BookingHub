@@ -10,4 +10,7 @@ internal sealed class EmployeeLocationAssignmentRepository(ApplicationDbContext 
 
     public Task<EmployeeLocationAssignment?> GetByIdAsync(Guid locationId, Guid assignmentId, CancellationToken cancellationToken) =>
         dbContext.EmployeeLocationAssignments.FirstOrDefaultAsync(a => a.Id == assignmentId && a.LocationId == locationId, cancellationToken);
+
+    public Task<EmployeeLocationAssignment?> GetByEmployeeAndLocationAsync(Guid employeeId, Guid locationId, CancellationToken cancellationToken) =>
+        dbContext.EmployeeLocationAssignments.FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.LocationId == locationId, cancellationToken);
 }

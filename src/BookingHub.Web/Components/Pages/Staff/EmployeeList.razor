@@ -1,0 +1,70 @@
+﻿@page "/app/{OrganizationId:guid}/employees"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject IEmployeesApiClient EmployeesApiClient
+
+<PageTitle>Employees</PageTitle>
+
+<h1>Employees</h1>
+
+@if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_employees is null)
+{
+    <LoadingState />
+}
+else if (_employees.Count == 0)
+{
+    <EmptyState Title="No employees yet"
+                Description="Employees are the people guests book appointments with.">
+        @if (CanCreate)
+        {
+            <a class="button-link" href="@StaffRoutes.NewEmployee(OrganizationId)">Add an employee</a>
+        }
+    </EmptyState>
+}
+else
+{
+    <div class="card-list">
+        @foreach (var employee in _employees)
+        {
+            <a class="card" href="@StaffRoutes.Employee(OrganizationId, employee.EmployeeId)">
+                <h2>@employee.FullName</h2>
+                @if (!employee.IsBookable)
+                {
+                    <p class="hint">Not bookable online</p>
+                }
+            </a>
+        }
+    </div>
+
+    @if (CanCreate)
+    {
+        <a class="button-link" href="@StaffRoutes.NewEmployee(OrganizationId)">Add an employee</a>
+    }
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private IReadOnlyList<EmployeeResponse>? _employees;
+    private ApiError? _error;
+
+    private bool CanCreate => OrganizationRoles.CanManage(Membership.Role);
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var result = await EmployeesApiClient.GetAllAsync(OrganizationId, CancellationToken.None);
+        if (result.IsSuccess)
+            _employees = result.Value;
+        else
+            _error = result.Error;
+    }
+}

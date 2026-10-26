@@ -13,7 +13,7 @@ internal sealed class GetEmployeeQueryHandler(IApplicationDbContext dbContext)
     {
         var response = await dbContext.Employees
             .Where(e => e.Id == query.EmployeeId && e.OrganizationId == query.OrganizationId)
-            .Select(e => new EmployeeResponse(e.Id, e.FullName, e.PhotoUrl, e.IsBookable))
+            .Select(EmployeeProjections.ToResponse)
             .FirstOrDefaultAsync(cancellationToken);
 
         return response is not null ? response : Result.Failure<EmployeeResponse>(ApplicationErrors.Employee.NotFound);

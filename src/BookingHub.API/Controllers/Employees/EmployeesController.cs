@@ -12,6 +12,8 @@ using BookingHub.Application.Features.Employees.Commands.RescheduleRecurringSche
 using BookingHub.Application.Features.Employees.Commands.SetEmployeeBookable;
 using BookingHub.Application.Features.Employees.Commands.UpdateEmployeePhoto;
 using BookingHub.Application.Features.Employees.Queries.GetEmployee;
+using BookingHub.Application.Features.Employees.Queries.GetEmployeeAssignments;
+using BookingHub.Application.Features.Employees.Queries.GetEmployees;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -30,10 +32,24 @@ public sealed class EmployeesController(IDispatcher dispatcher) : ApiControllerB
         return HandleResult(result);
     }
 
+    [HttpGet("employees")]
+    public async Task<IActionResult> GetAll(Guid organizationId, CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(new GetEmployeesQuery(organizationId), cancellationToken);
+        return HandleResult(result);
+    }
+
     [HttpGet("employees/{employeeId:guid}")]
     public async Task<IActionResult> Get(Guid organizationId, Guid employeeId, CancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(new GetEmployeeQuery(organizationId, employeeId), cancellationToken);
+        return HandleResult(result);
+    }
+
+    [HttpGet("employees/{employeeId:guid}/assignments")]
+    public async Task<IActionResult> GetAssignments(Guid organizationId, Guid employeeId, CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(new GetEmployeeAssignmentsQuery(organizationId, employeeId), cancellationToken);
         return HandleResult(result);
     }
 

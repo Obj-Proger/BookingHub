@@ -1,0 +1,160 @@
+﻿@inject IEmployeesApiClient EmployeesApiClient
+@inject ILocationsApiClient LocationsApiClient
+
+<section class="settings-section">
+    <h2>Locations</h2>
+
+    @if (_error is not null)
+    {
+        <ErrorState Error="_error" OnRetry="LoadAsync" />
+    }
+    else if (_assignments is null || _locations is null)
+    {
+        <LoadingState />
+    }
+    else
+    {
+        @if (_assignments.Count == 0)
+        {
+            <p class="hint">Not assigned to any location yet.</p>
+        }
+        else
+        {
+            <ul class="plain-list">
+                @foreach (var assignment in _assignments)
+                {
+                    <li class="assignment-row">
+                        <a href="@StaffRoutes.Location(OrganizationId, assignment.LocationId)">@assignment.LocationName</a>
+                        @if (OrganizationRoles.CanManageLocation(Membership, assignment.LocationId))
+                        {
+                            <button type="button" class="link-button"
+                                    disabled="@(_busyAssignmentId == assignment.AssignmentId)"
+                                    @onclick="() => RemoveAsync(assignment)">
+                                Remove
+                            </button>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+
+        <SaveStatus Error="_actionError" />
+
+        @if (AssignableLocations.Count > 0)
+        {
+            <div class="assign-row">
+                <select @bind="_selectedLocationId">
+                    <option value="@Guid.Empty">Select a location…</option>
+                    @foreach (var location in AssignableLocations)
+                    {
+                        <option value="@location.LocationId">@location.Name</option>
+                    }
+                </select>
+                <button type="button" disabled="@(_selectedLocationId == Guid.Empty || _isAssigning)" @onclick="AssignAsync">
+                    @(_isAssigning ? "Assigning…" : "Assign")
+                </button>
+            </div>
+        }
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public Guid OrganizationId { get; set; }
+    [Parameter, EditorRequired] public Guid EmployeeId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private IReadOnlyList<EmployeeAssignmentResponse>? _assignments;
+    private IReadOnlyList<LocationResponse>? _locations;
+    private ApiError? _error;
+    private ApiError? _actionError;
+    private Guid _selectedLocationId;
+    private Guid? _busyAssignmentId;
+    private bool _isAssigning;
+
+    /// <summary>Locations the user may assign to and that the employee is not working at yet.</summary>
+    private List<LocationResponse> AssignableLocations =>
+    [
+        .. _locations!.Where(location =>
+            OrganizationRoles.CanManageLocation(Membership, location.LocationId)
+            && _assignments!.All(assignment => assignment.LocationId != location.LocationId))
+    ];
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var assignmentsTask = EmployeesApiClient.GetAssignmentsAsync(OrganizationId, EmployeeId, CancellationToken.None);
+        var locationsTask = LocationsApiClient.GetAllAsync(OrganizationId, CancellationToken.None);
+        await Task.WhenAll(assignmentsTask, locationsTask);
+
+        var assignments = await assignmentsTask;
+        var locations = await locationsTask;
+
+        if (!assignments.IsSuccess)
+        {
+            _error = assignments.Error;
+            return;
+        }
+
+        if (!locations.IsSuccess)
+        {
+            _error = locations.Error;
+            return;
+        }
+
+        _assignments = assignments.Value;
+        _locations = locations.Value;
+    }
+
+    private async Task AssignAsync()
+    {
+        var location = _locations!.First(l => l.LocationId == _selectedLocationId);
+
+        _isAssigning = true;
+        _actionError = null;
+        try
+        {
+            var result = await EmployeesApiClient.AssignToLocationAsync(
+                OrganizationId, location.LocationId, EmployeeId, CancellationToken.None);
+
+            if (!result.IsSuccess)
+            {
+                _actionError = result.Error;
+                return;
+            }
+
+            var assignment = new EmployeeAssignmentResponse(result.Value.AssignmentId, location.LocationId, location.Name);
+            _assignments = [.. _assignments!.Append(assignment).OrderBy(a => a.LocationName)];
+            _selectedLocationId = Guid.Empty;
+        }
+        finally
+        {
+            _isAssigning = false;
+        }
+    }
+
+    private async Task RemoveAsync(EmployeeAssignmentResponse assignment)
+    {
+        _busyAssignmentId = assignment.AssignmentId;
+        _actionError = null;
+        try
+        {
+            var result = await EmployeesApiClient.DeactivateAssignmentAsync(
+                OrganizationId, assignment.LocationId, assignment.AssignmentId, CancellationToken.None);
+
+            if (!result.IsSuccess)
+            {
+                _actionError = result.Error;
+                return;
+            }
+
+            _assignments = [.. _assignments!.Where(a => a.AssignmentId != assignment.AssignmentId)];
+        }
+        finally
+        {
+            _busyAssignmentId = null;
+        }
+    }
+}

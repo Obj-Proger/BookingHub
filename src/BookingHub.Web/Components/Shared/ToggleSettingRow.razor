@@ -1,0 +1,53 @@
+﻿<label class="checkbox-row">
+    <input type="checkbox" checked="@_checked" disabled="@(ReadOnly || _isSaving)" @onchange="ToggleAsync" />
+    <span>@Label</span>
+</label>
+@if (Description is not null)
+{
+    <p class="hint">@Description</p>
+}
+@if (!ReadOnly)
+{
+    <SaveStatus Saved="_saved" Error="_error" />
+}
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = string.Empty;
+    [Parameter] public string? Description { get; set; }
+    [Parameter, EditorRequired] public bool Value { get; set; }
+    [Parameter, EditorRequired] public Func<bool, Task<ApiResult>> Save { get; set; } = default!;
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private bool _checked;
+    private ApiError? _error;
+    private bool _saved;
+    private bool _isSaving;
+
+    protected override void OnInitialized() => _checked = Value;
+
+    private async Task ToggleAsync(ChangeEventArgs e)
+    {
+        var requested = e.Value is true;
+
+        _isSaving = true;
+        _saved = false;
+        _error = null;
+        try
+        {
+            var result = await Save(requested);
+            if (result.IsSuccess)
+            {
+                _checked = requested;
+                _saved = true;
+            }
+            else
+            {
+                _error = result.Error;
+            }
+        }
+        finally
+        {
+            _isSaving = false;
+        }
+    }
+}

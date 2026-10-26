@@ -36,6 +36,7 @@ public static class ApplicationErrors
     public static class EmployeeLocationAssignment
     {
         public static readonly Error NotFound = new("EmployeeLocationAssignment.NotFound", "Employee assignment not found.", ErrorType.NotFound);
+        public static readonly Error AlreadyAssigned = new("EmployeeLocationAssignment.AlreadyAssigned", "This employee is already assigned to this location.", ErrorType.Conflict);
     }
 
     public static class Service

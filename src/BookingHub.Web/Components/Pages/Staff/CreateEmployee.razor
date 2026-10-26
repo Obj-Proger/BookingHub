@@ -1,0 +1,69 @@
+﻿@page "/app/{OrganizationId:guid}/employees/new"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject IEmployeesApiClient EmployeesApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>New employee</PageTitle>
+
+<a class="back-link" href="@StaffRoutes.Employees(OrganizationId)">&larr; Employees</a>
+
+<h1>Add an employee</h1>
+
+@if (!OrganizationRoles.CanManage(Membership.Role))
+{
+    <EmptyState Title="Not available"
+                Description="Only owners and administrators can add employees." />
+}
+else
+{
+    <EditForm Model="_input" OnValidSubmit="SubmitAsync">
+        <DataAnnotationsValidator />
+        <div class="form-field">
+            <label>Full name</label>
+            <InputText @bind-Value="_input.FullName" />
+        </div>
+        <ValidationSummary />
+        @if (_error is not null)
+        {
+            <ErrorState Error="_error" />
+        }
+        <button type="submit" disabled="@_isSubmitting">@(_isSubmitting ? "Creating…" : "Create employee")</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private readonly EmployeeInput _input = new();
+    private ApiError? _error;
+    private bool _isSubmitting;
+
+    private async Task SubmitAsync()
+    {
+        _isSubmitting = true;
+        _error = null;
+        try
+        {
+            var result = await EmployeesApiClient.CreateAsync(OrganizationId, _input.FullName.Trim(), CancellationToken.None);
+            if (!result.IsSuccess)
+            {
+                _error = result.Error;
+                return;
+            }
+
+            Navigation.NavigateTo(StaffRoutes.Employee(OrganizationId, result.Value.EmployeeId));
+        }
+        finally
+        {
+            _isSubmitting = false;
+        }
+    }
+
+    private sealed class EmployeeInput
+    {
+        [Required(ErrorMessage = "Full name is required.")]
+        public string FullName { get; set; } = string.Empty;
+    }
+}

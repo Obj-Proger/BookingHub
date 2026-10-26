@@ -1,10 +1,12 @@
 ﻿<EditForm Model="_input" OnValidSubmit="SaveAsync">
-    <DataAnnotationsValidator />
     <div class="form-field">
         <label>@Label</label>
         <InputText type="@InputType" @bind-Value="_input.Value" disabled="@ReadOnly" />
     </div>
-    <ValidationSummary />
+    @if (_validationMessage is not null)
+    {
+        <p class="error-text">@_validationMessage</p>
+    }
     @if (!ReadOnly)
     {
         <SaveStatus Saved="_saved" Error="_error" />
@@ -20,7 +22,11 @@
     [Parameter] public bool ReadOnly { get; set; }
     [Parameter] public string InputType { get; set; } = "text";
 
+    /// <summary>When false, an empty value is allowed and passed to <see cref="Save"/> as an empty string.</summary>
+    [Parameter] public bool Required { get; set; } = true;
+
     private readonly TextInput _input = new();
+    private string? _validationMessage;
     private ApiError? _error;
     private bool _saved;
     private bool _isSaving;
@@ -29,12 +35,20 @@
 
     private async Task SaveAsync()
     {
-        _isSaving = true;
         _saved = false;
         _error = null;
+        _validationMessage = null;
+
+        var trimmed = _input.Value.Trim();
+        if (Required && trimmed.Length == 0)
+        {
+            _validationMessage = "A value is required.";
+            return;
+        }
+
+        _isSaving = true;
         try
         {
-            var trimmed = _input.Value.Trim();
             var result = await Save(trimmed);
             if (!result.IsSuccess)
             {
@@ -54,7 +68,6 @@
 
     private sealed class TextInput
     {
-        [Required(ErrorMessage = "A value is required.")]
         public string Value { get; set; } = string.Empty;
     }
 }
