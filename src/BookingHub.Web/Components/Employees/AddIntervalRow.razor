@@ -1,0 +1,43 @@
+﻿@inject ISchedulesApiClient SchedulesApiClient
+
+<div class="interval-row">
+    <TimeRangeInput @bind-Start="_start" @bind-End="_end" />
+    <button type="button" disabled="@_isBusy" @onclick="AddAsync">Add hours</button>
+    <SaveStatus Error="_error" />
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Guid OrganizationId { get; set; }
+    [Parameter, EditorRequired] public Guid LocationId { get; set; }
+    [Parameter, EditorRequired] public Guid AssignmentId { get; set; }
+    [Parameter, EditorRequired] public DayOfWeek Day { get; set; }
+    [Parameter] public EventCallback<RecurringScheduleResponse> OnAdded { get; set; }
+
+    private TimeOnly _start = new(9, 0);
+    private TimeOnly _end = new(17, 0);
+    private ApiError? _error;
+    private bool _isBusy;
+
+    private async Task AddAsync()
+    {
+        _isBusy = true;
+        _error = null;
+        try
+        {
+            var result = await SchedulesApiClient.CreateRecurringAsync(
+                OrganizationId, LocationId, AssignmentId, Day, _start, _end, CancellationToken.None);
+
+            if (!result.IsSuccess)
+            {
+                _error = result.Error;
+                return;
+            }
+
+            await OnAdded.InvokeAsync(new RecurringScheduleResponse(result.Value.RecurringScheduleId, Day, _start, _end));
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}

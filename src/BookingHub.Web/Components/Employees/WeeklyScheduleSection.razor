@@ -1,0 +1,52 @@
+﻿<section class="settings-section">
+    <h2>Weekly hours</h2>
+
+    @foreach (var day in WeekOrder.Days)
+    {
+        var dayIntervals = _intervals.Where(interval => interval.DayOfWeek == day).OrderBy(interval => interval.StartTime).ToList();
+
+        <div class="schedule-day">
+            <div class="schedule-day-name">@day</div>
+            <div>
+                @foreach (var interval in dayIntervals)
+                {
+                    <RecurringIntervalRow @key="interval.RecurringScheduleId"
+                                          OrganizationId="OrganizationId"
+                                          LocationId="LocationId"
+                                          Interval="interval"
+                                          ReadOnly="ReadOnly"
+                                          OnRemoved="OnIntervalRemoved" />
+                }
+                @if (dayIntervals.Count == 0)
+                {
+                    <span class="hint">Not working</span>
+                }
+                @if (!ReadOnly)
+                {
+                    <AddIntervalRow OrganizationId="OrganizationId"
+                                    LocationId="LocationId"
+                                    AssignmentId="AssignmentId"
+                                    Day="day"
+                                    OnAdded="OnIntervalAdded" />
+                }
+            </div>
+        </div>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public Guid OrganizationId { get; set; }
+    [Parameter, EditorRequired] public Guid LocationId { get; set; }
+    [Parameter, EditorRequired] public Guid AssignmentId { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<RecurringScheduleResponse> Intervals { get; set; } = default!;
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private List<RecurringScheduleResponse> _intervals = [];
+
+    protected override void OnInitialized() => _intervals = [.. Intervals];
+
+    private void OnIntervalAdded(RecurringScheduleResponse added) => _intervals = [.. _intervals, added];
+
+    private void OnIntervalRemoved(Guid recurringScheduleId) =>
+        _intervals = [.. _intervals.Where(interval => interval.RecurringScheduleId != recurringScheduleId)];
+}

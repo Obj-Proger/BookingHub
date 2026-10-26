@@ -1,0 +1,141 @@
+﻿@using System.Globalization
+@inject ISchedulesApiClient SchedulesApiClient
+@inject TimeProvider Clock
+
+<section class="settings-section">
+    <h2>Days off and special hours</h2>
+
+    @if (_exceptions.Count == 0)
+    {
+        <p class="hint">No upcoming exceptions.</p>
+    }
+    else
+    {
+        <ul class="plain-list">
+            @foreach (var item in _exceptions)
+            {
+                <li class="assignment-row">
+                    <span><strong>@DisplayFormat.Date(item.Date)</strong> — @Describe(item)</span>
+                    @if (!ReadOnly)
+                    {
+                        <button type="button" class="link-button"
+                                disabled="@(_busyId == item.ScheduleExceptionId)"
+                                @onclick="() => RemoveAsync(item)">
+                            Remove
+                        </button>
+                    }
+                </li>
+            }
+        </ul>
+    }
+
+    <SaveStatus Error="_removeError" />
+
+    @if (!ReadOnly)
+    {
+        <div class="interval-row">
+            <input type="date" value="@DateText" @onchange="OnDateChanged" />
+            <select @bind="_type">
+                <option value="@ScheduleExceptionType.DayOff">Day off</option>
+                <option value="@ScheduleExceptionType.ModifiedHours">Different hours</option>
+            </select>
+            @if (_type == ScheduleExceptionType.ModifiedHours)
+            {
+                <TimeRangeInput @bind-Start="_start" @bind-End="_end" />
+            }
+            <button type="button" disabled="@_isAdding" @onclick="AddAsync">Add</button>
+        </div>
+        <SaveStatus Error="_addError" />
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public Guid OrganizationId { get; set; }
+    [Parameter, EditorRequired] public Guid LocationId { get; set; }
+    [Parameter, EditorRequired] public Guid AssignmentId { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<ScheduleExceptionResponse> Exceptions { get; set; } = default!;
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private List<ScheduleExceptionResponse> _exceptions = [];
+    private DateOnly _date;
+    private ScheduleExceptionType _type = ScheduleExceptionType.DayOff;
+    private TimeOnly _start = new(10, 0);
+    private TimeOnly _end = new(14, 0);
+    private ApiError? _addError;
+    private ApiError? _removeError;
+    private Guid? _busyId;
+    private bool _isAdding;
+
+    private string DateText => _date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    protected override void OnInitialized()
+    {
+        _exceptions = [.. Exceptions];
+        _date = DateOnly.FromDateTime(Clock.GetUtcNow().UtcDateTime);
+    }
+
+    private static string Describe(ScheduleExceptionResponse item) =>
+        item is { ModifiedStartTime: { } start, ModifiedEndTime: { } end }
+            ? $"{DisplayFormat.Time(start)}–{DisplayFormat.Time(end)}"
+            : "Day off";
+
+    private void OnDateChanged(ChangeEventArgs e)
+    {
+        if (DateOnly.TryParseExact(e.Value?.ToString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            _date = date;
+    }
+
+    private async Task AddAsync()
+    {
+        _isAdding = true;
+        _addError = null;
+        try
+        {
+            var isDayOff = _type == ScheduleExceptionType.DayOff;
+
+            var result = isDayOff
+                ? await SchedulesApiClient.CreateDayOffAsync(OrganizationId, LocationId, AssignmentId, _date, CancellationToken.None)
+                : await SchedulesApiClient.CreateModifiedHoursAsync(
+                    OrganizationId, LocationId, AssignmentId, _date, _start, _end, CancellationToken.None);
+
+            if (!result.IsSuccess)
+            {
+                _addError = result.Error;
+                return;
+            }
+
+            var added = new ScheduleExceptionResponse(
+                result.Value.ScheduleExceptionId, _date, _type,
+                isDayOff ? null : _start, isDayOff ? null : _end);
+
+            _exceptions = [.. _exceptions.Append(added).OrderBy(item => item.Date)];
+        }
+        finally
+        {
+            _isAdding = false;
+        }
+    }
+
+    private async Task RemoveAsync(ScheduleExceptionResponse item)
+    {
+        _busyId = item.ScheduleExceptionId;
+        _removeError = null;
+        try
+        {
+            var result = await SchedulesApiClient.RemoveExceptionAsync(
+                OrganizationId, LocationId, item.ScheduleExceptionId, CancellationToken.None);
+
+            if (!result.IsSuccess)
+            {
+                _removeError = result.Error;
+                return;
+            }
+
+            _exceptions = [.. _exceptions.Where(e => e.ScheduleExceptionId != item.ScheduleExceptionId)];
+        }
+        finally
+        {
+            _busyId = null;
+        }
+    }
+}

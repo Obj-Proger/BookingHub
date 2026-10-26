@@ -13,18 +13,12 @@ public sealed class WorkingHoursRow(DayOfWeek day)
 
 public static class WorkingHoursRows
 {
-    private static readonly DayOfWeek[] WeekOrder =
-    [
-        DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Wednesday, DayOfWeek.Thursday,
-        DayOfWeek.Friday, DayOfWeek.Saturday, DayOfWeek.Sunday
-    ];
-
     /// <summary>Monday to Friday 09:00–18:00, closed on weekends.</summary>
     public static List<WorkingHoursRow> CreateDefault() =>
-        [.. WeekOrder.Select(day => new WorkingHoursRow(day) { IsOpen = day is not (DayOfWeek.Saturday or DayOfWeek.Sunday) })];
+        [.. WeekOrder.Days.Select(day => new WorkingHoursRow(day) { IsOpen = day is not (DayOfWeek.Saturday or DayOfWeek.Sunday) })];
 
     public static List<WorkingHoursRow> FromDtos(IReadOnlyList<DailyHoursDto> days) =>
-        [.. WeekOrder.Select(day =>
+        [.. WeekOrder.Days.Select(day =>
         {
             var row = new WorkingHoursRow(day);
             var dto = days.FirstOrDefault(d => d.DayOfWeek == day);

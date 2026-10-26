@@ -1,0 +1,27 @@
+﻿@using System.Globalization
+
+<span class="time-range">
+    <input type="time" value="@Format(Start)" @onchange="OnStartChanged" disabled="@ReadOnly" />
+    <span>–</span>
+    <input type="time" value="@Format(End)" @onchange="OnEndChanged" disabled="@ReadOnly" />
+</span>
+
+@code {
+    [Parameter] public TimeOnly Start { get; set; }
+    [Parameter] public EventCallback<TimeOnly> StartChanged { get; set; }
+    [Parameter] public TimeOnly End { get; set; }
+    [Parameter] public EventCallback<TimeOnly> EndChanged { get; set; }
+    [Parameter] public bool ReadOnly { get; set; }
+
+    private static string Format(TimeOnly time) => time.ToString("HH:mm", CultureInfo.InvariantCulture);
+
+    private Task OnStartChanged(ChangeEventArgs e) => NotifyAsync(e, StartChanged);
+
+    private Task OnEndChanged(ChangeEventArgs e) => NotifyAsync(e, EndChanged);
+
+    /// <summary>An empty or malformed value (for example a cleared field) leaves the current time unchanged.</summary>
+    private static Task NotifyAsync(ChangeEventArgs e, EventCallback<TimeOnly> callback) =>
+        TimeOnly.TryParseExact(e.Value?.ToString(), ["HH:mm", "HH:mm:ss"], CultureInfo.InvariantCulture, DateTimeStyles.None, out var time)
+            ? callback.InvokeAsync(time)
+            : Task.CompletedTask;
+}

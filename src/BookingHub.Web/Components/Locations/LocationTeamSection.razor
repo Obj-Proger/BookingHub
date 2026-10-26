@@ -1,0 +1,54 @@
+﻿@inject ISchedulesApiClient SchedulesApiClient
+
+<section class="settings-section">
+    <h2>Team</h2>
+
+    @if (_error is not null)
+    {
+        <ErrorState Error="_error" OnRetry="LoadAsync" />
+    }
+    else if (_assignments is null)
+    {
+        <LoadingState />
+    }
+    else if (_assignments.Count == 0)
+    {
+        <p class="hint">
+            No employees work at this location yet. Assign them from an
+            <a href="@StaffRoutes.Employees(OrganizationId)">employee's page</a>.
+        </p>
+    }
+    else
+    {
+        <ul class="plain-list">
+            @foreach (var assignment in _assignments)
+            {
+                <li class="assignment-row">
+                    <a href="@StaffRoutes.Employee(OrganizationId, assignment.EmployeeId)">@assignment.EmployeeName</a>
+                    <a href="@StaffRoutes.Schedule(OrganizationId, LocationId, assignment.AssignmentId)">Schedule</a>
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+@code {
+    [Parameter, EditorRequired] public Guid OrganizationId { get; set; }
+    [Parameter, EditorRequired] public Guid LocationId { get; set; }
+
+    private IReadOnlyList<LocationAssignmentResponse>? _assignments;
+    private ApiError? _error;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var result = await SchedulesApiClient.GetLocationAssignmentsAsync(OrganizationId, LocationId, CancellationToken.None);
+        if (result.IsSuccess)
+            _assignments = result.Value;
+        else
+            _error = result.Error;
+    }
+}

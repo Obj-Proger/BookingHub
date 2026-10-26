@@ -1,0 +1,77 @@
+﻿@page "/app/{OrganizationId:guid}/locations/{LocationId:guid}/schedule/{AssignmentId:guid}"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject ISchedulesApiClient SchedulesApiClient
+@inject ILocationsApiClient LocationsApiClient
+
+<PageTitle>Schedule</PageTitle>
+
+<a class="back-link" href="@StaffRoutes.Location(OrganizationId, LocationId)">&larr; Location</a>
+
+@if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_schedule is null || _location is null)
+{
+    <LoadingState />
+}
+else
+{
+    <h1>@_schedule.EmployeeName</h1>
+    <p class="hint">@_location.Name · times are local to @_location.TimeZone</p>
+
+    <WeeklyScheduleSection OrganizationId="OrganizationId"
+                           LocationId="LocationId"
+                           AssignmentId="AssignmentId"
+                           Intervals="_schedule.RecurringSchedules"
+                           ReadOnly="ReadOnly" />
+
+    <ScheduleExceptionsSection OrganizationId="OrganizationId"
+                               LocationId="LocationId"
+                               AssignmentId="AssignmentId"
+                               Exceptions="_schedule.Exceptions"
+                               ReadOnly="ReadOnly" />
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [Parameter] public Guid LocationId { get; set; }
+    [Parameter] public Guid AssignmentId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private AssignmentScheduleResponse? _schedule;
+    private LocationResponse? _location;
+    private ApiError? _error;
+
+    private bool ReadOnly => !OrganizationRoles.CanManageLocation(Membership, LocationId);
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var scheduleTask = SchedulesApiClient.GetAssignmentScheduleAsync(OrganizationId, LocationId, AssignmentId, CancellationToken.None);
+        var locationTask = LocationsApiClient.GetAsync(OrganizationId, LocationId, CancellationToken.None);
+        await Task.WhenAll(scheduleTask, locationTask);
+
+        var schedule = await scheduleTask;
+        var location = await locationTask;
+
+        if (!schedule.IsSuccess)
+        {
+            _error = schedule.Error;
+            return;
+        }
+
+        if (!location.IsSuccess)
+        {
+            _error = location.Error;
+            return;
+        }
+
+        _schedule = schedule.Value;
+        _location = location.Value;
+    }
+}

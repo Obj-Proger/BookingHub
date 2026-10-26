@@ -18,4 +18,8 @@ internal static class DisplayFormat
             : minutes == 0 ? $"{hours} h"
             : $"{hours} h {minutes} min";
     }
+
+    public static string Time(TimeOnly time) => time.ToString("HH:mm", CultureInfo.InvariantCulture);
+
+    public static string Date(DateOnly date) => date.ToString("ddd, d MMM yyyy", CultureInfo.InvariantCulture);
 }

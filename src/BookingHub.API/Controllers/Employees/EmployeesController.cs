@@ -11,9 +11,11 @@ using BookingHub.Application.Features.Employees.Commands.RenameEmployee;
 using BookingHub.Application.Features.Employees.Commands.RescheduleRecurringSchedule;
 using BookingHub.Application.Features.Employees.Commands.SetEmployeeBookable;
 using BookingHub.Application.Features.Employees.Commands.UpdateEmployeePhoto;
+using BookingHub.Application.Features.Employees.Queries.GetAssignmentSchedule;
 using BookingHub.Application.Features.Employees.Queries.GetEmployee;
 using BookingHub.Application.Features.Employees.Queries.GetEmployeeAssignments;
 using BookingHub.Application.Features.Employees.Queries.GetEmployees;
+using BookingHub.Application.Features.Employees.Queries.GetLocationAssignments;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -95,6 +97,21 @@ public sealed class EmployeesController(IDispatcher dispatcher) : ApiControllerB
     }
 
     // Recurring schedule (location-scoped; Create needs the owning assignment, the rest only need their own id)
+
+    [HttpGet("locations/{locationId:guid}/employees")]
+    public async Task<IActionResult> GetLocationAssignments(Guid organizationId, Guid locationId, CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(new GetLocationAssignmentsQuery(organizationId, locationId), cancellationToken);
+        return HandleResult(result);
+    }
+
+    [HttpGet("locations/{locationId:guid}/assignments/{assignmentId:guid}/schedule")]
+    public async Task<IActionResult> GetAssignmentSchedule(
+        Guid organizationId, Guid locationId, Guid assignmentId, CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(new GetAssignmentScheduleQuery(organizationId, locationId, assignmentId), cancellationToken);
+        return HandleResult(result);
+    }
 
     [HttpPost("locations/{locationId:guid}/assignments/{assignmentId:guid}/schedule/recurring")]
     public async Task<IActionResult> CreateRecurringSchedule(

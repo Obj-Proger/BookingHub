@@ -1,0 +1,82 @@
+﻿@inject ISchedulesApiClient SchedulesApiClient
+
+<div class="interval-row">
+    <TimeRangeInput @bind-Start="_start" @bind-End="_end" ReadOnly="ReadOnly" />
+    @if (!ReadOnly)
+    {
+        <button type="button" disabled="@(_isBusy || !IsChanged)" @onclick="SaveAsync">Save</button>
+        <button type="button" class="link-button" disabled="@_isBusy" @onclick="RemoveAsync">Remove</button>
+        <SaveStatus Saved="_saved" Error="_error" />
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Guid OrganizationId { get; set; }
+    [Parameter, EditorRequired] public Guid LocationId { get; set; }
+    [Parameter, EditorRequired] public RecurringScheduleResponse Interval { get; set; } = default!;
+    [Parameter] public bool ReadOnly { get; set; }
+    [Parameter] public EventCallback<Guid> OnRemoved { get; set; }
+
+    private RecurringScheduleResponse _interval = default!;
+    private TimeOnly _start;
+    private TimeOnly _end;
+    private ApiError? _error;
+    private bool _saved;
+    private bool _isBusy;
+
+    private bool IsChanged => _start != _interval.StartTime || _end != _interval.EndTime;
+
+    protected override void OnInitialized()
+    {
+        _interval = Interval;
+        _start = Interval.StartTime;
+        _end = Interval.EndTime;
+    }
+
+    private async Task SaveAsync()
+    {
+        _isBusy = true;
+        _saved = false;
+        _error = null;
+        try
+        {
+            var result = await SchedulesApiClient.RescheduleRecurringAsync(
+                OrganizationId, LocationId, _interval.RecurringScheduleId, _start, _end, CancellationToken.None);
+
+            if (result.IsSuccess)
+            {
+                _interval = _interval with { StartTime = _start, EndTime = _end };
+                _saved = true;
+            }
+            else
+            {
+                _error = result.Error;
+            }
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task RemoveAsync()
+    {
+        _isBusy = true;
+        _saved = false;
+        _error = null;
+        try
+        {
+            var result = await SchedulesApiClient.RemoveRecurringAsync(
+                OrganizationId, LocationId, _interval.RecurringScheduleId, CancellationToken.None);
+
+            if (result.IsSuccess)
+                await OnRemoved.InvokeAsync(_interval.RecurringScheduleId);
+            else
+                _error = result.Error;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}

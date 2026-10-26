@@ -25,6 +25,9 @@ internal static class StaffRoutes
 
     public static string Employee(Guid organizationId, Guid employeeId) => $"{Employees(organizationId)}/{employeeId}";
 
+    public static string Schedule(Guid organizationId, Guid locationId, Guid assignmentId) =>
+    $"{Location(organizationId, locationId)}/schedule/{assignmentId}";
+
     /// <summary>Extracts the organization id from a URI shaped like /app/{organizationId}/…</summary>
     public static bool TryGetOrganizationId(string uri, out Guid organizationId)
     {

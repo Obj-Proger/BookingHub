@@ -24,7 +24,11 @@
                 @foreach (var assignment in _assignments)
                 {
                     <li class="assignment-row">
-                        <a href="@StaffRoutes.Location(OrganizationId, assignment.LocationId)">@assignment.LocationName</a>
+                        <span>
+                            <a href="@StaffRoutes.Location(OrganizationId, assignment.LocationId)">@assignment.LocationName</a>
+                            ·
+                            <a href="@StaffRoutes.Schedule(OrganizationId, assignment.LocationId, assignment.AssignmentId)">Schedule</a>
+                        </span>
                         @if (OrganizationRoles.CanManageLocation(Membership, assignment.LocationId))
                         {
                             <button type="button" class="link-button"
