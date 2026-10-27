@@ -17,7 +17,15 @@ public sealed class AnalyticsController(IDispatcher dispatcher) : ApiControllerB
         CancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(
-            new GetAnalyticsDashboardQuery(organizationId, locationId ?? Guid.Empty, fromUtc, toUtc), cancellationToken);
+            new GetAnalyticsDashboardQuery(organizationId, locationId ?? Guid.Empty, AsUtc(fromUtc), AsUtc(toUtc)), cancellationToken);
         return HandleResult(result);
     }
+
+    /// <summary>
+    /// Query-string binding turns an instant ending in "Z" into a Local-kind DateTime, which the database
+    /// driver refuses to compare with timestamptz columns; converting restores the original UTC instant.
+    /// A value without any offset is taken as already being UTC.
+    /// </summary>
+    private static DateTime AsUtc(DateTime value) =>
+        value.Kind == DateTimeKind.Local ? value.ToUniversalTime() : DateTime.SpecifyKind(value, DateTimeKind.Utc);
 }

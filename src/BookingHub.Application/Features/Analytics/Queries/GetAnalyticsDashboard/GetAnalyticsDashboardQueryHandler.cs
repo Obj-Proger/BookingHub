@@ -72,16 +72,35 @@ internal sealed class GetAnalyticsDashboardQueryHandler(
             .Take(10)
             .ToListAsync(cancellationToken);
 
-        var completedHours = await completed
-            .Select(b => b.TimeSlot.StartUtc.Hour)
+        var completedStarts = await (
+            from b in completed
+            join l in dbContext.Locations on b.LocationId equals l.Id
+            select new { b.TimeSlot.StartUtc, l.TimeZone })
             .ToListAsync(cancellationToken);
 
-        var peakHours = completedHours
-            .GroupBy(hour => hour)
-            .Select(g => new PeakHourResponse(g.Key, g.Count()))
-            .OrderBy(p => p.HourOfDay)
-            .ToList();
+        var peakHours = ToLocalHourHistogram(completedStarts.Select(b => (b.StartUtc, b.TimeZone)));
 
         return new AnalyticsDashboardResponse(totalRevenue, locationUtilization, employeeUtilization, popularServices, peakHours);
+    }
+
+    /// <summary>Counts bookings per hour of the day on the clock of the location each one took place at.</summary>
+    private static List<PeakHourResponse> ToLocalHourHistogram(IEnumerable<(DateTime StartUtc, string TimeZone)> starts)
+    {
+        var zones = new Dictionary<string, TimeZoneInfo>();
+
+        return
+        [
+            .. starts
+                .Select(start =>
+                {
+                    if (!zones.TryGetValue(start.TimeZone, out var zone))
+                        zones[start.TimeZone] = zone = TimeZoneInfo.FindSystemTimeZoneById(start.TimeZone);
+
+                    return TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(start.StartUtc, DateTimeKind.Utc), zone).Hour;
+                })
+                .GroupBy(hour => hour)
+                .Select(g => new PeakHourResponse(g.Key, g.Count()))
+                .OrderBy(peak => peak.HourOfDay)
+        ];
     }
 }

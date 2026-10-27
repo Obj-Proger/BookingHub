@@ -37,6 +37,7 @@ builder.Services.AddScoped<IEmployeesApiClient, EmployeesApiClient>();
 builder.Services.AddScoped<ISchedulesApiClient, SchedulesApiClient>();
 builder.Services.AddScoped<IStaffBookingsApiClient, StaffBookingsApiClient>();
 builder.Services.AddScoped<IClientsApiClient, ClientsApiClient>();
+builder.Services.AddScoped<IAnalyticsApiClient, AnalyticsApiClient>();
 builder.Services.AddScoped<MembershipCache>();
 
 var app = builder.Build();

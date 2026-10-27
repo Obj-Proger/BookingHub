@@ -1,0 +1,29 @@
+﻿@using System.Globalization
+
+@if (Items.Count == 0)
+{
+    <p class="hint">No data for this period.</p>
+}
+else
+{
+    <ul class="bar-list">
+        @foreach (var item in Items)
+        {
+            <li>
+                <span class="bar-label">@item.Label</span>
+                <span class="bar-track"><span class="bar-fill" style="width: @Percent(item.Value)%"></span></span>
+                <span class="bar-value">@item.Value</span>
+            </li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<BarItem> Items { get; set; } = default!;
+
+    private string Percent(int value)
+    {
+        var max = Items.Max(item => item.Value);
+        return max == 0 ? "0" : (value * 100.0 / max).ToString("0.#", CultureInfo.InvariantCulture);
+    }
+}

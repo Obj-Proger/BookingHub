@@ -1,0 +1,30 @@
+﻿@using System.Globalization
+
+<div class="hour-chart" role="img" aria-label="Completed bookings by hour of the day">
+    @for (var hour = 0; hour < 24; hour++)
+    {
+        var count = _counts.GetValueOrDefault(hour);
+        <div class="hour-col" title="@Tooltip(hour, count)">
+            <div class="hour-bar" style="height: @Height(count)%"></div>
+            <div class="hour-label">@(hour % 3 == 0 ? hour.ToString() : string.Empty)</div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<PeakHourResponse> Hours { get; set; } = default!;
+
+    private Dictionary<int, int> _counts = [];
+    private int _max;
+
+    protected override void OnParametersSet()
+    {
+        _counts = Hours.ToDictionary(hour => hour.HourOfDay, hour => hour.BookingCount);
+        _max = _counts.Count == 0 ? 0 : _counts.Values.Max();
+    }
+
+    private string Height(int count) =>
+        _max == 0 ? "0" : (count * 100.0 / _max).ToString("0.#", CultureInfo.InvariantCulture);
+
+    private static string Tooltip(int hour, int count) => $"{hour:00}:00 — {count}";
+}

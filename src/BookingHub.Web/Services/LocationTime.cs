@@ -31,6 +31,9 @@ public sealed class LocationTime
     public DateOnly Today(TimeProvider clock) =>
         DateOnly.FromDateTime(ToLocal(clock.GetUtcNow().UtcDateTime));
 
+    /// <summary>The UTC instant at which the given local calendar date begins.</summary>
+    public DateTime StartOfDayUtc(DateOnly date) => LocalMidnightToUtc(date);
+
     /// <summary>
     /// The part of the given local day that is still ahead, as a half-open UTC interval:
     /// from the later of local midnight and now (plus a small margin) until the next local midnight.

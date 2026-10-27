@@ -1,0 +1,204 @@
+﻿@page "/app/{OrganizationId:guid}/analytics"
+@attribute [Authorize]
+@layout OrganizationLayout
+@using System.Globalization
+@inject ILocationsApiClient LocationsApiClient
+@inject IAnalyticsApiClient AnalyticsApiClient
+@inject TimeProvider Clock
+
+<PageTitle>Analytics</PageTitle>
+
+<h1>Analytics</h1>
+
+@if (!OrganizationRoles.LocationManagement.Contains(Membership.Role))
+{
+    <EmptyState Title="Not available"
+                Description="Analytics is available to owners, administrators and location managers." />
+}
+else if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="InitializeAsync" />
+}
+else if (_locations is null)
+{
+    <LoadingState />
+}
+else if (_locations.Count == 0)
+{
+    <EmptyState Title="No locations yet"
+                Description="Analytics appears once a location has bookings." />
+}
+else
+{
+    <div class="booking-toolbar">
+        @if (CanViewAllLocations || _locations.Count > 1)
+        {
+            <select value="@LocationSelectValue" @onchange="OnLocationChanged">
+                @if (CanViewAllLocations)
+                {
+                    <option value="@Guid.Empty">All locations</option>
+                }
+                @foreach (var location in _locations)
+                {
+                    <option value="@location.LocationId">@location.Name</option>
+                }
+            </select>
+        }
+
+        <input type="date" value="@Text(_from)" @onchange="OnFromChanged" />
+        <span>–</span>
+        <input type="date" value="@Text(_to)" @onchange="OnToChanged" />
+
+        <button type="button" class="link-button" @onclick="() => ApplyPresetAsync(7)">Last 7 days</button>
+        <button type="button" class="link-button" @onclick="() => ApplyPresetAsync(30)">Last 30 days</button>
+        <button type="button" class="link-button" @onclick="ApplyThisMonthAsync">This month</button>
+    </div>
+
+    <p class="hint">
+        @if (_locationId is null)
+        {
+            <span>Periods start and end at midnight UTC when all locations are shown.</span>
+        }
+        else
+        {
+            <span>Periods follow the local time of the location (@_zone.ZoneId).</span>
+        }
+    </p>
+
+    @if (_dashboardError is not null)
+    {
+        <ErrorState Error="_dashboardError" OnRetry="LoadDashboardAsync" />
+    }
+    else if (_dashboard is null)
+    {
+        <LoadingState />
+    }
+    else
+    {
+        <DashboardReport Dashboard="_dashboard" ShowLocations="@(_locationId is null)" />
+    }
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private IReadOnlyList<LocationResponse>? _locations;
+    private Guid? _locationId;
+    private LocationTime _zone = LocationTime.FromZoneId("UTC");
+    private DateOnly _from;
+    private DateOnly _to;
+    private AnalyticsDashboardResponse? _dashboard;
+    private ApiError? _error;
+    private ApiError? _dashboardError;
+    private int _loadVersion;
+
+    private bool CanViewAllLocations => OrganizationRoles.CanManage(Membership.Role);
+
+    private Guid LocationSelectValue => _locationId ?? Guid.Empty;
+
+    protected override Task OnInitializedAsync() => InitializeAsync();
+
+    private async Task InitializeAsync()
+    {
+        _error = null;
+
+        if (!OrganizationRoles.LocationManagement.Contains(Membership.Role))
+            return;
+
+        var result = await LocationsApiClient.GetAllAsync(OrganizationId, CancellationToken.None);
+        if (!result.IsSuccess)
+        {
+            _error = result.Error;
+            return;
+        }
+
+        _locations = [.. result.Value.Where(location => OrganizationRoles.CanManageLocation(Membership, location.LocationId))];
+        if (_locations.Count == 0)
+            return;
+
+        SelectLocation(CanViewAllLocations ? null : _locations[0].LocationId);
+
+        _to = _zone.Today(Clock);
+        _from = _to.AddDays(-29);
+        await LoadDashboardAsync();
+    }
+
+    private void SelectLocation(Guid? locationId)
+    {
+        _locationId = locationId;
+        _zone = locationId is { } id
+            ? LocationTime.FromZoneId(_locations!.First(location => location.LocationId == id).TimeZone)
+            : LocationTime.FromZoneId("UTC");
+    }
+
+    private static string Text(DateOnly date) => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+    private static bool TryParseDate(object? value, out DateOnly date) =>
+        DateOnly.TryParseExact(value?.ToString(), "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out date);
+
+    private async Task OnLocationChanged(ChangeEventArgs e)
+    {
+        if (!Guid.TryParse(e.Value?.ToString(), out var locationId))
+            return;
+
+        SelectLocation(locationId == Guid.Empty ? null : locationId);
+        await LoadDashboardAsync();
+    }
+
+    private async Task OnFromChanged(ChangeEventArgs e)
+    {
+        if (!TryParseDate(e.Value, out var date))
+            return;
+
+        _from = date;
+        if (_to < _from)
+            _to = _from;
+
+        await LoadDashboardAsync();
+    }
+
+    private async Task OnToChanged(ChangeEventArgs e)
+    {
+        if (!TryParseDate(e.Value, out var date))
+            return;
+
+        _to = date;
+        if (_from > _to)
+            _from = _to;
+
+        await LoadDashboardAsync();
+    }
+
+    private Task ApplyPresetAsync(int days)
+    {
+        _to = _zone.Today(Clock);
+        _from = _to.AddDays(1 - days);
+        return LoadDashboardAsync();
+    }
+
+    private Task ApplyThisMonthAsync()
+    {
+        _to = _zone.Today(Clock);
+        _from = new DateOnly(_to.Year, _to.Month, 1);
+        return LoadDashboardAsync();
+    }
+
+    private async Task LoadDashboardAsync()
+    {
+        var version = ++_loadVersion;
+        _dashboard = null;
+        _dashboardError = null;
+
+        var result = await AnalyticsApiClient.GetDashboardAsync(
+            OrganizationId, _locationId, _zone.StartOfDayUtc(_from), _zone.StartOfDayUtc(_to.AddDays(1)), CancellationToken.None);
+
+        if (version != _loadVersion)
+            return;
+
+        if (result.IsSuccess)
+            _dashboard = result.Value;
+        else
+            _dashboardError = result.Error;
+    }
+}

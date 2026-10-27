@@ -319,3 +319,70 @@ a.card {
         color: #6b6b73;
         font-weight: 500;
     }
+
+.bar-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+    .bar-list li {
+        display: grid;
+        grid-template-columns: 10rem 1fr 3rem;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.3rem 0;
+    }
+
+.bar-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.bar-track {
+    height: 0.7rem;
+    background: #eeeaff;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.bar-fill {
+    display: block;
+    height: 100%;
+    background: #6b5bff;
+    border-radius: 999px;
+}
+
+.bar-value {
+    text-align: right;
+    color: #6b6b73;
+}
+
+.hour-chart {
+    display: grid;
+    grid-template-columns: repeat(24, 1fr);
+    align-items: end;
+    gap: 0.2rem;
+    height: 9rem;
+}
+
+.hour-col {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    height: 100%;
+}
+
+.hour-bar {
+    min-height: 2px;
+    background: #6b5bff;
+    border-radius: 3px 3px 0 0;
+}
+
+.hour-label {
+    height: 1rem;
+    font-size: 0.7rem;
+    text-align: center;
+    color: #6b6b73;
+}

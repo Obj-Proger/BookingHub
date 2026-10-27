@@ -1,0 +1,105 @@
+﻿<div class="stat-grid">
+    @foreach (var revenue in Dashboard.TotalRevenue)
+    {
+        <StatCard Label="Revenue" Value="@DisplayFormat.Price(revenue.Amount, revenue.Currency)" />
+    }
+    @if (Dashboard.TotalRevenue.Count == 0)
+    {
+        <StatCard Label="Revenue" Value="—" />
+    }
+    <StatCard Label="Completed bookings" Value="@_completed.ToString()" />
+    <StatCard Label="No-shows" Value="@_noShows.ToString()" />
+    <StatCard Label="No-show rate" Value="@Rate(_noShows, _completedByEmployees)" />
+</div>
+
+@if (ShowLocations)
+{
+    <section class="settings-section">
+        <h2>Completed bookings by location</h2>
+        <BarList Items="_locationBars" />
+    </section>
+}
+
+<section class="settings-section">
+    <h2>Employees</h2>
+    @if (Dashboard.EmployeeUtilization.Count == 0)
+    {
+        <p class="hint">No data for this period.</p>
+    }
+    else
+    {
+        <div class="table-scroll">
+            <table class="visits-table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Completed</th>
+                        <th>No-shows</th>
+                        <th>No-show rate</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var employee in Dashboard.EmployeeUtilization.OrderByDescending(e => e.CompletedBookings))
+                    {
+                        <tr>
+                            <td>@employee.EmployeeFullName</td>
+                            <td>@employee.CompletedBookings</td>
+                            <td>@employee.NoShowCount</td>
+                            <td>@Rate(employee.NoShowCount, employee.CompletedBookings)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>
+
+<section class="settings-section">
+    <h2>Popular services</h2>
+    <BarList Items="_serviceBars" />
+</section>
+
+<section class="settings-section">
+    <h2>Peak hours</h2>
+    <p class="hint">Completed bookings by start hour, on the clock of each location.</p>
+    <HourHistogram Hours="Dashboard.PeakHours" />
+</section>
+
+@code {
+    [Parameter, EditorRequired] public AnalyticsDashboardResponse Dashboard { get; set; } = default!;
+    [Parameter] public bool ShowLocations { get; set; }
+
+    private int _completed;
+    private int _completedByEmployees;
+    private int _noShows;
+    private IReadOnlyList<BarItem> _locationBars = [];
+    private IReadOnlyList<BarItem> _serviceBars = [];
+
+    protected override void OnParametersSet()
+    {
+        _completed = Dashboard.LocationUtilization.Sum(location => location.CompletedBookings);
+        _completedByEmployees = Dashboard.EmployeeUtilization.Sum(employee => employee.CompletedBookings);
+        _noShows = Dashboard.EmployeeUtilization.Sum(employee => employee.NoShowCount);
+
+        _locationBars =
+        [
+            .. Dashboard.LocationUtilization
+                .OrderByDescending(location => location.CompletedBookings)
+                .Select(location => new BarItem(location.LocationName, location.CompletedBookings))
+        ];
+
+        _serviceBars =
+        [
+            .. Dashboard.PopularServices
+                .OrderByDescending(service => service.BookingCount)
+                .Select(service => new BarItem(service.ServiceName, service.BookingCount))
+        ];
+    }
+
+    /// <summary>The share of no-shows among bookings that were either completed or missed.</summary>
+    private static string Rate(int noShows, int completed)
+    {
+        var total = noShows + completed;
+        return total == 0 ? "—" : $"{noShows * 100.0 / total:0.#}%";
+    }
+}
