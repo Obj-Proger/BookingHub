@@ -40,8 +40,10 @@ internal sealed class GetClientProfileQueryHandler(
             from b in bookingsQuery
             join s in dbContext.Services on b.ServiceId equals s.Id
             join e in dbContext.Employees on b.EmployeeId equals e.Id
+            join l in dbContext.Locations on b.LocationId equals l.Id
             orderby b.TimeSlot.StartUtc descending
-            select new ClientVisitResponse(b.Id, b.TimeSlot.StartUtc, s.Name, e.FullName, b.Status, b.Price.Amount, b.Price.Currency))
+            select new ClientVisitResponse(
+                b.Id, b.TimeSlot.StartUtc, l.Name, l.TimeZone, s.Name, e.FullName, b.Status, b.Price.Amount, b.Price.Currency))
             .ToListAsync(cancellationToken);
 
         var completedVisits = visits.Where(v => v.Status == BookingStatus.Completed).ToList();

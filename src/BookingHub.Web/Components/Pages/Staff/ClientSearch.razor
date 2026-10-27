@@ -1,0 +1,80 @@
+﻿@page "/app/{OrganizationId:guid}/clients"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject IClientsApiClient ClientsApiClient
+@inject NavigationManager Navigation
+
+<PageTitle>Clients</PageTitle>
+
+<h1>Clients</h1>
+
+<EditForm Model="_input" OnValidSubmit="SearchAsync">
+    <DataAnnotationsValidator />
+    <div class="form-field">
+        <label>Phone number</label>
+        <InputText type="tel" @bind-Value="_input.Phone" placeholder="+14155552671" />
+    </div>
+    <p class="hint">Enter the number with the country code, starting with +.</p>
+    <ValidationSummary />
+    <button type="submit" disabled="@_isSearching">@(_isSearching ? "Searching…" : "Search")</button>
+</EditForm>
+
+@if (_notFound)
+{
+    <p class="hint">No client with this phone number has visited this organization.</p>
+}
+else if (_error is not null)
+{
+    <ErrorState Error="_error" />
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [SupplyParameterFromQuery] public string? Phone { get; set; }
+
+    private readonly SearchInput _input = new();
+    private ApiError? _error;
+    private bool _notFound;
+    private bool _isSearching;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (string.IsNullOrWhiteSpace(Phone))
+            return;
+
+        _input.Phone = Phone;
+        await SearchAsync();
+    }
+
+    private async Task SearchAsync()
+    {
+        _isSearching = true;
+        _error = null;
+        _notFound = false;
+        try
+        {
+            var result = await ClientsApiClient.SearchByPhoneAsync(OrganizationId, _input.Phone.Trim(), CancellationToken.None);
+
+            if (result.IsSuccess)
+            {
+                Navigation.NavigateTo(StaffRoutes.Client(OrganizationId, result.Value.ClientId));
+                return;
+            }
+
+            if (result.Error!.StatusCode == System.Net.HttpStatusCode.NotFound)
+                _notFound = true;
+            else
+                _error = result.Error;
+        }
+        finally
+        {
+            _isSearching = false;
+        }
+    }
+
+    private sealed class SearchInput
+    {
+        [Required(ErrorMessage = "Enter a phone number.")]
+        public string Phone { get; set; } = string.Empty;
+    }
+}

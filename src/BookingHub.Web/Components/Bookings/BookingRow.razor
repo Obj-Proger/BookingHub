@@ -4,7 +4,10 @@
     <div class="booking-time">@Time(Booking.StartUtc)–@Time(Booking.EndUtc)</div>
     <div class="booking-main">
         <strong>@Booking.ServiceName</strong>
-        <span>@(Booking.ClientName ?? "Guest") · @Booking.ClientPhone</span>
+        <span>
+            @(Booking.ClientName ?? "Guest") ·
+            <a href="@StaffRoutes.ClientSearch(OrganizationId, Booking.ClientPhone)">@Booking.ClientPhone</a>
+        </span>
         @if (Booking.EmployeeName is not null)
         {
             <span class="hint">with @Booking.EmployeeName</span>

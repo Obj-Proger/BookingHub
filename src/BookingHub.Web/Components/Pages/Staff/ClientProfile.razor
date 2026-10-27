@@ -1,0 +1,112 @@
+﻿@page "/app/{OrganizationId:guid}/clients/{ClientId:guid}"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject IClientsApiClient ClientsApiClient
+
+<PageTitle>@(_client?.Name ?? "Client")</PageTitle>
+
+<a class="back-link" href="@StaffRoutes.Clients(OrganizationId)">&larr; Clients</a>
+
+@if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_client is null)
+{
+    <LoadingState />
+}
+else
+{
+    <h1>@(_client.Name ?? "Guest")</h1>
+    <p>
+        @_client.Phone
+        @if (_client.Email is not null)
+        {
+            <span> · @_client.Email</span>
+        }
+    </p>
+
+    @if (Membership.Role == OrganizationRole.Employee)
+    {
+        <p class="hint">Showing only your own visits with this client.</p>
+    }
+
+    <div class="stat-grid">
+        <StatCard Label="Visits" Value="@_client.TotalVisits.ToString()" />
+        <StatCard Label="Completed" Value="@_client.CompletedVisits.ToString()" />
+        <StatCard Label="No-shows" Value="@_client.NoShowCount.ToString()" />
+        <StatCard Label="Revenue" Value="@FormatMoney(_client.TotalRevenue)" />
+        <StatCard Label="Average check" Value="@FormatMoney(_client.AverageCheck)" />
+    </div>
+
+    <section class="settings-section">
+        <h2>Visits</h2>
+        @if (_client.Visits.Count == 0)
+        {
+            <p class="hint">No visits yet.</p>
+        }
+        else
+        {
+            <div class="table-scroll">
+                <table class="visits-table">
+                    <thead>
+                        <tr>
+                            <th>When</th>
+                            <th>Service</th>
+                            <th>Employee</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var visit in _client.Visits)
+                        {
+                            <tr>
+                                <td>@VisitTime(visit)</td>
+                                <td>@visit.ServiceName</td>
+                                <td>@visit.EmployeeFullName</td>
+                                <td>@visit.LocationName</td>
+                                <td><StatusBadge Status="visit.Status" /></td>
+                                <td>@DisplayFormat.Price(visit.PriceAmount, visit.PriceCurrency)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [Parameter] public Guid ClientId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private ClientProfileResponse? _client;
+    private ApiError? _error;
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var result = await ClientsApiClient.GetProfileAsync(OrganizationId, ClientId, CancellationToken.None);
+        if (result.IsSuccess)
+            _client = result.Value;
+        else
+            _error = result.Error;
+    }
+
+    private static string FormatMoney(IReadOnlyList<RevenueByCurrency> amounts) =>
+        amounts.Count == 0
+            ? "—"
+            : string.Join(", ", amounts.Select(amount => DisplayFormat.Price(amount.Amount, amount.Currency)));
+
+    private static string VisitTime(ClientVisitResponse visit)
+    {
+        var local = LocationTime.FromZoneId(visit.LocationTimeZone).ToLocal(visit.StartUtc);
+        return $"{DisplayFormat.Date(DateOnly.FromDateTime(local))} {DisplayFormat.Time(TimeOnly.FromDateTime(local))}";
+    }
+}

@@ -272,3 +272,50 @@ a.card {
     background: #f4e4e4;
     color: #8a2f2f;
 }
+
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.stat-card {
+    padding: 0.9rem 1rem;
+    background: white;
+    border: 1px solid #e3e3e6;
+    border-radius: 0.75rem;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.stat-label {
+    color: #6b6b73;
+    font-size: 0.85rem;
+}
+
+.table-scroll {
+    overflow-x: auto;
+}
+
+.visits-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+    .visits-table th,
+    .visits-table td {
+        padding: 0.5rem 0.75rem 0.5rem 0;
+        text-align: left;
+        border-top: 1px solid #f0f0f2;
+        white-space: nowrap;
+    }
+
+    .visits-table th {
+        border-top: none;
+        color: #6b6b73;
+        font-weight: 500;
+    }

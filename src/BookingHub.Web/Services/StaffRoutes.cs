@@ -28,6 +28,14 @@ internal static class StaffRoutes
     public static string Schedule(Guid organizationId, Guid locationId, Guid assignmentId) =>
     $"{Location(organizationId, locationId)}/schedule/{assignmentId}";
 
+    public static string Clients(Guid organizationId) => $"{Organization(organizationId)}/clients";
+
+    public static string Client(Guid organizationId, Guid clientId) => $"{Clients(organizationId)}/{clientId}";
+
+    /// <summary>The client search page, opened with this phone number already searched for.</summary>
+    public static string ClientSearch(Guid organizationId, string phone) =>
+        $"{Clients(organizationId)}?phone={Uri.EscapeDataString(phone)}";
+
     /// <summary>Extracts the organization id from a URI shaped like /app/{organizationId}/…</summary>
     public static bool TryGetOrganizationId(string uri, out Guid organizationId)
     {
