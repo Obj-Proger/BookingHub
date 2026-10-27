@@ -1,0 +1,190 @@
+﻿@page "/app/{OrganizationId:guid}/reviews"
+@attribute [Authorize]
+@layout OrganizationLayout
+@inject ILocationsApiClient LocationsApiClient
+@inject IStaffReviewsApiClient ReviewsApiClient
+
+<PageTitle>Reviews</PageTitle>
+
+<h1>Reviews</h1>
+
+@if (!OrganizationRoles.LocationManagement.Contains(Membership.Role))
+{
+    <EmptyState Title="Not available"
+                Description="Reviews are managed by owners, administrators and location managers." />
+}
+else if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="InitializeAsync" />
+}
+else if (_locations is null)
+{
+    <LoadingState />
+}
+else if (_locations.Count == 0)
+{
+    <EmptyState Title="No reviews yet"
+                Description="Guests can leave a review after a booking is completed." />
+}
+else
+{
+    <div class="booking-toolbar">
+        @if (_locations.Count > 1)
+        {
+            <select value="@_locationId" @onchange="OnLocationChanged">
+                @foreach (var location in _locations)
+                {
+                    <option value="@location.LocationId">@location.Name</option>
+                }
+            </select>
+        }
+        else
+        {
+            <strong>@_locations[0].Name</strong>
+        }
+    </div>
+
+    <p class="hint">Hidden reviews stay in this list but are not shown to guests on the booking page.</p>
+
+    @if (_reviewsError is not null)
+    {
+        <ErrorState Error="_reviewsError" OnRetry="LoadReviewsAsync" />
+    }
+    else if (_reviews is null)
+    {
+        <LoadingState />
+    }
+    else if (_reviews.Count == 0)
+    {
+        <p class="hint">No reviews for this location yet.</p>
+    }
+    else
+    {
+        @foreach (var review in _reviews)
+        {
+            <ReviewRow @key="review.ReviewId"
+                       OrganizationId="OrganizationId"
+                       LocationId="_locationId"
+                       Review="review"
+                       Zone="_zone"
+                       OnChanged="OnReviewChanged" />
+        }
+
+        @if (_hasMore)
+        {
+            <button type="button" disabled="@_isLoadingMore" @onclick="LoadMoreAsync">
+                @(_isLoadingMore ? "Loading…" : "Load more")
+            </button>
+            <SaveStatus Error="_moreError" />
+        }
+    }
+}
+
+@code {
+    private const int PageSize = 20;
+
+    [Parameter] public Guid OrganizationId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private IReadOnlyList<LocationResponse>? _locations;
+    private Guid _locationId;
+    private LocationTime _zone = LocationTime.FromZoneId("UTC");
+    private List<ReviewModerationResponse>? _reviews;
+    private bool _hasMore;
+    private bool _isLoadingMore;
+    private ApiError? _error;
+    private ApiError? _reviewsError;
+    private ApiError? _moreError;
+    private int _loadVersion;
+
+    protected override Task OnInitializedAsync() => InitializeAsync();
+
+    private async Task InitializeAsync()
+    {
+        _error = null;
+
+        if (!OrganizationRoles.LocationManagement.Contains(Membership.Role))
+            return;
+
+        var result = await LocationsApiClient.GetAllAsync(OrganizationId, CancellationToken.None);
+        if (!result.IsSuccess)
+        {
+            _error = result.Error;
+            return;
+        }
+
+        _locations = [.. result.Value.Where(location => OrganizationRoles.CanManageLocation(Membership, location.LocationId))];
+        if (_locations.Count == 0)
+            return;
+
+        SelectLocation(_locations[0].LocationId);
+        await LoadReviewsAsync();
+    }
+
+    private void SelectLocation(Guid locationId)
+    {
+        _locationId = locationId;
+        _zone = LocationTime.FromZoneId(_locations!.First(location => location.LocationId == locationId).TimeZone);
+    }
+
+    private async Task OnLocationChanged(ChangeEventArgs e)
+    {
+        if (!Guid.TryParse(e.Value?.ToString(), out var locationId))
+            return;
+
+        SelectLocation(locationId);
+        await LoadReviewsAsync();
+    }
+
+    private async Task LoadReviewsAsync()
+    {
+        var version = ++_loadVersion;
+        _reviews = null;
+        _reviewsError = null;
+        _moreError = null;
+
+        var result = await ReviewsApiClient.GetLocationReviewsAsync(OrganizationId, _locationId, 0, PageSize, CancellationToken.None);
+        if (version != _loadVersion)
+            return;
+
+        if (!result.IsSuccess)
+        {
+            _reviewsError = result.Error;
+            return;
+        }
+
+        _reviews = [.. result.Value];
+        _hasMore = result.Value.Count == PageSize;
+    }
+
+    private async Task LoadMoreAsync()
+    {
+        var version = _loadVersion;
+        _isLoadingMore = true;
+        _moreError = null;
+        try
+        {
+            var result = await ReviewsApiClient.GetLocationReviewsAsync(
+                OrganizationId, _locationId, _reviews!.Count, PageSize, CancellationToken.None);
+
+            if (version != _loadVersion)
+                return;
+
+            if (!result.IsSuccess)
+            {
+                _moreError = result.Error;
+                return;
+            }
+
+            _reviews = [.. _reviews, .. result.Value];
+            _hasMore = result.Value.Count == PageSize;
+        }
+        finally
+        {
+            _isLoadingMore = false;
+        }
+    }
+
+    private void OnReviewChanged(ReviewModerationResponse changed) =>
+        _reviews = [.. _reviews!.Select(review => review.ReviewId == changed.ReviewId ? changed : review)];
+}

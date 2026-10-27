@@ -1,0 +1,10 @@
+﻿<span class="stars" role="img" aria-label="@Value out of 5">
+    @for (var star = 1; star <= 5; star++)
+    {
+        <span class="@(star <= Value ? "star star-on" : "star")">★</span>
+    }
+</span>
+
+@code {
+    [Parameter, EditorRequired] public int Value { get; set; }
+}

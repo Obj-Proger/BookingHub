@@ -1,0 +1,67 @@
+﻿@inject IStaffReviewsApiClient ReviewsApiClient
+
+<div class="@RowClass">
+    <div class="review-head">
+        <StarRating Value="Review.Rating" />
+        @if (Review.IsHidden)
+        {
+            <span class="status-badge status-cancelled">Hidden</span>
+        }
+    </div>
+
+    @if (string.IsNullOrWhiteSpace(Review.Comment))
+    {
+        <p class="hint">No comment.</p>
+    }
+    else
+    {
+        <p class="review-comment">@Review.Comment</p>
+    }
+
+    <div class="review-foot">
+        <span class="hint">@Review.EmployeeName · @Review.ServiceName · visit on @VisitDate</span>
+        <button type="button" class="link-button" disabled="@_isBusy" @onclick="ToggleAsync">
+            @(Review.IsHidden ? "Show on public page" : "Hide from public page")
+        </button>
+    </div>
+    <SaveStatus Error="_error" />
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Guid OrganizationId { get; set; }
+    [Parameter, EditorRequired] public Guid LocationId { get; set; }
+    [Parameter, EditorRequired] public ReviewModerationResponse Review { get; set; } = default!;
+    [Parameter, EditorRequired] public LocationTime Zone { get; set; } = default!;
+    [Parameter] public EventCallback<ReviewModerationResponse> OnChanged { get; set; }
+
+    private ApiError? _error;
+    private bool _isBusy;
+
+    private string RowClass => Review.IsHidden ? "review-row review-hidden" : "review-row";
+
+    private string VisitDate => DisplayFormat.Date(DateOnly.FromDateTime(Zone.ToLocal(Review.VisitStartUtc)));
+
+    private async Task ToggleAsync()
+    {
+        _isBusy = true;
+        _error = null;
+        try
+        {
+            var result = Review.IsHidden
+                ? await ReviewsApiClient.UnhideAsync(OrganizationId, LocationId, Review.ReviewId, CancellationToken.None)
+                : await ReviewsApiClient.HideAsync(OrganizationId, LocationId, Review.ReviewId, CancellationToken.None);
+
+            if (!result.IsSuccess)
+            {
+                _error = result.Error;
+                return;
+            }
+
+            await OnChanged.InvokeAsync(Review with { IsHidden = !Review.IsHidden });
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}
