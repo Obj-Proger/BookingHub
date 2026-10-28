@@ -429,3 +429,37 @@ a.card {
 .star-on {
     color: #f0a92b;
 }
+
+.member-row {
+    padding: 0.75rem 0;
+    border-top: 1px solid #f0f0f2;
+}
+
+    .member-row:first-of-type {
+        border-top: none;
+    }
+
+.member-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.member-main {
+    display: flex;
+    flex-direction: column;
+}
+
+.member-actions {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.member-edit {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}

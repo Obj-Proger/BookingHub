@@ -17,4 +17,16 @@ internal static class OrganizationRoles
     public static bool CanManageLocation(MyOrganizationMembershipResponse membership, Guid locationId) =>
         CanManage(membership.Role)
         || (membership.Role == OrganizationRole.LocationManager && membership.LocationId == locationId);
+
+    /// <summary>The roles a member of the given role may grant: only an Owner may grant Owner.</summary>
+    public static OrganizationRole[] AssignableBy(OrganizationRole caller) =>
+        caller == OrganizationRole.Owner
+            ? Enum.GetValues<OrganizationRole>()
+            : [.. Enum.GetValues<OrganizationRole>().Where(role => role != OrganizationRole.Owner)];
+
+    public static string Label(OrganizationRole role) => role switch
+    {
+        OrganizationRole.LocationManager => "Location manager",
+        _ => role.ToString()
+    };
 }

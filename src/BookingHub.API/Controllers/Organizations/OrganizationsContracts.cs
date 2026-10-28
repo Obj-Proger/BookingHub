@@ -6,6 +6,7 @@ public sealed record CreateOrganizationRequest(string? Name, string? Slug);
 public sealed record RenameOrganizationRequest(string? NewName);
 
 public sealed record AddOrganizationMemberRequest(Guid UserId, OrganizationRole Role, Guid? LocationId, Guid? EmployeeId);
+public sealed record AddOrganizationMemberByEmailRequest(string? Email, OrganizationRole Role, Guid? LocationId, Guid? EmployeeId);
 public sealed record ChangeOrganizationMemberRoleRequest(OrganizationRole NewRole, Guid? LocationId, Guid? EmployeeId);
 
 /// <param name="Deadline">.NET TimeSpan format only (e.g. "1.00:00:00" for one day, "02:30:00"

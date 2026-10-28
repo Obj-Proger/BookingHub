@@ -20,6 +20,7 @@ internal static class StaffNavigation
         new("Locations", "locations", OrganizationRoles.LocationManagement),
         new("Services", "services", OrganizationRoles.LocationManagement),
         new("Employees", "employees", OrganizationRoles.LocationManagement),
+        new("Members", "members", OrganizationRoles.Management),
         new("Settings", "settings", OrganizationRoles.Management)
     ];
 

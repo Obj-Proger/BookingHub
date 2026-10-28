@@ -90,6 +90,7 @@ public static class DependencyInjection
         services.AddScoped<IWaitlistEntryRepository, WaitlistEntryRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+        services.AddScoped<IUserDirectory, UserDirectory>();
 
         services.AddHangfire(config => config
             .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)

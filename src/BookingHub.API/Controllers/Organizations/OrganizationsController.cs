@@ -1,5 +1,6 @@
 ﻿using BookingHub.API.Common;
 using BookingHub.Application.Features.Organizations.Commands.AddOrganizationMember;
+using BookingHub.Application.Features.Organizations.Commands.AddOrganizationMemberByEmail;
 using BookingHub.Application.Features.Organizations.Commands.ChangeOrganizationMemberRole;
 using BookingHub.Application.Features.Organizations.Commands.CreateOrganization;
 using BookingHub.Application.Features.Organizations.Commands.DeleteOrganization;
@@ -58,6 +59,16 @@ public sealed class OrganizationsController(IDispatcher dispatcher) : ApiControl
     {
         var result = await dispatcher.Send(
             new AddOrganizationMemberCommand(organizationId, request.UserId, request.Role, request.LocationId, request.EmployeeId),
+            cancellationToken);
+        return HandleResult(result);
+    }
+
+    [HttpPost("{organizationId:guid}/members/by-email")]
+    public async Task<IActionResult> AddMemberByEmail(
+    Guid organizationId, AddOrganizationMemberByEmailRequest request, CancellationToken cancellationToken)
+    {
+        var result = await dispatcher.Send(
+            new AddOrganizationMemberByEmailCommand(organizationId, request.Email, request.Role, request.LocationId, request.EmployeeId),
             cancellationToken);
         return HandleResult(result);
     }

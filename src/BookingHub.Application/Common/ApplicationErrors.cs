@@ -81,6 +81,7 @@ public static class ApplicationErrors
         public static readonly Error AlreadyMember = new("OrganizationMember.AlreadyMember", "This user is already a member of the organization.", ErrorType.Conflict);
         public static readonly Error OnlyOwnerCanManageOwnerRole = new("OrganizationMember.OnlyOwnerCanManageOwnerRole", "Only an existing Owner can grant, change, or revoke the Owner role.", ErrorType.Forbidden);
         public static readonly Error CannotRemoveLastOwner = new("OrganizationMember.CannotRemoveLastOwner", "The organization must always have at least one Owner.", ErrorType.Conflict);
+        public static readonly Error UserNotFound = new("OrganizationMember.UserNotFound", "No registered user has this email address. They need to create an account first.", ErrorType.NotFound);
     }
 
     public static class RecurringSchedule

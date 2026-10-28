@@ -1,0 +1,191 @@
+﻿@page "/app/{OrganizationId:guid}/members"
+@attribute [Authorize]
+@layout OrganizationLayout
+@using System.Security.Claims
+@inject IMembersApiClient MembersApiClient
+@inject ILocationsApiClient LocationsApiClient
+@inject IEmployeesApiClient EmployeesApiClient
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<PageTitle>Members</PageTitle>
+
+<h1>Members</h1>
+
+@if (!OrganizationRoles.CanManage(Membership.Role))
+{
+    <EmptyState Title="Not available"
+                Description="Only owners and administrators can manage members." />
+}
+else if (_error is not null)
+{
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_members is null || _locations is null || _employees is null)
+{
+    <LoadingState />
+}
+else
+{
+    <section class="settings-section">
+        <h2>People with access</h2>
+        @foreach (var member in _members)
+        {
+            <MemberRow @key="member.OrganizationMemberId"
+                       OrganizationId="OrganizationId"
+                       Member="member"
+                       CallerRole="Membership.Role"
+                       Locations="_locations"
+                       Employees="_employees"
+                       IsSelf="IsSelf(member)"
+                       OnChanged="ReloadMembersAsync" />
+        }
+    </section>
+
+    <section class="settings-section">
+        <h2>Add a member</h2>
+        <p class="hint">The person needs a BookingHub account first. Enter the email they registered with.</p>
+        <EditForm Model="_input" OnValidSubmit="AddAsync">
+            <DataAnnotationsValidator />
+            <div class="form-field">
+                <label>Email</label>
+                <InputText type="email" @bind-Value="_input.Email" />
+            </div>
+            <div class="form-field">
+                <label>Role</label>
+                <div class="member-edit">
+                    <select @bind="_role" @bind:after="OnRoleChanged">
+                        @foreach (var role in OrganizationRoles.AssignableBy(Membership.Role))
+                        {
+                            <option value="@role">@OrganizationRoles.Label(role)</option>
+                        }
+                    </select>
+                    <MemberScopeFields Role="_role"
+                                       Locations="_locations"
+                                       Employees="_employees"
+                                       @bind-LocationId="_locationId"
+                                       @bind-EmployeeId="_employeeId" />
+                </div>
+            </div>
+            <ValidationSummary />
+            <SaveStatus Saved="_added" Error="_addError" />
+            <button type="submit" disabled="@_isAdding">@(_isAdding ? "Adding…" : "Add member")</button>
+        </EditForm>
+    </section>
+}
+
+@code {
+    [Parameter] public Guid OrganizationId { get; set; }
+    [CascadingParameter] public MyOrganizationMembershipResponse Membership { get; set; } = default!;
+
+    private readonly AddInput _input = new();
+    private IReadOnlyList<OrganizationMemberResponse>? _members;
+    private IReadOnlyList<LocationResponse>? _locations;
+    private IReadOnlyList<EmployeeResponse>? _employees;
+    private string? _selfEmail;
+    private OrganizationRole _role = OrganizationRole.Administrator;
+    private Guid? _locationId;
+    private Guid? _employeeId;
+    private ApiError? _error;
+    private ApiError? _addError;
+    private bool _added;
+    private bool _isAdding;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _selfEmail = authenticationState.User.FindFirst(ClaimTypes.Email)?.Value;
+
+        if (OrganizationRoles.CanManage(Membership.Role))
+            await LoadAsync();
+    }
+
+    private bool IsSelf(OrganizationMemberResponse member) =>
+        member.Email is not null && string.Equals(member.Email, _selfEmail, StringComparison.OrdinalIgnoreCase);
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+
+        var membersTask = MembersApiClient.GetAllAsync(OrganizationId, CancellationToken.None);
+        var locationsTask = LocationsApiClient.GetAllAsync(OrganizationId, CancellationToken.None);
+        var employeesTask = EmployeesApiClient.GetAllAsync(OrganizationId, CancellationToken.None);
+        await Task.WhenAll(membersTask, locationsTask, employeesTask);
+
+        var members = await membersTask;
+        var locations = await locationsTask;
+        var employees = await employeesTask;
+
+        if (!members.IsSuccess)
+        {
+            _error = members.Error;
+            return;
+        }
+
+        if (!locations.IsSuccess)
+        {
+            _error = locations.Error;
+            return;
+        }
+
+        if (!employees.IsSuccess)
+        {
+            _error = employees.Error;
+            return;
+        }
+
+        _members = Sorted(members.Value);
+        _locations = locations.Value;
+        _employees = employees.Value;
+    }
+
+    private async Task ReloadMembersAsync()
+    {
+        var result = await MembersApiClient.GetAllAsync(OrganizationId, CancellationToken.None);
+        if (result.IsSuccess)
+            _members = Sorted(result.Value);
+        else
+            _error = result.Error;
+    }
+
+    private static IReadOnlyList<OrganizationMemberResponse> Sorted(IReadOnlyList<OrganizationMemberResponse> members) =>
+        [.. members.OrderBy(member => member.Role).ThenBy(member => member.Email, StringComparer.OrdinalIgnoreCase)];
+
+    private void OnRoleChanged()
+    {
+        _locationId = null;
+        _employeeId = null;
+    }
+
+    private async Task AddAsync()
+    {
+        _isAdding = true;
+        _added = false;
+        _addError = null;
+        try
+        {
+            var result = await MembersApiClient.AddByEmailAsync(
+                OrganizationId, _input.Email.Trim(), _role, _locationId, _employeeId, CancellationToken.None);
+
+            if (!result.IsSuccess)
+            {
+                _addError = result.Error;
+                return;
+            }
+
+            _input.Email = string.Empty;
+            _added = true;
+            await ReloadMembersAsync();
+        }
+        finally
+        {
+            _isAdding = false;
+        }
+    }
+
+    private sealed class AddInput
+    {
+        [Required(ErrorMessage = "Email is required.")]
+        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        public string Email { get; set; } = string.Empty;
+    }
+}

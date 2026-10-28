@@ -1,0 +1,37 @@
+﻿@if (Role == OrganizationRole.LocationManager)
+{
+    <select value="@(LocationId ?? Guid.Empty)" @onchange="OnLocationChanged">
+        <option value="@Guid.Empty">Select a location…</option>
+        @foreach (var location in Locations)
+        {
+            <option value="@location.LocationId">@location.Name</option>
+        }
+    </select>
+}
+else if (Role == OrganizationRole.Employee)
+{
+    <select value="@(EmployeeId ?? Guid.Empty)" @onchange="OnEmployeeChanged">
+        <option value="@Guid.Empty">Select an employee…</option>
+        @foreach (var employee in Employees)
+        {
+            <option value="@employee.EmployeeId">@employee.FullName</option>
+        }
+    </select>
+}
+
+@code {
+    [Parameter, EditorRequired] public OrganizationRole Role { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<LocationResponse> Locations { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<EmployeeResponse> Employees { get; set; } = default!;
+    [Parameter] public Guid? LocationId { get; set; }
+    [Parameter] public EventCallback<Guid?> LocationIdChanged { get; set; }
+    [Parameter] public Guid? EmployeeId { get; set; }
+    [Parameter] public EventCallback<Guid?> EmployeeIdChanged { get; set; }
+
+    private Task OnLocationChanged(ChangeEventArgs e) => LocationIdChanged.InvokeAsync(ParseId(e));
+
+    private Task OnEmployeeChanged(ChangeEventArgs e) => EmployeeIdChanged.InvokeAsync(ParseId(e));
+
+    private static Guid? ParseId(ChangeEventArgs e) =>
+        Guid.TryParse(e.Value?.ToString(), out var id) && id != Guid.Empty ? id : null;
+}

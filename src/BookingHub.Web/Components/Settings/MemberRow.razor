@@ -1,0 +1,159 @@
+﻿@inject IMembersApiClient MembersApiClient
+
+<div class="member-row">
+    <div class="member-line">
+        <div class="member-main">
+            <div>
+                <strong>@(Member.Email ?? "Unknown user")</strong>
+                @if (IsSelf)
+                {
+                    <span class="status-badge">You</span>
+                }
+            </div>
+            <span class="hint">@RoleText</span>
+        </div>
+
+        @if (CanEdit && _mode == Mode.Idle)
+        {
+            <div class="member-actions">
+                <button type="button" class="link-button" @onclick="StartEdit">Change role</button>
+                <button type="button" class="link-button" @onclick="() => _mode = Mode.ConfirmRemove">Remove</button>
+            </div>
+        }
+    </div>
+
+    @if (_mode == Mode.Editing)
+    {
+        <div class="member-edit">
+            <select @bind="_role" @bind:after="OnRoleChanged">
+                @foreach (var role in OrganizationRoles.AssignableBy(CallerRole))
+                {
+                    <option value="@role">@OrganizationRoles.Label(role)</option>
+                }
+            </select>
+            <MemberScopeFields Role="_role"
+                               Locations="Locations"
+                               Employees="Employees"
+                               @bind-LocationId="_locationId"
+                               @bind-EmployeeId="_employeeId" />
+            <button type="button" disabled="@_isBusy" @onclick="SaveAsync">Save</button>
+            <button type="button" class="link-button" @onclick="Cancel">Cancel</button>
+        </div>
+    }
+    else if (_mode == Mode.ConfirmRemove)
+    {
+        <div class="member-edit">
+            <span>Remove this member from the organization?</span>
+            <button type="button" class="btn-danger" disabled="@_isBusy" @onclick="RemoveAsync">Yes, remove</button>
+            <button type="button" class="link-button" @onclick="Cancel">Cancel</button>
+        </div>
+    }
+
+    <SaveStatus Error="_error" />
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Guid OrganizationId { get; set; }
+    [Parameter, EditorRequired] public OrganizationMemberResponse Member { get; set; } = default!;
+    [Parameter, EditorRequired] public OrganizationRole CallerRole { get; set; }
+    [Parameter, EditorRequired] public IReadOnlyList<LocationResponse> Locations { get; set; } = default!;
+    [Parameter, EditorRequired] public IReadOnlyList<EmployeeResponse> Employees { get; set; } = default!;
+    [Parameter] public bool IsSelf { get; set; }
+
+    /// <summary>Raised after the member was changed or removed, so the list can be reloaded.</summary>
+    [Parameter] public EventCallback OnChanged { get; set; }
+
+    private enum Mode { Idle, Editing, ConfirmRemove }
+
+    private Mode _mode = Mode.Idle;
+    private OrganizationRole _role;
+    private Guid? _locationId;
+    private Guid? _employeeId;
+    private ApiError? _error;
+    private bool _isBusy;
+
+    /// <summary>Only an Owner may touch an Owner, and nobody edits their own membership here.</summary>
+    private bool CanEdit => !IsSelf && (Member.Role != OrganizationRole.Owner || CallerRole == OrganizationRole.Owner);
+
+    private string RoleText
+    {
+        get
+        {
+            var scope = Member.Role switch
+            {
+                OrganizationRole.LocationManager => Locations.FirstOrDefault(l => l.LocationId == Member.LocationId)?.Name,
+                OrganizationRole.Employee => Employees.FirstOrDefault(e => e.EmployeeId == Member.EmployeeId)?.FullName,
+                _ => null
+            };
+
+            return scope is null ? OrganizationRoles.Label(Member.Role) : $"{OrganizationRoles.Label(Member.Role)} · {scope}";
+        }
+    }
+
+    private void StartEdit()
+    {
+        _error = null;
+        _role = Member.Role;
+        _locationId = Member.LocationId;
+        _employeeId = Member.EmployeeId;
+        _mode = Mode.Editing;
+    }
+
+    private void Cancel()
+    {
+        _error = null;
+        _mode = Mode.Idle;
+    }
+
+    private void OnRoleChanged()
+    {
+        _locationId = null;
+        _employeeId = null;
+    }
+
+    private async Task SaveAsync()
+    {
+        _isBusy = true;
+        _error = null;
+        try
+        {
+            var result = await MembersApiClient.ChangeRoleAsync(
+                OrganizationId, Member.OrganizationMemberId, _role, _locationId, _employeeId, CancellationToken.None);
+
+            if (!result.IsSuccess)
+            {
+                _error = result.Error;
+                return;
+            }
+
+            _mode = Mode.Idle;
+            await OnChanged.InvokeAsync();
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+
+    private async Task RemoveAsync()
+    {
+        _isBusy = true;
+        _error = null;
+        try
+        {
+            var result = await MembersApiClient.RemoveAsync(OrganizationId, Member.OrganizationMemberId, CancellationToken.None);
+            if (!result.IsSuccess)
+            {
+                _error = result.Error;
+                return;
+            }
+
+            _mode = Mode.Idle;
+            await OnChanged.InvokeAsync();
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}
