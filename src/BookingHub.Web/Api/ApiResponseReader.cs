@@ -1,5 +1,4 @@
-﻿using System.Net;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace BookingHub.Web.Api;
@@ -25,11 +24,12 @@ internal static class ApiResponseReader
 
         var value = await response.Content.ReadFromJsonAsync<T>(ApiJsonOptions.Default, cancellationToken);
         return value is null
-            ? ApiResult<T>.Failure(new ApiError(response.StatusCode, "The server returned an empty response."))
+            ? ApiResult<T>.Failure(new ApiError(response.StatusCode))
             : ApiResult<T>.Success(value);
     }
 
-    private static async Task<string> ReadProblemMessageAsync(HttpResponseMessage response, CancellationToken cancellationToken)
+    /// <returns>The API's explanation, or null when the body has none.</returns>
+    private static async Task<string?> ReadProblemMessageAsync(HttpResponseMessage response, CancellationToken cancellationToken)
     {
         try
         {
@@ -48,18 +48,8 @@ internal static class ApiResponseReader
         {
         }
 
-        return DefaultMessage(response.StatusCode);
+        return null;
     }
-
-    private static string DefaultMessage(HttpStatusCode statusCode) => statusCode switch
-    {
-        HttpStatusCode.Unauthorized => "Your session has expired.",
-        HttpStatusCode.Forbidden => "You don't have access to this.",
-        HttpStatusCode.NotFound => "Not found.",
-        HttpStatusCode.TooManyRequests => "Too many requests. Please wait a moment and try again.",
-        HttpStatusCode.ServiceUnavailable => "The service is temporarily unavailable. Please try again.",
-        _ => "Something went wrong. Please try again."
-    };
 
     private sealed record ProblemResponse(string? Title, string? Detail);
 }

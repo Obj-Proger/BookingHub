@@ -14,32 +14,32 @@ else if (_memberships is null)
 }
 else if (_membership is null)
 {
-    <EmptyState Title="Organization not found"
-                Description="You're not a member of this organization, or it no longer exists.">
-        <a class="back-link" href="@StaffRoutes.Home">Back to your organizations</a>
+    <EmptyState Title="@L["Org_NotFound_Title"]"
+                Description="@L["Org_NotFound_Description"]">
+        <a class="back-link" href="@StaffRoutes.Home">@L["Common_BackToOrganizations"]</a>
     </EmptyState>
 }
 else
 {
     <div class="org-shell">
-        <nav class="org-nav" aria-label="Organization">
+        <nav class="org-nav">
             <div class="org-nav-title">
                 <strong>@_membership.OrganizationName</strong>
-                <span>@_membership.Role</span>
+                <span>@L[$"Role_{_membership.Role}"]</span>
             </div>
             @foreach (var item in StaffNavigation.ItemsFor(_membership.Role))
             {
                 <NavLink href="@StaffNavigation.Href(_membership.OrganizationId, item)"
                          Match="@(item.Segment.Length == 0 ? NavLinkMatch.All : NavLinkMatch.Prefix)">
-                    @item.Title
+                    @L[item.TitleKey]
                 </NavLink>
             }
             <div class="org-nav-secondary">
                 @if (_memberships.Count > 1)
                 {
-                    <a href="@StaffRoutes.Home">Switch organization</a>
+                    <a href="@StaffRoutes.Home">@L["Nav_SwitchOrganization"]</a>
                 }
-                <a href="@StaffRoutes.NewOrganization">New organization</a>
+                <a href="@StaffRoutes.NewOrganization">@L["Nav_NewOrganization"]</a>
             </div>
         </nav>
         <section class="org-content">

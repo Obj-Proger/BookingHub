@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Загрузка…</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Сохранить</value>
+  </data>
+  <data name="Common_Saving" xml:space="preserve">
+    <value>Сохранение…</value>
+  </data>
+  <data name="Common_Saved" xml:space="preserve">
+    <value>Сохранено.</value>
+  </data>
+  <data name="Common_TryAgain" xml:space="preserve">
+    <value>Повторить</value>
+  </data>
+  <data name="Common_NoDataForPeriod" xml:space="preserve">
+    <value>Нет данных за этот период.</value>
+  </data>
+  <data name="Common_ValueRequired" xml:space="preserve">
+    <value>Укажите значение.</value>
+  </data>
+  <data name="Common_PageNotFound" xml:space="preserve">
+    <value>Страница не найдена.</value>
+  </data>
+  <data name="Common_Back" xml:space="preserve">
+    <value>Назад</value>
+  </data>
+  <data name="Common_BackToOrganizations" xml:space="preserve">
+    <value>К вашим организациям</value>
+  </data>
+  <data name="Language_Switch" xml:space="preserve">
+    <value>Язык</value>
+  </data>
+  <data name="Error_SessionExpired" xml:space="preserve">
+    <value>Сессия истекла.</value>
+  </data>
+  <data name="Error_SignInAgain" xml:space="preserve">
+    <value>Войти снова</value>
+  </data>
+  <data name="Error_Status_Forbidden" xml:space="preserve">
+    <value>У вас нет доступа к этому разделу.</value>
+  </data>
+  <data name="Error_Status_NotFound" xml:space="preserve">
+    <value>Не найдено.</value>
+  </data>
+  <data name="Error_Status_TooManyRequests" xml:space="preserve">
+    <value>Слишком много запросов. Подождите немного и повторите попытку.</value>
+  </data>
+  <data name="Error_Status_ServiceUnavailable" xml:space="preserve">
+    <value>Сервис временно недоступен. Повторите попытку позже.</value>
+  </data>
+  <data name="Error_Status_Default" xml:space="preserve">
+    <value>Что-то пошло не так. Повторите попытку.</value>
+  </data>
+  <data name="Staff_SignOut" xml:space="preserve">
+    <value>Выйти</value>
+  </data>
+  <data name="Nav_Overview" xml:space="preserve">
+    <value>Обзор</value>
+  </data>
+  <data name="Nav_Bookings" xml:space="preserve">
+    <value>Записи</value>
+  </data>
+  <data name="Nav_Clients" xml:space="preserve">
+    <value>Клиенты</value>
+  </data>
+  <data name="Nav_Analytics" xml:space="preserve">
+    <value>Аналитика</value>
+  </data>
+  <data name="Nav_Reviews" xml:space="preserve">
+    <value>Отзывы</value>
+  </data>
+  <data name="Nav_Locations" xml:space="preserve">
+    <value>Локации</value>
+  </data>
+  <data name="Nav_Services" xml:space="preserve">
+    <value>Услуги</value>
+  </data>
+  <data name="Nav_Employees" xml:space="preserve">
+    <value>Сотрудники</value>
+  </data>
+  <data name="Nav_Members" xml:space="preserve">
+    <value>Участники</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Настройки</value>
+  </data>
+  <data name="Nav_SwitchOrganization" xml:space="preserve">
+    <value>Сменить организацию</value>
+  </data>
+  <data name="Nav_NewOrganization" xml:space="preserve">
+    <value>Новая организация</value>
+  </data>
+  <data name="Org_NotFound_Title" xml:space="preserve">
+    <value>Организация не найдена</value>
+  </data>
+  <data name="Org_NotFound_Description" xml:space="preserve">
+    <value>Вы не участник этой организации, либо её больше не существует.</value>
+  </data>
+  <data name="Role_Owner" xml:space="preserve">
+    <value>Владелец</value>
+  </data>
+  <data name="Role_Administrator" xml:space="preserve">
+    <value>Администратор</value>
+  </data>
+  <data name="Role_LocationManager" xml:space="preserve">
+    <value>Менеджер локации</value>
+  </data>
+  <data name="Role_Employee" xml:space="preserve">
+    <value>Сотрудник</value>
+  </data>
+  <data name="Status_Pending" xml:space="preserve">
+    <value>Ждёт подтверждения</value>
+  </data>
+  <data name="Status_Confirmed" xml:space="preserve">
+    <value>Подтверждена</value>
+  </data>
+  <data name="Status_AwaitingReview" xml:space="preserve">
+    <value>Требует отметки</value>
+  </data>
+  <data name="Status_Completed" xml:space="preserve">
+    <value>Завершена</value>
+  </data>
+  <data name="Status_NoShow" xml:space="preserve">
+    <value>Не пришёл</value>
+  </data>
+  <data name="Status_Cancelled" xml:space="preserve">
+    <value>Отменена</value>
+  </data>
+  <data name="Status_Expired" xml:space="preserve">
+    <value>Истекла</value>
+  </data>
+  <data name="Unit_Minutes" xml:space="preserve">
+    <value>мин.</value>
+  </data>
+  <data name="Unit_Hours" xml:space="preserve">
+    <value>ч</value>
+  </data>
+  <data name="Unit_Days" xml:space="preserve">
+    <value>дн.</value>
+  </data>
+  <data name="Stars_Label" xml:space="preserve">
+    <value>{0} из 5</value>
+  </data>
+  <data name="Login_Title" xml:space="preserve">
+    <value>Вход</value>
+  </data>
+  <data name="Login_Email" xml:space="preserve">
+    <value>Эл. почта</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Пароль</value>
+  </data>
+  <data name="Login_Submit" xml:space="preserve">
+    <value>Войти</value>
+  </data>
+  <data name="Login_Error_Invalid" xml:space="preserve">
+    <value>Неверная почта или пароль.</value>
+  </data>
+  <data name="Login_Error_TooMany" xml:space="preserve">
+    <value>Слишком много попыток. Подождите минуту и повторите.</value>
+  </data>
+  <data name="Login_Error_Failed" xml:space="preserve">
+    <value>Не удалось войти. Повторите попытку.</value>
+  </data>
+  <data name="Validation_EmailRequired" xml:space="preserve">
+    <value>Укажите адрес эл. почты.</value>
+  </data>
+  <data name="Validation_EmailInvalid" xml:space="preserve">
+    <value>Введите корректный адрес эл. почты.</value>
+  </data>
+  <data name="Validation_PasswordRequired" xml:space="preserve">
+    <value>Укажите пароль.</value>
+  </data>
+  <data name="Validation_NameRequired" xml:space="preserve">
+    <value>Укажите название.</value>
+  </data>
+  <data name="Validation_AddressRequired" xml:space="preserve">
+    <value>Укажите адрес.</value>
+  </data>
+  <data name="Orgs_Title" xml:space="preserve">
+    <value>Ваши организации</value>
+  </data>
+  <data name="Orgs_Create" xml:space="preserve">
+    <value>Создать новую организацию</value>
+  </data>
+  <data name="NewOrg_PageTitle" xml:space="preserve">
+    <value>Новая организация</value>
+  </data>
+  <data name="NewOrg_Title" xml:space="preserve">
+    <value>Создание организации</value>
+  </data>
+  <data name="NewOrg_Name" xml:space="preserve">
+    <value>Название</value>
+  </data>
+  <data name="NewOrg_Address" xml:space="preserve">
+    <value>Адрес</value>
+  </data>
+  <data name="NewOrg_HintBookAt" xml:space="preserve">
+    <value>Гости будут записываться онлайн по адресу</value>
+  </data>
+  <data name="NewOrg_HintFormat" xml:space="preserve">
+    <value>Используйте строчные латинские буквы, цифры и дефисы.</value>
+  </data>
+  <data name="NewOrg_DefaultAddress" xml:space="preserve">
+    <value>ваш-адрес</value>
+  </data>
+  <data name="NewOrg_Submit" xml:space="preserve">
+    <value>Создать организацию</value>
+  </data>
+  <data name="NewOrg_Creating" xml:space="preserve">
+    <value>Создание…</value>
+  </data>
+  <data name="Overview_SignedInAs" xml:space="preserve">
+    <value>Вы вошли как</value>
+  </data>
+</root>

@@ -3,7 +3,7 @@
     <select @bind="_unit" @bind:after="OnChangedAsync" disabled="@ReadOnly">
         @foreach (var unit in Enum.GetValues<DurationUnit>())
         {
-            <option value="@unit">@unit.ToString().ToLowerInvariant()</option>
+            <option value="@unit">@L[$"Unit_{unit}"]</option>
         }
     </select>
 </span>

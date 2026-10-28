@@ -5,33 +5,33 @@
 @inject MembershipCache Memberships
 @inject NavigationManager Navigation
 
-<PageTitle>New organization</PageTitle>
+<PageTitle>@L["NewOrg_PageTitle"]</PageTitle>
 
-<h1>Create an organization</h1>
+<h1>@L["NewOrg_Title"]</h1>
 
 <EditForm Model="_input" OnValidSubmit="SubmitAsync" FormName="create-organization">
     <DataAnnotationsValidator />
     <div class="form-field">
-        <label>Name</label>
+        <label>@L["NewOrg_Name"]</label>
         <InputText @bind-Value="_input.Name" @bind-Value:after="SuggestSlug" />
     </div>
     <div class="form-field">
-        <label>Address</label>
+        <label>@L["NewOrg_Address"]</label>
         <InputText @bind-Value="_input.Slug" @bind-Value:after="MarkSlugEdited" />
     </div>
     <p class="hint">
-        Guests will book online at <code>/book/@(string.IsNullOrWhiteSpace(_input.Slug) ? "your-address" : _input.Slug)</code>.
-        Use lowercase letters, digits and hyphens.
+        @L["NewOrg_HintBookAt"] <code>/book/@(string.IsNullOrWhiteSpace(_input.Slug) ? L["NewOrg_DefaultAddress"].Value : _input.Slug)</code>.
+        @L["NewOrg_HintFormat"]
     </p>
     <ValidationSummary />
     @if (_error is not null)
     {
         <ErrorState Error="_error" />
     }
-    <button type="submit" disabled="@_isSubmitting">@(_isSubmitting ? "Creating…" : "Create organization")</button>
+    <button type="submit" disabled="@_isSubmitting">@(_isSubmitting ? L["NewOrg_Creating"] : L["NewOrg_Submit"])</button>
 </EditForm>
 
-<a class="back-link" href="@StaffRoutes.Home">&larr; Back</a>
+<a class="back-link" href="@StaffRoutes.Home">&larr; @L["Common_Back"]</a>
 
 @code {
     private readonly OrganizationInput _input = new();
@@ -71,10 +71,10 @@
 
     private sealed class OrganizationInput
     {
-        [Required(ErrorMessage = "Name is required.")]
+        [LocalizedRequired("Validation_NameRequired")]
         public string Name { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Address is required.")]
+        [LocalizedRequired("Validation_AddressRequired")]
         public string Slug { get; set; } = string.Empty;
     }
 }

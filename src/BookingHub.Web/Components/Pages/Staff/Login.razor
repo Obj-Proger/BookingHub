@@ -4,18 +4,18 @@
 @inject StaffSessionManager SessionManager
 @inject NavigationManager Navigation
 
-<PageTitle>Sign in</PageTitle>
+<PageTitle>@L["Login_Title"]</PageTitle>
 
-<h1>Sign in</h1>
+<h1>@L["Login_Title"]</h1>
 
 <EditForm Model="Input" FormName="login" OnValidSubmit="SignInAsync" method="post">
     <DataAnnotationsValidator />
     <div class="form-field">
-        <label>Email</label>
+        <label>@L["Login_Email"]</label>
         <InputText type="email" @bind-Value="Input!.Email" autocomplete="username" />
     </div>
     <div class="form-field">
-        <label>Password</label>
+        <label>@L["Login_Password"]</label>
         <InputText type="password" @bind-Value="Input!.Password" autocomplete="current-password" />
     </div>
     <ValidationSummary />
@@ -23,7 +23,7 @@
     {
         <p class="error-text">@_errorMessage</p>
     }
-    <button type="submit">Sign in</button>
+    <button type="submit">@L["Login_Submit"]</button>
 </EditForm>
 
 @code {
@@ -44,16 +44,16 @@
         {
             _errorMessage = result.Outcome switch
             {
-                LoginOutcome.InvalidCredentials => "Invalid email or password.",
-                LoginOutcome.TooManyRequests => "Too many attempts. Please wait a minute and try again.",
-                _ => "The service is temporarily unavailable. Please try again."
+                LoginOutcome.InvalidCredentials => L["Login_Error_Invalid"],
+                LoginOutcome.TooManyRequests => L["Login_Error_TooMany"],
+                _ => L["Error_Status_ServiceUnavailable"]
             };
             return;
         }
 
         if (!await SessionManager.SignInAsync(HttpContext, email, result.Tokens!, CancellationToken.None))
         {
-            _errorMessage = "Sign-in failed. Please try again.";
+            _errorMessage = L["Login_Error_Failed"];
             return;
         }
 
@@ -62,11 +62,11 @@
 
     private sealed class LoginInput
     {
-        [Required(ErrorMessage = "Email is required.")]
-        [EmailAddress(ErrorMessage = "Enter a valid email address.")]
+        [LocalizedRequired("Validation_EmailRequired")]
+        [LocalizedEmailAddress("Validation_EmailInvalid")]
         public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Password is required.")]
+        [LocalizedRequired("Validation_PasswordRequired")]
         public string Password { get; set; } = string.Empty;
     }
 }

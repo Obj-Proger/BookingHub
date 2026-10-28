@@ -10,7 +10,7 @@
     @if (!ReadOnly)
     {
         <SaveStatus Saved="_saved" Error="_error" />
-        <button type="submit" disabled="@_isSaving">@(_isSaving ? "Saving…" : "Save")</button>
+        <button type="submit" disabled="@_isSaving">@(_isSaving ? L["Common_Saving"] : L["Common_Save"])</button>
     }
 </EditForm>
 
@@ -42,7 +42,7 @@
         var trimmed = _input.Value.Trim();
         if (Required && trimmed.Length == 0)
         {
-            _validationMessage = "A value is required.";
+            _validationMessage = L["Common_ValueRequired"];
             return;
         }
 

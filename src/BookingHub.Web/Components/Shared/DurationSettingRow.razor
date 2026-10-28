@@ -10,7 +10,7 @@
         <DurationInput @bind-Value="_value" ReadOnly="ReadOnly" />
         @if (!ReadOnly)
         {
-            <button type="button" disabled="@_isSaving" @onclick="SaveAsync">@(_isSaving ? "Saving…" : "Save")</button>
+            <button type="button" disabled="@_isSaving" @onclick="SaveAsync">@(_isSaving ? L["Common_Saving"] : L["Common_Save"])</button>
         }
     </div>
     @if (!ReadOnly)

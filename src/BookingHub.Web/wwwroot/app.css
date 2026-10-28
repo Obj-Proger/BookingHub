@@ -463,3 +463,27 @@ a.card {
     gap: 0.5rem;
     margin-top: 0.5rem;
 }
+
+.page-tools {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+.staff-header-tools {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.language-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+}
+
+    .language-switcher .language-current {
+        font-weight: 700;
+        text-decoration: underline;
+    }

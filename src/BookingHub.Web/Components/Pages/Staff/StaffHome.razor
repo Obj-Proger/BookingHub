@@ -4,9 +4,9 @@
 @inject MembershipCache Memberships
 @inject NavigationManager Navigation
 
-<PageTitle>Your organizations</PageTitle>
+<PageTitle>@L["Orgs_Title"]</PageTitle>
 
-<h1>Your organizations</h1>
+<h1>@L["Orgs_Title"]</h1>
 
 @if (_error is not null)
 {
@@ -23,11 +23,11 @@ else
         {
             <a class="card" href="@StaffRoutes.Organization(membership.OrganizationId)">
                 <h2>@membership.OrganizationName</h2>
-                <p>@membership.Role</p>
+                <p>@L[$"Role_{membership.Role}"]</p>
             </a>
         }
     </div>
-    <a class="back-link" href="@StaffRoutes.NewOrganization">Create a new organization</a>
+    <a class="back-link" href="@StaffRoutes.NewOrganization">@L["Orgs_Create"]</a>
 }
 
 @code {

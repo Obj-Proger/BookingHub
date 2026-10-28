@@ -3,4 +3,10 @@
 		<TargetFramework>net10.0</TargetFramework>
 		<RootNamespace>BookingHub.Web</RootNamespace>
 	</PropertyGroup>
+	<ItemGroup>
+	  <EmbeddedResource Remove="Resources\SharedResource.ru.resx" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ApplicationDefinition Include="Resources\SharedResource.ru.resx" />
+	</ItemGroup>
 </Project>

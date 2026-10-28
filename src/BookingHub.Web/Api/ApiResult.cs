@@ -2,7 +2,8 @@
 
 namespace BookingHub.Web.Api;
 
-public sealed record ApiError(HttpStatusCode StatusCode, string Message)
+/// <param name="ServerMessage">The explanation the API gave, if any; without one the UI picks a text for the status code.</param>
+public sealed record ApiError(HttpStatusCode StatusCode, string? ServerMessage = null)
 {
     public bool IsUnauthorized => StatusCode == HttpStatusCode.Unauthorized;
 }

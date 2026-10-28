@@ -1,0 +1,17 @@
+﻿@using System.Globalization
+@inject NavigationManager Navigation
+
+<form method="get" action="/culture/set" class="language-switcher" title="@L["Language_Switch"]">
+    <input type="hidden" name="returnUrl" value="@ReturnUrl" />
+    @foreach (var culture in SupportedCultures.All)
+    {
+        <button type="submit" name="culture" value="@culture" class="@ButtonClass(culture)">@culture.ToUpperInvariant()</button>
+    }
+</form>
+
+@code {
+    private string ReturnUrl => "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+
+    private static string ButtonClass(string culture) =>
+        CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == culture ? "link-button language-current" : "link-button";
+}

@@ -5,7 +5,7 @@
         <input class="currency-input" maxlength="3" @bind="_currency" disabled="@ReadOnly" />
         @if (!ReadOnly)
         {
-            <button type="button" disabled="@_isSaving" @onclick="SaveAsync">@(_isSaving ? "Saving…" : "Save")</button>
+            <button type="button" disabled="@_isSaving" @onclick="SaveAsync">@(_isSaving ? L["Common_Saving"] : L["Common_Save"])</button>
         }
     </div>
 </div>

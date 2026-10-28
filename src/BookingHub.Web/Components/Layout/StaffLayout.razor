@@ -2,15 +2,18 @@
 
 <header class="staff-header">
     <a class="staff-brand" href="/app">BookingHub</a>
-    <AuthorizeView>
-        <div class="staff-user">
-            <span>@context.User.Identity?.Name</span>
-            <form method="post" action="/logout">
-                <AntiforgeryToken />
-                <button type="submit" class="link-button">Sign out</button>
-            </form>
-        </div>
-    </AuthorizeView>
+    <div class="staff-header-tools">
+        <LanguageSwitcher />
+        <AuthorizeView>
+            <div class="staff-user">
+                <span>@context.User.Identity?.Name</span>
+                <form method="post" action="/logout">
+                    <AntiforgeryToken />
+                    <button type="submit" class="link-button">@L["Staff_SignOut"]</button>
+                </form>
+            </div>
+        </AuthorizeView>
+    </div>
 </header>
 
 <div class="page staff-page">

@@ -1,6 +1,7 @@
 using BookingHub.Web.Api;
 using BookingHub.Web.Auth;
 using BookingHub.Web.Components;
+using BookingHub.Web.Localization;
 using BookingHub.Web.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -8,6 +9,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddLocalization();
 
 builder.Services.TryAddSingleton(TimeProvider.System);
 builder.Services.AddStaffAuthentication();
@@ -52,10 +55,17 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.MapStaticAssets();
+
+app.UseRequestLocalization(new RequestLocalizationOptions()
+    .SetDefaultCulture(SupportedCultures.Default)
+    .AddSupportedCultures(SupportedCultures.All)
+    .AddSupportedUICultures(SupportedCultures.All));
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
+app.MapCultureSwitch();
 app.MapStaffLogout();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

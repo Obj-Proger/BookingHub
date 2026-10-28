@@ -1,0 +1,231 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="Common_Loading" xml:space="preserve">
+    <value>Loading…</value>
+  </data>
+  <data name="Common_Save" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="Common_Saving" xml:space="preserve">
+    <value>Saving…</value>
+  </data>
+  <data name="Common_Saved" xml:space="preserve">
+    <value>Saved.</value>
+  </data>
+  <data name="Common_TryAgain" xml:space="preserve">
+    <value>Try again</value>
+  </data>
+  <data name="Common_NoDataForPeriod" xml:space="preserve">
+    <value>No data for this period.</value>
+  </data>
+  <data name="Common_ValueRequired" xml:space="preserve">
+    <value>A value is required.</value>
+  </data>
+  <data name="Common_PageNotFound" xml:space="preserve">
+    <value>Page not found.</value>
+  </data>
+  <data name="Common_Back" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="Common_BackToOrganizations" xml:space="preserve">
+    <value>Back to your organizations</value>
+  </data>
+  <data name="Language_Switch" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Error_SessionExpired" xml:space="preserve">
+    <value>Your session has expired.</value>
+  </data>
+  <data name="Error_SignInAgain" xml:space="preserve">
+    <value>Sign in again</value>
+  </data>
+  <data name="Error_Status_Forbidden" xml:space="preserve">
+    <value>You don't have access to this.</value>
+  </data>
+  <data name="Error_Status_NotFound" xml:space="preserve">
+    <value>Not found.</value>
+  </data>
+  <data name="Error_Status_TooManyRequests" xml:space="preserve">
+    <value>Too many requests. Please wait a moment and try again.</value>
+  </data>
+  <data name="Error_Status_ServiceUnavailable" xml:space="preserve">
+    <value>The service is temporarily unavailable. Please try again.</value>
+  </data>
+  <data name="Error_Status_Default" xml:space="preserve">
+    <value>Something went wrong. Please try again.</value>
+  </data>
+  <data name="Staff_SignOut" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="Nav_Overview" xml:space="preserve">
+    <value>Overview</value>
+  </data>
+  <data name="Nav_Bookings" xml:space="preserve">
+    <value>Bookings</value>
+  </data>
+  <data name="Nav_Clients" xml:space="preserve">
+    <value>Clients</value>
+  </data>
+  <data name="Nav_Analytics" xml:space="preserve">
+    <value>Analytics</value>
+  </data>
+  <data name="Nav_Reviews" xml:space="preserve">
+    <value>Reviews</value>
+  </data>
+  <data name="Nav_Locations" xml:space="preserve">
+    <value>Locations</value>
+  </data>
+  <data name="Nav_Services" xml:space="preserve">
+    <value>Services</value>
+  </data>
+  <data name="Nav_Employees" xml:space="preserve">
+    <value>Employees</value>
+  </data>
+  <data name="Nav_Members" xml:space="preserve">
+    <value>Members</value>
+  </data>
+  <data name="Nav_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Nav_SwitchOrganization" xml:space="preserve">
+    <value>Switch organization</value>
+  </data>
+  <data name="Nav_NewOrganization" xml:space="preserve">
+    <value>New organization</value>
+  </data>
+  <data name="Org_NotFound_Title" xml:space="preserve">
+    <value>Organization not found</value>
+  </data>
+  <data name="Org_NotFound_Description" xml:space="preserve">
+    <value>You're not a member of this organization, or it no longer exists.</value>
+  </data>
+  <data name="Role_Owner" xml:space="preserve">
+    <value>Owner</value>
+  </data>
+  <data name="Role_Administrator" xml:space="preserve">
+    <value>Administrator</value>
+  </data>
+  <data name="Role_LocationManager" xml:space="preserve">
+    <value>Location manager</value>
+  </data>
+  <data name="Role_Employee" xml:space="preserve">
+    <value>Employee</value>
+  </data>
+  <data name="Status_Pending" xml:space="preserve">
+    <value>Awaiting confirmation</value>
+  </data>
+  <data name="Status_Confirmed" xml:space="preserve">
+    <value>Confirmed</value>
+  </data>
+  <data name="Status_AwaitingReview" xml:space="preserve">
+    <value>Needs review</value>
+  </data>
+  <data name="Status_Completed" xml:space="preserve">
+    <value>Completed</value>
+  </data>
+  <data name="Status_NoShow" xml:space="preserve">
+    <value>No-show</value>
+  </data>
+  <data name="Status_Cancelled" xml:space="preserve">
+    <value>Cancelled</value>
+  </data>
+  <data name="Status_Expired" xml:space="preserve">
+    <value>Expired</value>
+  </data>
+  <data name="Unit_Minutes" xml:space="preserve">
+    <value>minutes</value>
+  </data>
+  <data name="Unit_Hours" xml:space="preserve">
+    <value>hours</value>
+  </data>
+  <data name="Unit_Days" xml:space="preserve">
+    <value>days</value>
+  </data>
+  <data name="Stars_Label" xml:space="preserve">
+    <value>{0} out of 5</value>
+  </data>
+  <data name="Login_Title" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="Login_Email" xml:space="preserve">
+    <value>Email</value>
+  </data>
+  <data name="Login_Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="Login_Submit" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="Login_Error_Invalid" xml:space="preserve">
+    <value>Invalid email or password.</value>
+  </data>
+  <data name="Login_Error_TooMany" xml:space="preserve">
+    <value>Too many attempts. Please wait a minute and try again.</value>
+  </data>
+  <data name="Login_Error_Failed" xml:space="preserve">
+    <value>Sign-in failed. Please try again.</value>
+  </data>
+  <data name="Validation_EmailRequired" xml:space="preserve">
+    <value>Email is required.</value>
+  </data>
+  <data name="Validation_EmailInvalid" xml:space="preserve">
+    <value>Enter a valid email address.</value>
+  </data>
+  <data name="Validation_PasswordRequired" xml:space="preserve">
+    <value>Password is required.</value>
+  </data>
+  <data name="Validation_NameRequired" xml:space="preserve">
+    <value>Name is required.</value>
+  </data>
+  <data name="Validation_AddressRequired" xml:space="preserve">
+    <value>Address is required.</value>
+  </data>
+  <data name="Orgs_Title" xml:space="preserve">
+    <value>Your organizations</value>
+  </data>
+  <data name="Orgs_Create" xml:space="preserve">
+    <value>Create a new organization</value>
+  </data>
+  <data name="NewOrg_PageTitle" xml:space="preserve">
+    <value>New organization</value>
+  </data>
+  <data name="NewOrg_Title" xml:space="preserve">
+    <value>Create an organization</value>
+  </data>
+  <data name="NewOrg_Name" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="NewOrg_Address" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="NewOrg_HintBookAt" xml:space="preserve">
+    <value>Guests will book online at</value>
+  </data>
+  <data name="NewOrg_HintFormat" xml:space="preserve">
+    <value>Use lowercase letters, digits and hyphens.</value>
+  </data>
+  <data name="NewOrg_DefaultAddress" xml:space="preserve">
+    <value>your-address</value>
+  </data>
+  <data name="NewOrg_Submit" xml:space="preserve">
+    <value>Create organization</value>
+  </data>
+  <data name="NewOrg_Creating" xml:space="preserve">
+    <value>Creating…</value>
+  </data>
+  <data name="Overview_SignedInAs" xml:space="preserve">
+    <value>You're signed in as</value>
+  </data>
+</root>

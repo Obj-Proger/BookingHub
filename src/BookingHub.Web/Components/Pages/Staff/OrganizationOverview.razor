@@ -5,7 +5,7 @@
 <PageTitle>@Membership.OrganizationName</PageTitle>
 
 <h1>@Membership.OrganizationName</h1>
-<p>You're signed in as <strong>@Membership.Role</strong>.</p>
+<p>@L["Overview_SignedInAs"] <strong>@L[$"Role_{Membership.Role}"]</strong>.</p>
 
 @code {
     [Parameter] public Guid OrganizationId { get; set; }

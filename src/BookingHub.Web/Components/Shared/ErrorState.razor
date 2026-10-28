@@ -1,17 +1,18 @@
-﻿@inject NavigationManager Navigation
+﻿@using System.Net
+@inject NavigationManager Navigation
 
 <div class="state-panel state-error" role="alert">
     @if (Error.IsUnauthorized)
     {
-        <p>Your session has expired.</p>
-        <a href="@SignInUrl">Sign in again</a>
+        <p>@L["Error_SessionExpired"]</p>
+        <a href="@SignInUrl">@L["Error_SignInAgain"]</a>
     }
     else
     {
-        <p>@Error.Message</p>
+        <p>@Message</p>
         @if (OnRetry.HasDelegate)
         {
-            <button type="button" @onclick="OnRetry">Try again</button>
+            <button type="button" @onclick="OnRetry">@L["Common_TryAgain"]</button>
         }
     }
 </div>
@@ -20,6 +21,17 @@
     [Parameter, EditorRequired] public ApiError Error { get; set; } = default!;
     [Parameter] public EventCallback OnRetry { get; set; }
 
+    private string Message => Error.ServerMessage ?? L[StatusKey(Error.StatusCode)].Value;
+
     private string SignInUrl =>
         "/login?returnUrl=" + Uri.EscapeDataString("/" + Navigation.ToBaseRelativePath(Navigation.Uri));
+
+    private static string StatusKey(HttpStatusCode statusCode) => statusCode switch
+    {
+        HttpStatusCode.Forbidden => "Error_Status_Forbidden",
+        HttpStatusCode.NotFound => "Error_Status_NotFound",
+        HttpStatusCode.TooManyRequests => "Error_Status_TooManyRequests",
+        HttpStatusCode.ServiceUnavailable => "Error_Status_ServiceUnavailable",
+        _ => "Error_Status_Default"
+    };
 }
