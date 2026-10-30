@@ -3,6 +3,7 @@
 <div class="@RowClass">
     <div class="review-head">
         <StarRating Value="Review.Rating" />
+        <span class="hint">@ReviewDate</span>
         @if (Review.IsHidden)
         {
             <span class="status-badge status-cancelled">Hidden</span>
@@ -40,6 +41,8 @@
     private string RowClass => Review.IsHidden ? "review-row review-hidden" : "review-row";
 
     private string VisitDate => DisplayFormat.Date(DateOnly.FromDateTime(Zone.ToLocal(Review.VisitStartUtc)));
+
+    private string ReviewDate => DisplayFormat.Date(DateOnly.FromDateTime(Zone.ToLocal(Review.CreatedAtUtc)));
 
     private async Task ToggleAsync()
     {

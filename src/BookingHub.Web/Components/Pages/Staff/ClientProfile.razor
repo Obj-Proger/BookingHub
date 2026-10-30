@@ -35,8 +35,11 @@ else
         <StatCard Label="Visits" Value="@_client.TotalVisits.ToString()" />
         <StatCard Label="Completed" Value="@_client.CompletedVisits.ToString()" />
         <StatCard Label="No-shows" Value="@_client.NoShowCount.ToString()" />
-        <StatCard Label="Revenue" Value="@FormatMoney(_client.TotalRevenue)" />
-        <StatCard Label="Average check" Value="@FormatMoney(_client.AverageCheck)" />
+        @if (_client.FinancialsVisible)
+        {
+            <StatCard Label="Revenue" Value="@FormatMoney(_client.TotalRevenue)" />
+            <StatCard Label="Average check" Value="@FormatMoney(_client.AverageCheck)" />
+        }
     </div>
 
     <section class="settings-section">
@@ -56,7 +59,10 @@ else
                             <th>Employee</th>
                             <th>Location</th>
                             <th>Status</th>
-                            <th>Price</th>
+                            @if (_client.FinancialsVisible)
+                            {
+                                <th>Price</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -68,7 +74,10 @@ else
                                 <td>@visit.EmployeeFullName</td>
                                 <td>@visit.LocationName</td>
                                 <td><StatusBadge Status="visit.Status" /></td>
-                                <td>@DisplayFormat.Price(visit.PriceAmount, visit.PriceCurrency)</td>
+                                @if (_client.FinancialsVisible)
+                                {
+                                    <td>@VisitPrice(visit)</td>
+                                }
                             </tr>
                         }
                     </tbody>
@@ -103,6 +112,9 @@ else
         amounts.Count == 0
             ? "—"
             : string.Join(", ", amounts.Select(amount => DisplayFormat.Price(amount.Amount, amount.Currency)));
+
+    private static string VisitPrice(ClientVisitResponse visit) =>
+        visit is { PriceAmount: { } amount, PriceCurrency: { } currency } ? DisplayFormat.Price(amount, currency) : "—";
 
     private static string VisitTime(ClientVisitResponse visit)
     {

@@ -13,8 +13,10 @@ public sealed class Review : BaseEntity
     public int Rating { get; private set; }
     public string? Comment { get; private set; }
     public bool IsHidden { get; private set; }
+    public DateTime CreatedAtUtc { get; private set; }
 
-    private Review(Guid id, Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, int rating, string? comment)
+    private Review(
+        Guid id, Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, int rating, string? comment, DateTime createdAtUtc)
         : base(id)
     {
         OrganizationId = organizationId;
@@ -23,6 +25,7 @@ public sealed class Review : BaseEntity
         BookingId = bookingId;
         Rating = rating;
         Comment = comment;
+        CreatedAtUtc = createdAtUtc;
     }
 
     private Review()
@@ -59,7 +62,7 @@ public sealed class Review : BaseEntity
         if (trimmedComment is { Length: > MaxCommentLength })
             return Result.Failure<Review>(DomainErrors.Review.CommentTooLong);
 
-        var review = new Review(Guid.CreateVersion7(), organizationId, locationId, employeeId, bookingId, rating, trimmedComment);
+        var review = new Review(Guid.CreateVersion7(), organizationId, locationId, employeeId, bookingId, rating, trimmedComment, utcNow);
         review.RaiseDomainEvent(new ReviewSubmittedEvent(review.Id, organizationId, employeeId, rating, utcNow));
         return review;
     }

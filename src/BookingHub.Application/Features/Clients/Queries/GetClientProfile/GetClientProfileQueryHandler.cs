@@ -36,31 +36,60 @@ internal sealed class GetClientProfileQueryHandler(
         if (caller.Role == OrganizationRole.Employee)
             bookingsQuery = bookingsQuery.Where(b => b.EmployeeId == caller.EmployeeId);
 
-        var visits = await (
+        var rows = await (
             from b in bookingsQuery
             join s in dbContext.Services on b.ServiceId equals s.Id
             join e in dbContext.Employees on b.EmployeeId equals e.Id
             join l in dbContext.Locations on b.LocationId equals l.Id
             orderby b.TimeSlot.StartUtc descending
-            select new ClientVisitResponse(
+            select new VisitRow(
                 b.Id, b.TimeSlot.StartUtc, l.Name, l.TimeZone, s.Name, e.FullName, b.Status, b.Price.Amount, b.Price.Currency))
             .ToListAsync(cancellationToken);
 
-        var completedVisits = visits.Where(v => v.Status == BookingStatus.Completed).ToList();
+        var financialsVisible = await CanViewFinancialsAsync(caller.Role, query.OrganizationId, cancellationToken);
 
-        var totalRevenue = completedVisits
-            .GroupBy(v => v.PriceCurrency)
-            .Select(g => new RevenueByCurrency(g.Key, g.Sum(v => v.PriceAmount)))
-            .ToList();
+        var completedRows = rows.Where(r => r.Status == BookingStatus.Completed).ToList();
 
-        var averageCheck = completedVisits
-            .GroupBy(v => v.PriceCurrency)
-            .Select(g => new RevenueByCurrency(g.Key, Math.Round(g.Average(v => v.PriceAmount), 2)))
+        var totalRevenue = financialsVisible
+            ? completedRows
+                .GroupBy(r => r.PriceCurrency)
+                .Select(g => new RevenueByCurrency(g.Key, g.Sum(r => r.PriceAmount)))
+                .ToList()
+            : [];
+
+        var averageCheck = financialsVisible
+            ? completedRows
+                .GroupBy(r => r.PriceCurrency)
+                .Select(g => new RevenueByCurrency(g.Key, Math.Round(g.Average(r => r.PriceAmount), 2)))
+                .ToList()
+            : [];
+
+        var visits = rows
+            .Select(r => new ClientVisitResponse(
+                r.BookingId, r.StartUtc, r.LocationName, r.LocationTimeZone, r.ServiceName, r.EmployeeFullName, r.Status,
+                financialsVisible ? r.PriceAmount : null, financialsVisible ? r.PriceCurrency : null))
             .ToList();
 
         return new ClientProfileResponse(
             client.Id, client.Phone.Value, client.Name, client.Email?.Value,
-            visits.Count, completedVisits.Count, visits.Count(v => v.Status == BookingStatus.NoShow),
-            totalRevenue, averageCheck, visits);
+            rows.Count, completedRows.Count, rows.Count(r => r.Status == BookingStatus.NoShow),
+            financialsVisible, totalRevenue, averageCheck, visits);
     }
+
+    /// <summary>The same rule as the analytics dashboard: Owner and LocationManager always, Administrator only
+    /// when the Owner enabled it, Employee never.</summary>
+    private async Task<bool> CanViewFinancialsAsync(OrganizationRole role, Guid organizationId, CancellationToken cancellationToken) =>
+        role switch
+        {
+            OrganizationRole.Owner or OrganizationRole.LocationManager => true,
+            OrganizationRole.Administrator => await dbContext.Organizations
+                .Where(o => o.Id == organizationId)
+                .Select(o => o.CanAdministratorsViewFinancials)
+                .FirstAsync(cancellationToken),
+            _ => false
+        };
+
+    private sealed record VisitRow(
+        Guid BookingId, DateTime StartUtc, string LocationName, string LocationTimeZone, string ServiceName,
+        string EmployeeFullName, BookingStatus Status, decimal PriceAmount, string PriceCurrency);
 }
