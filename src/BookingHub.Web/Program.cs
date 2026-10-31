@@ -1,4 +1,4 @@
-using BookingHub.Web.Api;
+﻿using BookingHub.Web.Api;
 using BookingHub.Web.Auth;
 using BookingHub.Web.Components;
 using BookingHub.Web.Localization;
@@ -15,22 +15,21 @@ builder.Services.AddLocalization();
 builder.Services.TryAddSingleton(TimeProvider.System);
 builder.Services.AddStaffAuthentication();
 
-var apiBaseUrl = builder.Configuration["Api:BaseUrl"]
-    ?? throw new InvalidOperationException("Api:BaseUrl is not configured.");
+var apiBaseUrl = ReadApiBaseUrl(builder.Configuration);
 
 builder.Services.AddHttpClient<IPublicCatalogApiClient, PublicCatalogApiClient>(client =>
-    client.BaseAddress = new Uri(apiBaseUrl));
+    client.BaseAddress = apiBaseUrl);
 builder.Services.AddHttpClient<IPublicBookingsApiClient, PublicBookingsApiClient>(client =>
-    client.BaseAddress = new Uri(apiBaseUrl));
+    client.BaseAddress = apiBaseUrl);
 builder.Services.AddHttpClient<IPublicReviewsApiClient, PublicReviewsApiClient>(client =>
-    client.BaseAddress = new Uri(apiBaseUrl));
+    client.BaseAddress = apiBaseUrl);
 builder.Services.AddHttpClient<IPublicWaitlistApiClient, PublicWaitlistApiClient>(client =>
-    client.BaseAddress = new Uri(apiBaseUrl));
+    client.BaseAddress = apiBaseUrl);
 builder.Services.AddHttpClient<IAuthApiClient, AuthApiClient>(client =>
-    client.BaseAddress = new Uri(apiBaseUrl));
+    client.BaseAddress = apiBaseUrl);
 
 builder.Services.AddHttpClient(AuthorizedApiClient.HttpClientName, client =>
-    client.BaseAddress = new Uri(apiBaseUrl));
+    client.BaseAddress = apiBaseUrl);
 builder.Services.AddScoped<AuthorizedApiClient>();
 builder.Services.AddScoped<IMeApiClient, MeApiClient>();
 builder.Services.AddScoped<IOrganizationsApiClient, OrganizationsApiClient>();
@@ -71,3 +70,11 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.Run();
+
+// Fails at startup with an actionable message instead of on the first API call.
+static Uri ReadApiBaseUrl(IConfiguration configuration) =>
+    Uri.TryCreate(configuration["Api:BaseUrl"], UriKind.Absolute, out var url)
+        ? url
+        : throw new InvalidOperationException(
+            "Api:BaseUrl must be the absolute URL of BookingHub.API, e.g. https://localhost:7117 " +
+            "(appsettings.Development.json locally, the Api__BaseUrl environment variable when deployed).");

@@ -1,4 +1,4 @@
-using BookingHub.Mobile.ViewModels;
+﻿using BookingHub.Mobile.ViewModels;
 
 namespace BookingHub.Mobile.Views;
 

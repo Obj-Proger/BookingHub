@@ -22,6 +22,8 @@
 		<PackageReference Include="Serilog.Sinks.Seq" />
 		<PackageReference Include="MailKit" />
 		<PackageReference Include="Twilio" />
+		<!-- Lifts the vulnerable version MailKit brings in transitively; see Directory.Packages.props. -->
+		<PackageReference Include="System.Security.Cryptography.Pkcs" />
 	</ItemGroup>
 	
   <ItemGroup>

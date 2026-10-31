@@ -9,6 +9,9 @@ public sealed class JwtOptions
 {
     public const string SectionName = "Jwt";
 
+    /// <summary>The smallest key HMAC-SHA256 accepts: 256 bits.</summary>
+    public const int MinimumSigningKeyBytes = 32;
+
     public required string SigningKey { get; init; }
     public required string Issuer { get; init; }
     public required string Audience { get; init; }

@@ -52,6 +52,17 @@ public static class DependencyInjection
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
             ?? throw new InvalidOperationException("The \"Jwt\" configuration section is missing.");
 
+        // The configuration binder leaves SigningKey null when the setting is absent, 'required'
+        // notwithstanding. HS256 needs a key of at least 256 bits; anything shorter would fail only
+        // on the first token operation (IDX10703/IDX10720), so it is rejected here, at startup.
+        var signingKey = Encoding.UTF8.GetBytes(jwtOptions.SigningKey ?? string.Empty);
+        if (signingKey.Length < JwtOptions.MinimumSigningKeyBytes)
+        {
+            throw new InvalidOperationException(
+                $"Jwt:SigningKey must be at least {JwtOptions.MinimumSigningKeyBytes} bytes long. " +
+                "Set it with dotnet user-secrets locally (see README) or the Jwt__SigningKey environment variable when deployed.");
+        }
+
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
@@ -64,13 +75,18 @@ public static class DependencyInjection
                 ValidAudience = jwtOptions.Audience,
                 ValidateLifetime = true,
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.SigningKey))
+                IssuerSigningKey = new SymmetricSecurityKey(signingKey)
             };
         });
 
         services.AddNotifications(configuration);
 
-        services.Configure<WebAppOptions>(configuration.GetSection(WebAppOptions.SectionName));
+        services.AddOptions<WebAppOptions>()
+            .Bind(configuration.GetSection(WebAppOptions.SectionName))
+            .Validate(
+                options => Uri.TryCreate(options.BaseUrl, UriKind.Absolute, out _),
+                "WebApp:BaseUrl must be the absolute URL of BookingHub.Web, e.g. https://localhost:7201 — links in notifications are built from it.")
+            .ValidateOnStart();
         services.AddSingleton<IWebLinkBuilder, WebLinkBuilder>();
 
         services.AddScoped<IApplicationDbContext>(sp => sp.GetRequiredService<ApplicationDbContext>());

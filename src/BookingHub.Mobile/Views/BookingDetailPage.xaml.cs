@@ -1,4 +1,4 @@
-using BookingHub.Mobile.Api.Contracts;
+﻿using BookingHub.Mobile.Api.Contracts;
 using BookingHub.Mobile.ViewModels;
 
 namespace BookingHub.Mobile.Views;

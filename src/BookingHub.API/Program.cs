@@ -1,4 +1,4 @@
-using BookingHub.API.BackgroundJobs;
+﻿using BookingHub.API.BackgroundJobs;
 using BookingHub.API.Common;
 using BookingHub.Application;
 using BookingHub.Infrastructure;

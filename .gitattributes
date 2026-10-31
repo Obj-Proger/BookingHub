@@ -1,0 +1,27 @@
+# Store text files with LF in the repository and check them out with the platform's native
+# line endings (CRLF on Windows). Git decides what is text; the rules below only refine that.
+* text=auto
+
+# Windows-only scripts keep CRLF on every platform.
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Shell scripts run inside Linux containers and must keep LF even on a Windows checkout.
+*.sh text eol=lf
+
+# Language-aware diff hunks.
+*.cs diff=csharp
+
+# Binary assets are never diffed or normalized.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.woff binary
+*.woff2 binary
+*.pdf binary
+*.zip binary

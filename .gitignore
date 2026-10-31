@@ -24,11 +24,12 @@ packages/
 .idea/
 *.iml
 
-# env
+# Secrets and deployment-specific settings. Local development settings
+# (appsettings.Development.json) are committed and hold no secrets — secrets go to
+# dotnet user-secrets locally and to environment variables when deployed.
 .env
 .env.local
 .env.*.local
-appsettings.Development.json
 appsettings.Production.json
 appsettings.Staging.json
 secrets.json
