@@ -35,7 +35,8 @@ public class GetClientProfileQueryHandlerTests(PostgreSqlFixture fixture)
         var employee = Employee.Create(organization.Id, "John Smith").Value;
         var service = Service.Create(
             organization.Id, "Haircut", TimeSpan.FromMinutes(30), Money.Create(50m, "USD").Value, TimeSpan.Zero, TimeSpan.Zero, "#FF5733").Value;
-        var owner = OrganizationMember.Create(organization.Id, Guid.CreateVersion7(), OrganizationRole.Owner).Value;
+        var ownerUser = TestUsers.Create();
+        var owner = OrganizationMember.Create(organization.Id, ownerUser.Id, OrganizationRole.Owner).Value;
 
         var usdBooking = CreateCompletedBooking(organization.Id, location.Id, employee.Id, service.Id, phone, 100m, "USD");
         var eurBooking = CreateCompletedBooking(organization.Id, location.Id, employee.Id, service.Id, phone, 40m, "EUR");
@@ -49,6 +50,7 @@ public class GetClientProfileQueryHandlerTests(PostgreSqlFixture fixture)
             seedContext.Employees.Add(employee);
             seedContext.Services.Add(service);
             seedContext.Clients.Add(client);
+            seedContext.Users.Add(ownerUser);
             seedContext.OrganizationMembers.Add(owner);
             seedContext.Bookings.AddRange(usdBooking, eurBooking);
             await seedContext.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -85,8 +87,8 @@ public class GetClientProfileQueryHandlerTests(PostgreSqlFixture fixture)
         var employeeB = Employee.Create(organization.Id, "Employee B").Value;
         var service = Service.Create(
             organization.Id, "Haircut", TimeSpan.FromMinutes(30), Money.Create(50m, "USD").Value, TimeSpan.Zero, TimeSpan.Zero, "#FF5733").Value;
-        var callerUserId = Guid.CreateVersion7();
-        var callerAsEmployeeA = OrganizationMember.Create(organization.Id, callerUserId, OrganizationRole.Employee, employeeId: employeeA.Id).Value;
+        var callerUser = TestUsers.Create();
+        var callerAsEmployeeA = OrganizationMember.Create(organization.Id, callerUser.Id, OrganizationRole.Employee, employeeId: employeeA.Id).Value;
 
         var bookingWithEmployeeA = CreateCompletedBooking(organization.Id, location.Id, employeeA.Id, service.Id, phone, 50m, "USD");
         var bookingWithEmployeeB = CreateCompletedBooking(organization.Id, location.Id, employeeB.Id, service.Id, phone, 50m, "USD");
@@ -100,6 +102,7 @@ public class GetClientProfileQueryHandlerTests(PostgreSqlFixture fixture)
             seedContext.Employees.AddRange(employeeA, employeeB);
             seedContext.Services.Add(service);
             seedContext.Clients.Add(client);
+            seedContext.Users.Add(callerUser);
             seedContext.OrganizationMembers.Add(callerAsEmployeeA);
             seedContext.Bookings.AddRange(bookingWithEmployeeA, bookingWithEmployeeB);
             await seedContext.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -107,7 +110,7 @@ public class GetClientProfileQueryHandlerTests(PostgreSqlFixture fixture)
 
         await using var dbContext = fixture.CreateDbContext();
         var handler = new GetClientProfileQueryHandler(
-            new ClientRepository(dbContext), dbContext, new FixedCurrentUser(callerUserId), new OrganizationMemberRepository(dbContext));
+            new ClientRepository(dbContext), dbContext, new FixedCurrentUser(callerUser.Id), new OrganizationMemberRepository(dbContext));
 
         var result = await handler.Handle(new GetClientProfileQuery(organization.Id, client.Id), TestContext.Current.CancellationToken);
 

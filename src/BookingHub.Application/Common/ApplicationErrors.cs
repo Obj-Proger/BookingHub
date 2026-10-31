@@ -81,7 +81,7 @@ public static class ApplicationErrors
         public static readonly Error AlreadyMember = Error.Conflict("OrganizationMember.AlreadyMember", "This user is already a member of the organization.");
         public static readonly Error OnlyOwnerCanManageOwnerRole = Error.Forbidden("OrganizationMember.OnlyOwnerCanManageOwnerRole", "Only an existing Owner can grant, change, or revoke the Owner role.");
         public static readonly Error CannotRemoveLastOwner = Error.Conflict("OrganizationMember.CannotRemoveLastOwner", "The organization must always have at least one Owner.");
-        public static readonly Error UserNotFound = Error.NotFound("OrganizationMember.UserNotFound", "No registered user has this email address. They need to create an account first.");
+        public static readonly Error UserNotFound = Error.NotFound("OrganizationMember.UserNotFound", "This person has no BookingHub account yet. They need to create one first.");
     }
 
     public static class RecurringSchedule

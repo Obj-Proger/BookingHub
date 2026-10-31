@@ -10,12 +10,9 @@ public interface IOrganizationRepository
     Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Deletes every row belonging to this organization across all org-scoped tables, in FK-safe
-    /// order, via bulk ExecuteDeleteAsync (no entities are loaded into memory). Does NOT delete the
-    /// Organization row itself — call Remove for that. Does NOT touch Client rows — clients are
-    /// global, shared across organizations. Runs inside whatever transaction is already open for
-    /// the request (TenantResolutionMiddleware opens one whenever the route carries an
-    /// organizationId), so no transaction is started here.
+    /// Deletes everything that belongs to the organization, without loading it. Does not delete the
+    /// organization itself (call <see cref="Remove"/> and save in the same unit of work) and never
+    /// touches clients, which are shared across organizations.
     /// </summary>
     Task DeleteAllDataAsync(Guid organizationId, CancellationToken cancellationToken);
 }

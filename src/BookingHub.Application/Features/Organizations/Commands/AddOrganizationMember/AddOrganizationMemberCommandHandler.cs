@@ -12,6 +12,7 @@ internal sealed class AddOrganizationMemberCommandHandler(
     IOrganizationMemberRepository organizationMemberRepository,
     ILocationRepository locationRepository,
     IEmployeeRepository employeeRepository,
+    IUserDirectory userDirectory,
     ICurrentUser currentUser,
     IUnitOfWork unitOfWork)
     : ICommandHandler<AddOrganizationMemberCommand, OrganizationMemberCreatedResponse>
@@ -41,6 +42,9 @@ internal sealed class AddOrganizationMemberCommandHandler(
             if (employee is null)
                 return Result.Failure<OrganizationMemberCreatedResponse>(ApplicationErrors.Employee.NotFound);
         }
+
+        if (!await userDirectory.ExistsAsync(command.UserId, cancellationToken))
+            return Result.Failure<OrganizationMemberCreatedResponse>(ApplicationErrors.OrganizationMember.UserNotFound);
 
         var memberResult = OrganizationMember.Create(command.OrganizationId, command.UserId, command.Role, command.LocationId, command.EmployeeId);
         if (memberResult.IsFailure)

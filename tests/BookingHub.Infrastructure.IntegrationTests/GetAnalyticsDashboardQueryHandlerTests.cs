@@ -34,7 +34,8 @@ public class GetAnalyticsDashboardQueryHandlerTests(PostgreSqlFixture fixture)
         var employee = Employee.Create(organization.Id, "John Smith").Value;
         var service = Service.Create(
             organization.Id, "Haircut", TimeSpan.FromMinutes(30), Money.Create(50m, "USD").Value, TimeSpan.Zero, TimeSpan.Zero, "#FF5733").Value;
-        var owner = OrganizationMember.Create(organization.Id, Guid.CreateVersion7(), OrganizationRole.Owner).Value;
+        var ownerUser = TestUsers.Create();
+        var owner = OrganizationMember.Create(organization.Id, ownerUser.Id, OrganizationRole.Owner).Value;
 
         var slotStart = DateTime.UtcNow.AddDays(-1);
         var bookingAtA = CreateCompletedBooking(organization.Id, locationA.Id, employee.Id, service.Id, slotStart, 50m);
@@ -46,6 +47,7 @@ public class GetAnalyticsDashboardQueryHandlerTests(PostgreSqlFixture fixture)
             seedContext.Locations.AddRange(locationA, locationB);
             seedContext.Employees.Add(employee);
             seedContext.Services.Add(service);
+            seedContext.Users.Add(ownerUser);
             seedContext.OrganizationMembers.Add(owner);
             seedContext.Bookings.AddRange(bookingAtA, bookingAtB);
             await seedContext.SaveChangesAsync(TestContext.Current.CancellationToken);
@@ -69,11 +71,13 @@ public class GetAnalyticsDashboardQueryHandlerTests(PostgreSqlFixture fixture)
     public async Task Handle_AdministratorWithoutFinancialAccess_ReturnsForbidden()
     {
         var organization = Organization.Create("Acme", $"acme-{Guid.CreateVersion7()}").Value;
-        var administrator = OrganizationMember.Create(organization.Id, Guid.CreateVersion7(), OrganizationRole.Administrator).Value;
+        var administratorUser = TestUsers.Create();
+        var administrator = OrganizationMember.Create(organization.Id, administratorUser.Id, OrganizationRole.Administrator).Value;
 
         await using (var seedContext = fixture.CreateDbContext())
         {
             seedContext.Organizations.Add(organization);
+            seedContext.Users.Add(administratorUser);
             seedContext.OrganizationMembers.Add(administrator);
             await seedContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
@@ -94,11 +98,13 @@ public class GetAnalyticsDashboardQueryHandlerTests(PostgreSqlFixture fixture)
     {
         var organization = Organization.Create("Acme", $"acme-{Guid.CreateVersion7()}").Value;
         organization.SetAdministratorFinancialAccess(true);
-        var administrator = OrganizationMember.Create(organization.Id, Guid.CreateVersion7(), OrganizationRole.Administrator).Value;
+        var administratorUser = TestUsers.Create();
+        var administrator = OrganizationMember.Create(organization.Id, administratorUser.Id, OrganizationRole.Administrator).Value;
 
         await using (var seedContext = fixture.CreateDbContext())
         {
             seedContext.Organizations.Add(organization);
+            seedContext.Users.Add(administratorUser);
             seedContext.OrganizationMembers.Add(administrator);
             await seedContext.SaveChangesAsync(TestContext.Current.CancellationToken);
         }
@@ -121,7 +127,8 @@ public class GetAnalyticsDashboardQueryHandlerTests(PostgreSqlFixture fixture)
         var employee = Employee.Create(organization.Id, "John Smith").Value;
         var service = Service.Create(
             organization.Id, "Haircut", TimeSpan.FromMinutes(30), Money.Create(50m, "USD").Value, TimeSpan.Zero, TimeSpan.Zero, "#FF5733").Value;
-        var owner = OrganizationMember.Create(organization.Id, Guid.CreateVersion7(), OrganizationRole.Owner).Value;
+        var ownerUser = TestUsers.Create();
+        var owner = OrganizationMember.Create(organization.Id, ownerUser.Id, OrganizationRole.Owner).Value;
 
         var insideRange = CreateCompletedBooking(organization.Id, location.Id, employee.Id, service.Id, DateTime.UtcNow.AddDays(-5), 50m);
         var outsideRange = CreateCompletedBooking(organization.Id, location.Id, employee.Id, service.Id, DateTime.UtcNow.AddDays(-20), 999m);
@@ -132,6 +139,7 @@ public class GetAnalyticsDashboardQueryHandlerTests(PostgreSqlFixture fixture)
             seedContext.Locations.Add(location);
             seedContext.Employees.Add(employee);
             seedContext.Services.Add(service);
+            seedContext.Users.Add(ownerUser);
             seedContext.OrganizationMembers.Add(owner);
             seedContext.Bookings.AddRange(insideRange, outsideRange);
             await seedContext.SaveChangesAsync(TestContext.Current.CancellationToken);

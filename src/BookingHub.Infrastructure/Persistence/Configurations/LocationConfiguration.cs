@@ -29,6 +29,8 @@ internal sealed class LocationConfiguration : IEntityTypeConfiguration<Location>
             .HasColumnName("WorkingHours")
             .HasColumnType("jsonb");
 
+        builder.HasOne<Organization>().WithMany().HasForeignKey(l => l.OrganizationId).OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(l => l.OrganizationId);
     }
 }

@@ -6,6 +6,9 @@ namespace BookingHub.Infrastructure.Identity;
 
 internal sealed class UserDirectory(UserManager<ApplicationUser> userManager) : IUserDirectory
 {
+    public Task<bool> ExistsAsync(Guid userId, CancellationToken cancellationToken) =>
+        userManager.Users.AnyAsync(user => user.Id == userId, cancellationToken);
+
     public async Task<Guid?> FindUserIdByEmailAsync(string email, CancellationToken cancellationToken)
     {
         var user = await userManager.FindByEmailAsync(email);

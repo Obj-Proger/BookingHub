@@ -3,6 +3,8 @@
 /// <summary>Read access to the registered users, which live in the Identity store outside the Application layer.</summary>
 public interface IUserDirectory
 {
+    Task<bool> ExistsAsync(Guid userId, CancellationToken cancellationToken);
+
     /// <returns>The id of the user registered with this email address, or null if there is none.</returns>
     Task<Guid?> FindUserIdByEmailAsync(string email, CancellationToken cancellationToken);
 

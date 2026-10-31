@@ -1,5 +1,6 @@
 ﻿using BookingHub.Domain.Entities;
 using BookingHub.Domain.ValueObjects;
+using BookingHub.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -24,6 +25,7 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
         // complex type property (confirmed: dotnet/efcore#32578, #32350, #34794 — a documented,
         // still-open limitation, not specific to our case). Added as raw SQL directly in the
         // migration instead, on the "Phone" column this configuration names above.
+        builder.HasOne<ApplicationUser>().WithMany().HasForeignKey(c => c.UserId).OnDelete(DeleteBehavior.Restrict);
         builder.HasIndex(c => c.UserId).IsUnique();
     }
 }
