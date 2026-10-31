@@ -2,9 +2,11 @@
 
 namespace BookingHub.Domain.Entities;
 
-public sealed class Review : BaseEntity
+public sealed class Review : BaseEntity, IAuditable
 {
-    private const int MaxCommentLength = 2000;
+    public const int MinRating = 1;
+    public const int MaxRating = 5;
+    public const int MaxCommentLength = 2000;
 
     public Guid OrganizationId { get; private set; }
     public Guid LocationId { get; private set; }
@@ -13,10 +15,15 @@ public sealed class Review : BaseEntity
     public int Rating { get; private set; }
     public string? Comment { get; private set; }
     public bool IsHidden { get; private set; }
+
+    /// <inheritdoc />
     public DateTime CreatedAtUtc { get; private set; }
 
+    /// <inheritdoc />
+    public DateTime? ModifiedAtUtc { get; private set; }
+
     private Review(
-        Guid id, Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, int rating, string? comment, DateTime createdAtUtc)
+        Guid id, Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, int rating, string? comment)
         : base(id)
     {
         OrganizationId = organizationId;
@@ -25,7 +32,6 @@ public sealed class Review : BaseEntity
         BookingId = bookingId;
         Rating = rating;
         Comment = comment;
-        CreatedAtUtc = createdAtUtc;
     }
 
     private Review()
@@ -39,30 +45,30 @@ public sealed class Review : BaseEntity
     public static Result<Review> Create(
         Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, int rating, string? comment, DateTime utcNow)
     {
-        var organizationIdResult = Guard.NotEmpty(organizationId, "Review.OrganizationIdEmpty", "OrganizationId");
+        var organizationIdResult = Guard.NotEmpty(organizationId, DomainErrors.Review.OrganizationIdEmpty);
         if (organizationIdResult.IsFailure)
             return Result.Failure<Review>(organizationIdResult.Error);
 
-        var locationIdResult = Guard.NotEmpty(locationId, "Review.LocationIdEmpty", "LocationId");
+        var locationIdResult = Guard.NotEmpty(locationId, DomainErrors.Review.LocationIdEmpty);
         if (locationIdResult.IsFailure)
             return Result.Failure<Review>(locationIdResult.Error);
 
-        var employeeIdResult = Guard.NotEmpty(employeeId, "Review.EmployeeIdEmpty", "EmployeeId");
+        var employeeIdResult = Guard.NotEmpty(employeeId, DomainErrors.Review.EmployeeIdEmpty);
         if (employeeIdResult.IsFailure)
             return Result.Failure<Review>(employeeIdResult.Error);
 
-        var bookingIdResult = Guard.NotEmpty(bookingId, "Review.BookingIdEmpty", "BookingId");
+        var bookingIdResult = Guard.NotEmpty(bookingId, DomainErrors.Review.BookingIdEmpty);
         if (bookingIdResult.IsFailure)
             return Result.Failure<Review>(bookingIdResult.Error);
 
-        if (rating is < 1 or > 5)
+        if (rating is < MinRating or > MaxRating)
             return Result.Failure<Review>(DomainErrors.Review.RatingOutOfRange);
 
-        var trimmedComment = string.IsNullOrWhiteSpace(comment) ? null : comment.Trim();
-        if (trimmedComment is { Length: > MaxCommentLength })
-            return Result.Failure<Review>(DomainErrors.Review.CommentTooLong);
+        var commentResult = Guard.OptionalText(comment, MaxCommentLength, DomainErrors.Review.CommentTooLong);
+        if (commentResult.IsFailure)
+            return Result.Failure<Review>(commentResult.Error);
 
-        var review = new Review(Guid.CreateVersion7(), organizationId, locationId, employeeId, bookingId, rating, trimmedComment, utcNow);
+        var review = new Review(Guid.CreateVersion7(), organizationId, locationId, employeeId, bookingId, rating, commentResult.Value);
         review.RaiseDomainEvent(new ReviewSubmittedEvent(review.Id, organizationId, employeeId, rating, utcNow));
         return review;
     }

@@ -16,7 +16,7 @@ public class GetAnalyticsDashboardQueryHandlerTests(PostgreSqlFixture fixture)
         Guid organizationId, Guid locationId, Guid employeeId, Guid serviceId, DateTime slotStartUtc, decimal amount)
     {
         var booking = Booking.CreatePending(
-            organizationId, locationId, employeeId, serviceId, ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
+            organizationId, locationId, employeeId, serviceId, ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value,
             TimeSlot.Create(slotStartUtc, slotStartUtc.AddMinutes(30)).Value,
             Money.Create(amount, "USD").Value, BookingSource.Public, slotStartUtc.AddHours(-1)).Value;
         booking.Confirm(slotStartUtc.AddHours(-1));

@@ -10,7 +10,7 @@ internal sealed class ReviewConfiguration : IEntityTypeConfiguration<Review>
     {
         builder.ConfigureBaseEntity();
 
-        builder.Property(r => r.Comment).HasMaxLength(2000);
+        builder.Property(r => r.Comment).HasMaxLength(Review.MaxCommentLength);
 
         builder.HasOne<Organization>().WithMany().HasForeignKey(r => r.OrganizationId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Location>().WithMany().HasForeignKey(r => r.LocationId).OnDelete(DeleteBehavior.Restrict);

@@ -10,14 +10,10 @@ internal sealed class ServiceConfiguration : IEntityTypeConfiguration<Service>
     {
         builder.ConfigureBaseEntity();
 
-        builder.Property(s => s.Name).HasMaxLength(200).IsRequired();
-        builder.Property(s => s.Color).HasMaxLength(7).IsRequired();
+        builder.Property(s => s.Name).HasMaxLength(Service.MaxNameLength).IsRequired();
+        builder.Property(s => s.Color).HasMaxLength(Service.ColorLength).IsRequired();
 
-        builder.ComplexProperty(s => s.BasePrice, price =>
-        {
-            price.Property(p => p.Amount).HasColumnName("BasePriceAmount").HasPrecision(18, 2);
-            price.Property(p => p.Currency).HasColumnName("BasePriceCurrency").HasMaxLength(3).IsRequired();
-        });
+        builder.ComplexProperty(s => s.BasePrice, price => price.MapMoney("BasePrice"));
 
         builder.HasOne<Organization>().WithMany().HasForeignKey(s => s.OrganizationId).OnDelete(DeleteBehavior.Restrict);
 

@@ -10,11 +10,7 @@ internal sealed class LocationServiceOverrideConfiguration : IEntityTypeConfigur
     {
         builder.ConfigureBaseEntity();
 
-        builder.ComplexProperty(o => o.OverridePrice, price =>
-        {
-            price.Property(p => p.Amount).HasColumnName("OverridePriceAmount").HasPrecision(18, 2);
-            price.Property(p => p.Currency).HasColumnName("OverridePriceCurrency").HasMaxLength(3).IsRequired();
-        });
+        builder.ComplexProperty(o => o.OverridePrice, price => price.MapMoney("OverridePrice"));
 
         builder.HasOne<Location>().WithMany().HasForeignKey(o => o.LocationId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Service>().WithMany().HasForeignKey(o => o.ServiceId).OnDelete(DeleteBehavior.Restrict);

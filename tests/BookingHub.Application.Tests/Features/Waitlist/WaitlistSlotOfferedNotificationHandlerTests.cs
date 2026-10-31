@@ -21,7 +21,7 @@ public class WaitlistSlotOfferedNotificationHandlerTests
     {
         var entry = WaitlistEntry.Create(
             Guid.CreateVersion7(), Guid.CreateVersion7(), null, Guid.CreateVersion7(),
-            ClientContact.Create(PhoneNumber.Create("+14155552671").Value, email: email),
+            ClientContact.Create(PhoneNumber.Create("+14155552671").Value, email: email).Value,
             TimeSlot.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddHours(1)).Value, DateTime.UtcNow).Value;
         entry.Offer(
             Guid.CreateVersion7(), TimeSlot.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddHours(1)).Value,
@@ -78,7 +78,7 @@ public class WaitlistSlotOfferedNotificationHandlerTests
     {
         _waitlistEntryRepository.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns((WaitlistEntry?)null);
         var domainEvent = new WaitlistSlotOfferedEvent(
-            Guid.CreateVersion7(), Guid.CreateVersion7(), ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
+            Guid.CreateVersion7(), Guid.CreateVersion7(), ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value,
             TimeSlot.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddHours(1)).Value, DateTime.UtcNow.AddHours(2), DateTime.UtcNow);
         var sut = CreateSut();
 

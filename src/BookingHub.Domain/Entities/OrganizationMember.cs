@@ -36,11 +36,11 @@ public sealed class OrganizationMember : BaseEntity
     public static Result<OrganizationMember> Create(
         Guid organizationId, Guid userId, OrganizationRole role, Guid? locationId = null, Guid? employeeId = null)
     {
-        var organizationIdResult = Guard.NotEmpty(organizationId, "OrganizationMember.OrganizationIdEmpty", "OrganizationId");
+        var organizationIdResult = Guard.NotEmpty(organizationId, DomainErrors.OrganizationMember.OrganizationIdEmpty);
         if (organizationIdResult.IsFailure)
             return Result.Failure<OrganizationMember>(organizationIdResult.Error);
 
-        var userIdResult = Guard.NotEmpty(userId, "OrganizationMember.UserIdEmpty", "UserId");
+        var userIdResult = Guard.NotEmpty(userId, DomainErrors.OrganizationMember.UserIdEmpty);
         if (userIdResult.IsFailure)
             return Result.Failure<OrganizationMember>(userIdResult.Error);
 

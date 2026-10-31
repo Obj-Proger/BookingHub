@@ -3,6 +3,8 @@
 /// <summary>A free-form postal address.</summary>
 public sealed class Address : ValueObject
 {
+    public const int MaxLength = 500;
+
     public string Value { get; }
 
     private Address(string value)
@@ -12,15 +14,11 @@ public sealed class Address : ValueObject
 
     public static Result<Address> Create(string? rawValue)
     {
-        if (string.IsNullOrWhiteSpace(rawValue))
-            return Result.Failure<Address>(DomainErrors.Address.Empty);
+        var valueResult = Guard.RequiredText(rawValue, MaxLength, DomainErrors.Address.Empty, DomainErrors.Address.TooLong);
 
-        var trimmed = rawValue.Trim();
-
-        if (trimmed.Length > 500)
-            return Result.Failure<Address>(DomainErrors.Address.TooLong);
-
-        return new Address(trimmed);
+        return valueResult.IsSuccess
+            ? new Address(valueResult.Value)
+            : Result.Failure<Address>(valueResult.Error);
     }
 
     protected override IEnumerable<object?> GetEqualityComponents()

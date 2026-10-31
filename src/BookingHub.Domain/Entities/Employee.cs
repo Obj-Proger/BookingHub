@@ -2,7 +2,8 @@
 
 public sealed class Employee : BaseEntity
 {
-    private const int MaxFullNameLength = 200;
+    public const int MaxFullNameLength = 200;
+    public const int MaxPhotoUrlLength = 2048;
 
     public Guid OrganizationId { get; private set; }
     public Guid? UserId { get; private set; }
@@ -23,7 +24,7 @@ public sealed class Employee : BaseEntity
 
     public static Result<Employee> Create(Guid organizationId, string? fullName)
     {
-        var organizationIdResult = Guard.NotEmpty(organizationId, "Employee.OrganizationIdEmpty", "OrganizationId");
+        var organizationIdResult = Guard.NotEmpty(organizationId, DomainErrors.Employee.OrganizationIdEmpty);
         if (organizationIdResult.IsFailure)
             return Result.Failure<Employee>(organizationIdResult.Error);
 
@@ -55,16 +56,17 @@ public sealed class Employee : BaseEntity
             return Result.Success();
         }
 
-        if (!Uri.TryCreate(photoUrl, UriKind.Absolute, out _))
+        var trimmed = photoUrl.Trim();
+        if (!IsWebUrl(trimmed))
             return Result.Failure(DomainErrors.Employee.InvalidPhotoUrl);
 
-        PhotoUrl = photoUrl;
+        PhotoUrl = trimmed;
         return Result.Success();
     }
 
     public Result LinkUser(Guid userId)
     {
-        var userIdResult = Guard.NotEmpty(userId, "Employee.UserIdEmpty", "UserId");
+        var userIdResult = Guard.NotEmpty(userId, DomainErrors.Employee.UserIdEmpty);
         if (userIdResult.IsFailure)
             return Result.Failure(userIdResult.Error);
 
@@ -74,4 +76,10 @@ public sealed class Employee : BaseEntity
         UserId = userId;
         return Result.Success();
     }
+
+    /// <summary>Only http(s) links are accepted: the URL ends up in an <c>&lt;img src&gt;</c> on staff and guest pages.</summary>
+    private static bool IsWebUrl(string url) =>
+        url.Length <= MaxPhotoUrlLength
+        && Uri.TryCreate(url, UriKind.Absolute, out var uri)
+        && (uri.Scheme == Uri.UriSchemeHttps || uri.Scheme == Uri.UriSchemeHttp);
 }

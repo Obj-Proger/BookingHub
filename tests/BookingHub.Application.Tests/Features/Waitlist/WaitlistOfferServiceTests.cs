@@ -21,7 +21,7 @@ public class WaitlistOfferServiceTests
 
     private static WaitlistEntry CreateWaitingEntry(Guid organizationId) => WaitlistEntry.Create(
         organizationId, LocationId, null, ServiceId,
-        ClientContact.Create(PhoneNumber.Create("+14155552671").Value), FreedSlot, DateTime.UtcNow).Value;
+        ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value, FreedSlot, DateTime.UtcNow).Value;
 
     private Organization SetUpOrganization(TimeSpan offerWindow)
     {

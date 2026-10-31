@@ -16,7 +16,7 @@ public class GetClientProfileQueryHandlerTests(PostgreSqlFixture fixture)
         Guid organizationId, Guid locationId, Guid employeeId, Guid serviceId, PhoneNumber phone, decimal amount, string currency)
     {
         var booking = Booking.CreatePending(
-            organizationId, locationId, employeeId, serviceId, ClientContact.Create(phone),
+            organizationId, locationId, employeeId, serviceId, ClientContact.Create(phone).Value,
             TimeSlot.Create(DateTime.UtcNow.AddHours(-3), DateTime.UtcNow.AddHours(-2)).Value,
             Money.Create(amount, currency).Value, BookingSource.Public, DateTime.UtcNow.AddHours(-4)).Value;
         booking.Confirm(DateTime.UtcNow.AddHours(-4));
@@ -29,7 +29,7 @@ public class GetClientProfileQueryHandlerTests(PostgreSqlFixture fixture)
     public async Task Handle_CompletedVisitsInDifferentCurrencies_AggregatesRevenueSeparatelyPerCurrency()
     {
         var phone = PhoneNumber.Create("+14155552673").Value;
-        var client = Client.Create(phone, "Jane Doe");
+        var client = Client.Create(ClientContact.Create(phone, "Jane Doe").Value);
         var organization = Organization.Create("Acme", $"acme-{Guid.CreateVersion7()}").Value;
         var location = Location.Create(organization.Id, "Branch", Address.Create("1 First St").Value, "UTC", ClosedAllWeek()).Value;
         var employee = Employee.Create(organization.Id, "John Smith").Value;
@@ -78,7 +78,7 @@ public class GetClientProfileQueryHandlerTests(PostgreSqlFixture fixture)
     public async Task Handle_CallerIsEmployee_SeesOnlyOwnVisitsWithThisClient()
     {
         var phone = PhoneNumber.Create("+14155552674").Value;
-        var client = Client.Create(phone, "Jane Doe");
+        var client = Client.Create(ClientContact.Create(phone, "Jane Doe").Value);
         var organization = Organization.Create("Acme", $"acme-{Guid.CreateVersion7()}").Value;
         var location = Location.Create(organization.Id, "Branch", Address.Create("1 First St").Value, "UTC", ClosedAllWeek()).Value;
         var employeeA = Employee.Create(organization.Id, "Employee A").Value;

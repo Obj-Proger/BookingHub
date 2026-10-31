@@ -10,20 +10,7 @@ internal sealed class WaitlistEntryConfiguration : IEntityTypeConfiguration<Wait
     {
         builder.ConfigureBaseEntity();
 
-        builder.ComplexProperty(e => e.ClientContact, contact =>
-        {
-            contact.ComplexProperty(c => c.Phone, phone =>
-            {
-                phone.Property(p => p.Value).HasColumnName("ClientPhone").HasMaxLength(20).IsRequired();
-            });
-
-            contact.Property(c => c.Name).HasColumnName("ClientName").HasMaxLength(200);
-
-            contact.ComplexProperty(c => c.Email, email =>
-            {
-                email.Property(e => e.Value).HasColumnName("ClientEmail").HasMaxLength(320);
-            });
-        });
+        builder.ComplexProperty(e => e.ClientContact, contact => contact.MapClientContact());
 
         builder.ComplexProperty(e => e.DesiredWindow, window =>
         {
@@ -40,10 +27,7 @@ internal sealed class WaitlistEntryConfiguration : IEntityTypeConfiguration<Wait
             slot.Property(s => s.EndUtc).HasColumnName("OfferedSlot_EndUtc");
         });
 
-        builder.ComplexProperty(e => e.ManagementToken, token =>
-        {
-            token.Property(t => t.Value).HasColumnName("ManagementToken").HasMaxLength(64).IsRequired();
-        });
+        builder.ComplexProperty(e => e.ManagementToken, token => token.MapSecurityToken("ManagementToken"));
 
         builder.HasOne<Organization>().WithMany().HasForeignKey(e => e.OrganizationId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Location>().WithMany().HasForeignKey(e => e.LocationId).OnDelete(DeleteBehavior.Restrict);

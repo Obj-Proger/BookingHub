@@ -33,7 +33,7 @@ public sealed class ScheduleException : BaseEntity
     /// <summary>Creates an exception marking the employee unavailable for the entire day.</summary>
     public static Result<ScheduleException> CreateDayOff(Guid employeeLocationAssignmentId, DateOnly date)
     {
-        var assignmentIdResult = ValidateAssignmentId(employeeLocationAssignmentId);
+        var assignmentIdResult = Guard.NotEmpty(employeeLocationAssignmentId, DomainErrors.ScheduleException.EmployeeLocationAssignmentIdEmpty);
         if (assignmentIdResult.IsFailure)
             return Result.Failure<ScheduleException>(assignmentIdResult.Error);
 
@@ -44,7 +44,7 @@ public sealed class ScheduleException : BaseEntity
     public static Result<ScheduleException> CreateModifiedHours(
         Guid employeeLocationAssignmentId, DateOnly date, TimeOnly modifiedStartTime, TimeOnly modifiedEndTime)
     {
-        var assignmentIdResult = ValidateAssignmentId(employeeLocationAssignmentId);
+        var assignmentIdResult = Guard.NotEmpty(employeeLocationAssignmentId, DomainErrors.ScheduleException.EmployeeLocationAssignmentIdEmpty);
         if (assignmentIdResult.IsFailure)
             return Result.Failure<ScheduleException>(assignmentIdResult.Error);
 
@@ -54,7 +54,4 @@ public sealed class ScheduleException : BaseEntity
         return new ScheduleException(
             Guid.CreateVersion7(), employeeLocationAssignmentId, date, ScheduleExceptionType.ModifiedHours, modifiedStartTime, modifiedEndTime);
     }
-
-    private static Result<Guid> ValidateAssignmentId(Guid employeeLocationAssignmentId) =>
-        Guard.NotEmpty(employeeLocationAssignmentId, "ScheduleException.EmployeeLocationAssignmentIdEmpty", "EmployeeLocationAssignmentId");
 }

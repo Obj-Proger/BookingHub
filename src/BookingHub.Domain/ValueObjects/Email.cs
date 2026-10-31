@@ -8,6 +8,9 @@ public sealed partial class Email : ValueObject
     [GeneratedRegex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$")]
     private static partial Regex Pattern();
 
+    /// <summary>The maximum mailbox length allowed by RFC 5321.</summary>
+    public const int MaxLength = 320;
+
     public string Value { get; }
 
     private Email(string value)
@@ -18,18 +21,14 @@ public sealed partial class Email : ValueObject
     /// <summary>Validates and creates an <see cref="Email"/> from raw input.</summary>
     public static Result<Email> Create(string? rawValue)
     {
-        if (string.IsNullOrWhiteSpace(rawValue))
-            return Result.Failure<Email>(DomainErrors.Email.Empty);
+        var valueResult = Guard.RequiredText(rawValue, MaxLength, DomainErrors.Email.Empty, DomainErrors.Email.TooLong);
+        if (valueResult.IsFailure)
+            return Result.Failure<Email>(valueResult.Error);
 
-        var trimmed = rawValue.Trim();
-
-        if (trimmed.Length > 320) // RFC 5321 maximum mailbox length
-            return Result.Failure<Email>(DomainErrors.Email.TooLong);
-
-        if (!Pattern().IsMatch(trimmed))
+        if (!Pattern().IsMatch(valueResult.Value))
             return Result.Failure<Email>(DomainErrors.Email.InvalidFormat);
 
-        return new Email(trimmed.ToLowerInvariant());
+        return new Email(valueResult.Value.ToLowerInvariant());
     }
 
     protected override IEnumerable<object?> GetEqualityComponents()

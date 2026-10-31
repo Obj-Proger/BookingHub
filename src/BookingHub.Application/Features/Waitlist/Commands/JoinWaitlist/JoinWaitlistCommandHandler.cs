@@ -32,24 +32,15 @@ internal sealed class JoinWaitlistCommandHandler(
                 return Result.Failure<WaitlistEntryCreatedResponse>(ApplicationErrors.WaitlistEntry.EmployeeNotFound);
         }
 
-        var phoneResult = PhoneNumber.Create(command.Phone);
-        if (phoneResult.IsFailure)
-            return Result.Failure<WaitlistEntryCreatedResponse>(phoneResult.Error);
+        var contactResult = ClientContact.Create(command.Phone, command.ClientName, command.ClientEmail);
+        if (contactResult.IsFailure)
+            return Result.Failure<WaitlistEntryCreatedResponse>(contactResult.Error);
 
-        Email? email = null;
-        if (!string.IsNullOrWhiteSpace(command.ClientEmail))
-        {
-            var emailResult = Email.Create(command.ClientEmail);
-            if (emailResult.IsFailure)
-                return Result.Failure<WaitlistEntryCreatedResponse>(emailResult.Error);
-            email = emailResult.Value;
-        }
+        var clientContact = contactResult.Value;
 
         var windowResult = TimeSlot.Create(command.DesiredStartUtc, command.DesiredEndUtc);
         if (windowResult.IsFailure)
             return Result.Failure<WaitlistEntryCreatedResponse>(windowResult.Error);
-
-        var clientContact = ClientContact.Create(phoneResult.Value, command.ClientName, email);
 
         var entryResult = WaitlistEntry.Create(
             command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId,

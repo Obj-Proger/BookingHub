@@ -42,7 +42,7 @@ public class ConfirmWaitlistOfferCommandHandlerTests(PostgreSqlFixture fixture)
     {
         var entry = WaitlistEntry.Create(
             f.Organization.Id, f.Location.Id, f.Employee.Id, f.Service.Id,
-            ClientContact.Create(PhoneNumber.Create(phone).Value), offeredSlot, DateTime.UtcNow).Value;
+            ClientContact.Create(PhoneNumber.Create(phone).Value).Value, offeredSlot, DateTime.UtcNow).Value;
         entry.Offer(f.Employee.Id, offeredSlot, DateTime.UtcNow.AddHours(1), DateTime.UtcNow);
         return entry;
     }
@@ -106,7 +106,7 @@ public class ConfirmWaitlistOfferCommandHandlerTests(PostgreSqlFixture fixture)
         var slot = TimeSlot.Create(DateTime.UtcNow.Date.AddDays(14).AddHours(10), DateTime.UtcNow.Date.AddDays(14).AddHours(10).AddMinutes(30)).Value;
         var entry = WaitlistEntry.Create(
             f.Organization.Id, f.Location.Id, f.Employee.Id, f.Service.Id,
-            ClientContact.Create(PhoneNumber.Create("+14155552691").Value), slot, DateTime.UtcNow).Value; // still Waiting, never offered
+            ClientContact.Create(PhoneNumber.Create("+14155552691").Value).Value, slot, DateTime.UtcNow).Value; // still Waiting, never offered
 
         await using (var seedContext = fixture.CreateDbContext())
         {
@@ -133,7 +133,7 @@ public class ConfirmWaitlistOfferCommandHandlerTests(PostgreSqlFixture fixture)
         var entry = CreateOfferedEntry(f, slot, "+14155552692");
 
         var stolenByAnother = Booking.CreatePending(
-            f.Organization.Id, f.Location.Id, f.Employee.Id, f.Service.Id, ClientContact.Create(PhoneNumber.Create("+14155552693").Value),
+            f.Organization.Id, f.Location.Id, f.Employee.Id, f.Service.Id, ClientContact.Create(PhoneNumber.Create("+14155552693").Value).Value,
             slot, Money.Create(50m, "USD").Value, BookingSource.Public, DateTime.UtcNow).Value;
         stolenByAnother.Confirm(DateTime.UtcNow);
 

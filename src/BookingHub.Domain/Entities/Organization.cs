@@ -4,8 +4,8 @@ namespace BookingHub.Domain.Entities;
 
 public sealed partial class Organization : BaseEntity
 {
-    private const int MaxNameLength = 200;
-    private const int MaxSlugLength = 100;
+    public const int MaxNameLength = 200;
+    public const int MaxSlugLength = 100;
 
     /// <summary>Slugs that guest-facing URLs already use as their second segment (/book/waitlist/…, /book/review/…).</summary>
     private static readonly HashSet<string> ReservedSlugs = ["waitlist", "review"];

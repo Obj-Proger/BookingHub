@@ -21,7 +21,7 @@ public class ConfirmWaitlistOfferCommandHandlerTests
     {
         var entry = WaitlistEntry.Create(
             Guid.CreateVersion7(), Guid.CreateVersion7(), null, Guid.CreateVersion7(),
-            ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
+            ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value,
             TimeSlot.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddHours(1)).Value, DateTime.UtcNow).Value;
         entry.Offer(
             Guid.CreateVersion7(), TimeSlot.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddHours(1)).Value,
@@ -59,7 +59,7 @@ public class ConfirmWaitlistOfferCommandHandlerTests
     {
         var entry = WaitlistEntry.Create(
             Guid.CreateVersion7(), Guid.CreateVersion7(), null, Guid.CreateVersion7(),
-            ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
+            ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value,
             TimeSlot.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddHours(1)).Value, DateTime.UtcNow).Value;
         _waitlistEntryRepository.GetByIdAsync(entry.Id, Arg.Any<CancellationToken>()).Returns(entry);
         var sut = CreateSut();

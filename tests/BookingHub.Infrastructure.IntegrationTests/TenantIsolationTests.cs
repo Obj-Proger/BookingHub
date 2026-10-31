@@ -43,7 +43,7 @@ public class TenantIsolationTests(PostgreSqlFixture fixture)
             TimeSpan.Zero, TimeSpan.Zero, "#FF5733").Value;
         var booking = Booking.CreatePending(
             organization.Id, locationB.Id, employee.Id, service.Id,
-            ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
+            ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value,
             TimeSlot.Create(DateTime.UtcNow.AddHours(-3), DateTime.UtcNow.AddHours(-2)).Value,
             Money.Create(50m, "USD").Value, BookingSource.Public, DateTime.UtcNow.AddHours(-4)).Value;
         var review = Review.Create(organization.Id, locationB.Id, employee.Id, booking.Id, 5, null, DateTime.UtcNow).Value;

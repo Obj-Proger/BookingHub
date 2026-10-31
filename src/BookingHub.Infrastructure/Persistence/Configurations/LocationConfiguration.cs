@@ -12,12 +12,12 @@ internal sealed class LocationConfiguration : IEntityTypeConfiguration<Location>
     {
         builder.ConfigureBaseEntity();
 
-        builder.Property(l => l.Name).HasMaxLength(200).IsRequired();
-        builder.Property(l => l.TimeZone).IsRequired();
+        builder.Property(l => l.Name).HasMaxLength(Location.MaxNameLength).IsRequired();
+        builder.Property(l => l.TimeZone).HasMaxLength(Location.MaxTimeZoneLength).IsRequired();
 
         builder.ComplexProperty(l => l.Address, address =>
         {
-            address.Property(a => a.Value).HasColumnName("Address").HasMaxLength(500).IsRequired();
+            address.Property(a => a.Value).HasColumnName("Address").HasMaxLength(Address.MaxLength).IsRequired();
         });
 
         builder.Property(l => l.WorkingHours)

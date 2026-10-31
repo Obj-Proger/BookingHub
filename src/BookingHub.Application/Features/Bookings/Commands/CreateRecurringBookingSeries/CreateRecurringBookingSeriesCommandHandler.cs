@@ -27,20 +27,11 @@ internal sealed class CreateRecurringBookingSeriesCommandHandler(
         if (command.FirstStartUtc.Kind != DateTimeKind.Utc)
             return Result.Failure<RecurringBookingSeriesCreatedResponse>(DomainErrors.TimeSlot.NotUtc);
 
-        var phoneResult = PhoneNumber.Create(command.Phone);
-        if (phoneResult.IsFailure)
-            return Result.Failure<RecurringBookingSeriesCreatedResponse>(phoneResult.Error);
+        var contactResult = ClientContact.Create(command.Phone, command.ClientName, command.ClientEmail);
+        if (contactResult.IsFailure)
+            return Result.Failure<RecurringBookingSeriesCreatedResponse>(contactResult.Error);
 
-        Email? email = null;
-        if (!string.IsNullOrWhiteSpace(command.ClientEmail))
-        {
-            var emailResult = Email.Create(command.ClientEmail);
-            if (emailResult.IsFailure)
-                return Result.Failure<RecurringBookingSeriesCreatedResponse>(emailResult.Error);
-            email = emailResult.Value;
-        }
-
-        var clientContact = ClientContact.Create(phoneResult.Value, command.ClientName, email);
+        var clientContact = contactResult.Value;
         var seriesId = Guid.CreateVersion7();
 
         var createdBookings = new List<Booking>();
@@ -63,15 +54,15 @@ internal sealed class CreateRecurringBookingSeriesCommandHandler(
         if (createdBookings.Count == 0)
             return Result.Failure<RecurringBookingSeriesCreatedResponse>(ApplicationErrors.Booking.NoOccurrenceAvailable);
 
-        var client = await clientRepository.GetByPhoneAsync(phoneResult.Value, cancellationToken);
+        var client = await clientRepository.GetByPhoneAsync(clientContact.Phone, cancellationToken);
         if (client is null)
         {
-            client = Client.Create(phoneResult.Value, command.ClientName, email);
+            client = Client.Create(clientContact);
             clientRepository.Add(client);
         }
         else
         {
-            client.UpdateContactInfo(command.ClientName, email);
+            client.UpdateContactInfo(clientContact);
         }
 
         foreach (var booking in createdBookings)

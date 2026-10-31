@@ -1,12 +1,13 @@
 ﻿namespace BookingHub.Domain.Common;
 
 /// <summary>
-/// Shared validation for entity fields that repeat the same
-/// "required, trimmed, length-limited" shape across multiple entities.
+/// Shared structural checks that repeat across entities and value objects. Every check reports
+/// a failure through an <see cref="Error"/> from <see cref="DomainErrors"/> supplied by the caller,
+/// so each failure keeps the code of the concept it belongs to.
 /// </summary>
 internal static class Guard
 {
-    /// <summary>Validates that a string is non-empty (after trimming) and within a maximum length.</summary>
+    /// <summary>Requires non-blank text and returns it trimmed, within <paramref name="maxLength"/> characters.</summary>
     public static Result<string> RequiredText(string? value, int maxLength, Error emptyError, Error tooLongError)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -19,13 +20,24 @@ internal static class Guard
             : trimmed;
     }
 
-    /// <summary>Validates that a referenced identifier is not <see cref="Guid.Empty"/>.</summary>
-    public static Result<Guid> NotEmpty(Guid value, string errorCode, string fieldName) =>
-        value == Guid.Empty
-            ? Result.Failure<Guid>(Error.Validation(errorCode, $"{fieldName} is required."))
-            : value;
+    /// <summary>Returns the text trimmed, or null when it is blank, within <paramref name="maxLength"/> characters.</summary>
+    public static Result<string?> OptionalText(string? value, int maxLength, Error tooLongError)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            return Result.Success<string?>(null);
 
-    /// <summary>Validates that a UTC instant is strictly later than the current time.</summary>
+        var trimmed = value.Trim();
+
+        return trimmed.Length > maxLength
+            ? Result.Failure<string?>(tooLongError)
+            : Result.Success<string?>(trimmed);
+    }
+
+    /// <summary>Requires a referenced identifier other than <see cref="Guid.Empty"/>.</summary>
+    public static Result<Guid> NotEmpty(Guid value, Error error) =>
+        value == Guid.Empty ? Result.Failure<Guid>(error) : value;
+
+    /// <summary>Requires a UTC instant strictly later than <paramref name="utcNow"/>.</summary>
     public static Result<DateTime> NotPast(DateTime value, DateTime utcNow, Error error) =>
         value <= utcNow ? Result.Failure<DateTime>(error) : value;
 }

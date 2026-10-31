@@ -22,7 +22,7 @@ public class ConfirmBookingCommandHandlerTests
 
     private static Booking CreatePendingBooking(Guid? recurringSeriesId = null) => Booking.CreatePending(
         Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
-        ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
+        ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value,
         TimeSlot.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddHours(1)).Value, Money.Create(50m, "USD").Value,
         BookingSource.Public, DateTime.UtcNow, recurringSeriesId).Value;
 

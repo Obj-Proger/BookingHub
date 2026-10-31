@@ -5,7 +5,10 @@ namespace BookingHub.Domain.Entities;
 
 public sealed partial class Service : BaseEntity
 {
-    private const int MaxNameLength = 200;
+    public const int MaxNameLength = 200;
+
+    /// <summary>The length of a <c>#RRGGBB</c> color code.</summary>
+    public const int ColorLength = 7;
 
     [GeneratedRegex(@"^#[0-9A-Fa-f]{6}$")]
     private static partial Regex ColorPattern();
@@ -40,7 +43,7 @@ public sealed partial class Service : BaseEntity
         Guid organizationId, string? name, TimeSpan duration, Money basePrice,
         TimeSpan bufferBefore, TimeSpan bufferAfter, string? color)
     {
-        var organizationIdResult = Guard.NotEmpty(organizationId, "Service.OrganizationIdEmpty", "OrganizationId");
+        var organizationIdResult = Guard.NotEmpty(organizationId, DomainErrors.Service.OrganizationIdEmpty);
         if (organizationIdResult.IsFailure)
             return Result.Failure<Service>(organizationIdResult.Error);
 

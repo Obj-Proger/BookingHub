@@ -21,13 +21,13 @@ public class DoubleBookingConstraintTests(PostgreSqlFixture fixture)
 
         var firstBooking = Booking.CreatePending(
             organization.Id, location.Id, employee.Id, service.Id,
-            ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
+            ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value,
             TimeSlot.Create(utcNow.AddHours(1), utcNow.AddHours(2)).Value, price, BookingSource.Public, utcNow).Value;
         firstBooking.Confirm(utcNow);
 
         var secondBooking = Booking.CreatePending(
             organization.Id, location.Id, employee.Id, service.Id,
-            ClientContact.Create(PhoneNumber.Create("+14155559999").Value),
+            ClientContact.Create(PhoneNumber.Create("+14155559999").Value).Value,
             TimeSlot.Create(utcNow.AddMinutes(90), utcNow.AddMinutes(150)).Value, price, BookingSource.Public, utcNow).Value;
         secondBooking.Confirm(utcNow);
 
@@ -66,13 +66,13 @@ public class DoubleBookingConstraintTests(PostgreSqlFixture fixture)
 
         var firstBooking = Booking.CreatePending(
             organization.Id, location.Id, employee.Id, service.Id,
-            ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
+            ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value,
             TimeSlot.Create(utcNow.AddHours(1), utcNow.AddHours(2)).Value, price, BookingSource.Public, utcNow).Value;
         firstBooking.Confirm(utcNow);
 
         var secondBooking = Booking.CreatePending(
             organization.Id, location.Id, employee.Id, service.Id,
-            ClientContact.Create(PhoneNumber.Create("+14155559999").Value),
+            ClientContact.Create(PhoneNumber.Create("+14155559999").Value).Value,
             TimeSlot.Create(utcNow.AddHours(2), utcNow.AddHours(3)).Value, price, BookingSource.Public, utcNow).Value;
         secondBooking.Confirm(utcNow);
 

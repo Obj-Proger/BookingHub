@@ -34,7 +34,7 @@ public class SearchClientByPhoneQueryHandlerTests(PostgreSqlFixture fixture)
     public async Task Handle_ClientExistsButOnlyVisitedAnotherOrganization_ReturnsSameNotFoundAsUnknownClient()
     {
         var phone = PhoneNumber.Create("+14155552671").Value;
-        var client = Client.Create(phone, "Jane Doe");
+        var client = Client.Create(ClientContact.Create(phone, "Jane Doe").Value);
         var thisOrganization = Organization.Create("This Org", $"this-org-{Guid.CreateVersion7()}").Value;
         var otherOrganization = Organization.Create("Other Org", $"other-org-{Guid.CreateVersion7()}").Value;
         var otherLocation = Location.Create(otherOrganization.Id, "Branch", Address.Create("1 First St").Value, "UTC", ClosedAllWeek()).Value;
@@ -42,7 +42,7 @@ public class SearchClientByPhoneQueryHandlerTests(PostgreSqlFixture fixture)
         var otherService = Service.Create(
             otherOrganization.Id, "Haircut", TimeSpan.FromMinutes(30), Money.Create(50m, "USD").Value, TimeSpan.Zero, TimeSpan.Zero, "#FF5733").Value;
         var bookingAtOtherOrg = Booking.CreatePending(
-            otherOrganization.Id, otherLocation.Id, otherEmployee.Id, otherService.Id, ClientContact.Create(phone),
+            otherOrganization.Id, otherLocation.Id, otherEmployee.Id, otherService.Id, ClientContact.Create(phone).Value,
             TimeSlot.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddMinutes(30)).Value,
             Money.Create(50m, "USD").Value, BookingSource.Public, DateTime.UtcNow).Value;
         bookingAtOtherOrg.LinkClient(client.Id);
@@ -73,14 +73,14 @@ public class SearchClientByPhoneQueryHandlerTests(PostgreSqlFixture fixture)
     public async Task Handle_ClientHasVisitedThisOrganization_ReturnsClient()
     {
         var phone = PhoneNumber.Create("+14155552672").Value;
-        var client = Client.Create(phone, "Jane Doe");
+        var client = Client.Create(ClientContact.Create(phone, "Jane Doe").Value);
         var organization = Organization.Create("Acme", $"acme-{Guid.CreateVersion7()}").Value;
         var location = Location.Create(organization.Id, "Branch", Address.Create("1 First St").Value, "UTC", ClosedAllWeek()).Value;
         var employee = Employee.Create(organization.Id, "John Smith").Value;
         var service = Service.Create(
             organization.Id, "Haircut", TimeSpan.FromMinutes(30), Money.Create(50m, "USD").Value, TimeSpan.Zero, TimeSpan.Zero, "#FF5733").Value;
         var booking = Booking.CreatePending(
-            organization.Id, location.Id, employee.Id, service.Id, ClientContact.Create(phone),
+            organization.Id, location.Id, employee.Id, service.Id, ClientContact.Create(phone).Value,
             TimeSlot.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddMinutes(30)).Value,
             Money.Create(50m, "USD").Value, BookingSource.Public, DateTime.UtcNow).Value;
         booking.LinkClient(client.Id);

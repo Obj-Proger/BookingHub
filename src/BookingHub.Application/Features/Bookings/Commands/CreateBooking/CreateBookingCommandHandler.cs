@@ -25,20 +25,11 @@ internal sealed class CreateBookingCommandHandler(
         if (command.StartUtc.Kind != DateTimeKind.Utc)
             return Result.Failure<BookingCreatedResponse>(DomainErrors.TimeSlot.NotUtc);
 
-        var phoneResult = PhoneNumber.Create(command.Phone);
-        if (phoneResult.IsFailure)
-            return Result.Failure<BookingCreatedResponse>(phoneResult.Error);
+        var contactResult = ClientContact.Create(command.Phone, command.ClientName, command.ClientEmail);
+        if (contactResult.IsFailure)
+            return Result.Failure<BookingCreatedResponse>(contactResult.Error);
 
-        Email? email = null;
-        if (!string.IsNullOrWhiteSpace(command.ClientEmail))
-        {
-            var emailResult = Email.Create(command.ClientEmail);
-            if (emailResult.IsFailure)
-                return Result.Failure<BookingCreatedResponse>(emailResult.Error);
-            email = emailResult.Value;
-        }
-
-        var clientContact = ClientContact.Create(phoneResult.Value, command.ClientName, email);
+        var clientContact = contactResult.Value;
 
         var bookingResult = await BookingSlotBuilder.TryCreatePendingBookingAsync(
             dbContext, command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId,
@@ -48,15 +39,15 @@ internal sealed class CreateBookingCommandHandler(
 
         var booking = bookingResult.Value;
 
-        var client = await clientRepository.GetByPhoneAsync(phoneResult.Value, cancellationToken);
+        var client = await clientRepository.GetByPhoneAsync(clientContact.Phone, cancellationToken);
         if (client is null)
         {
-            client = Client.Create(phoneResult.Value, command.ClientName, email);
+            client = Client.Create(clientContact);
             clientRepository.Add(client);
         }
         else
         {
-            client.UpdateContactInfo(command.ClientName, email);
+            client.UpdateContactInfo(clientContact);
         }
 
         booking.LinkClient(client.Id);

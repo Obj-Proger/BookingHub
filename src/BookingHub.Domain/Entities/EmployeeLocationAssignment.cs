@@ -23,11 +23,11 @@ public sealed class EmployeeLocationAssignment : BaseEntity
 
     public static Result<EmployeeLocationAssignment> Create(Guid employeeId, Guid locationId)
     {
-        var employeeIdResult = Guard.NotEmpty(employeeId, "EmployeeLocationAssignment.EmployeeIdEmpty", "EmployeeId");
+        var employeeIdResult = Guard.NotEmpty(employeeId, DomainErrors.EmployeeLocationAssignment.EmployeeIdEmpty);
         if (employeeIdResult.IsFailure)
             return Result.Failure<EmployeeLocationAssignment>(employeeIdResult.Error);
 
-        var locationIdResult = Guard.NotEmpty(locationId, "EmployeeLocationAssignment.LocationIdEmpty", "LocationId");
+        var locationIdResult = Guard.NotEmpty(locationId, DomainErrors.EmployeeLocationAssignment.LocationIdEmpty);
         if (locationIdResult.IsFailure)
             return Result.Failure<EmployeeLocationAssignment>(locationIdResult.Error);
 

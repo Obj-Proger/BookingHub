@@ -19,7 +19,7 @@ public class SubmitReviewCommandHandlerTests
     {
         var booking = Booking.CreatePending(
             Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
-            ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
+            ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value,
             TimeSlot.Create(DateTime.UtcNow.AddHours(-3), DateTime.UtcNow.AddHours(-2)).Value, Money.Create(50m, "USD").Value,
             BookingSource.Public, DateTime.UtcNow.AddHours(-4)).Value;
         booking.Confirm(DateTime.UtcNow.AddHours(-4));
@@ -62,7 +62,7 @@ public class SubmitReviewCommandHandlerTests
     {
         var booking = Booking.CreatePending(
             Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),
-            ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
+            ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value,
             TimeSlot.Create(DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddHours(2)).Value, Money.Create(50m, "USD").Value,
             BookingSource.Public, DateTime.UtcNow).Value;
         booking.Confirm(DateTime.UtcNow);

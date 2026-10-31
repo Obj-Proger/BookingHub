@@ -25,7 +25,7 @@ public class MarkCompletedAndNoShowCommandHandlerTests
     {
         var booking = Booking.CreatePending(
             OrganizationId, LocationId, EmployeeId, Guid.CreateVersion7(),
-            ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
+            ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value,
             TimeSlot.Create(DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddHours(2)).Value, Money.Create(50m, "USD").Value,
             BookingSource.Public, DateTime.UtcNow).Value;
         booking.Confirm(DateTime.UtcNow);
@@ -78,7 +78,7 @@ public class MarkCompletedAndNoShowCommandHandlerTests
     {
         var booking = Booking.CreatePending(
             OrganizationId, LocationId, EmployeeId, Guid.CreateVersion7(),
-            ClientContact.Create(PhoneNumber.Create("+14155552671").Value),
+            ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value,
             TimeSlot.Create(DateTime.UtcNow.AddHours(1), DateTime.UtcNow.AddHours(2)).Value, Money.Create(50m, "USD").Value,
             BookingSource.Public, DateTime.UtcNow).Value;
         booking.Confirm(DateTime.UtcNow);

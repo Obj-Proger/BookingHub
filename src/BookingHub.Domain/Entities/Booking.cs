@@ -10,6 +10,8 @@ namespace BookingHub.Domain.Entities;
 /// </summary>
 public sealed class Booking : BaseEntity, IAuditable
 {
+    public const int MaxCancellationReasonLength = 500;
+
     public Guid OrganizationId { get; private set; }
     public Guid LocationId { get; private set; }
     public Guid EmployeeId { get; private set; }
@@ -66,19 +68,19 @@ public sealed class Booking : BaseEntity, IAuditable
         ClientContact clientContact, TimeSlot timeSlot, Money price, BookingSource source,
         DateTime utcNow, Guid? recurringSeriesId = null)
     {
-        var organizationIdResult = Guard.NotEmpty(organizationId, "Booking.OrganizationIdEmpty", "OrganizationId");
+        var organizationIdResult = Guard.NotEmpty(organizationId, DomainErrors.Booking.OrganizationIdEmpty);
         if (organizationIdResult.IsFailure)
             return Result.Failure<Booking>(organizationIdResult.Error);
 
-        var locationIdResult = Guard.NotEmpty(locationId, "Booking.LocationIdEmpty", "LocationId");
+        var locationIdResult = Guard.NotEmpty(locationId, DomainErrors.Booking.LocationIdEmpty);
         if (locationIdResult.IsFailure)
             return Result.Failure<Booking>(locationIdResult.Error);
 
-        var employeeIdResult = Guard.NotEmpty(employeeId, "Booking.EmployeeIdEmpty", "EmployeeId");
+        var employeeIdResult = Guard.NotEmpty(employeeId, DomainErrors.Booking.EmployeeIdEmpty);
         if (employeeIdResult.IsFailure)
             return Result.Failure<Booking>(employeeIdResult.Error);
 
-        var serviceIdResult = Guard.NotEmpty(serviceId, "Booking.ServiceIdEmpty", "ServiceId");
+        var serviceIdResult = Guard.NotEmpty(serviceId, DomainErrors.Booking.ServiceIdEmpty);
         if (serviceIdResult.IsFailure)
             return Result.Failure<Booking>(serviceIdResult.Error);
 
@@ -165,8 +167,12 @@ public sealed class Booking : BaseEntity, IAuditable
         if (Status is not (BookingStatus.Pending or BookingStatus.Confirmed))
             return Result.Failure(DomainErrors.Booking.CannotCancel);
 
+        var reasonResult = Guard.OptionalText(reason, MaxCancellationReasonLength, DomainErrors.Booking.CancellationReasonTooLong);
+        if (reasonResult.IsFailure)
+            return Result.Failure(reasonResult.Error);
+
         Status = BookingStatus.Cancelled;
-        CancellationReason = string.IsNullOrWhiteSpace(reason) ? null : reason.Trim();
+        CancellationReason = reasonResult.Value;
         ResolvedAtUtc = utcNow;
 
         RaiseDomainEvent(new BookingCancelledEvent(Id, OrganizationId, LocationId, EmployeeId, ServiceId, TimeSlot, utcNow));
@@ -189,7 +195,7 @@ public sealed class Booking : BaseEntity, IAuditable
     /// <summary>Links this booking to the resolved <see cref="Client"/> record once the Application layer has found or created one by phone.</summary>
     public Result LinkClient(Guid clientId)
     {
-        var clientIdResult = Guard.NotEmpty(clientId, "Booking.ClientIdEmpty", "ClientId");
+        var clientIdResult = Guard.NotEmpty(clientId, DomainErrors.Booking.ClientIdEmpty);
         if (clientIdResult.IsFailure)
             return Result.Failure(clientIdResult.Error);
 

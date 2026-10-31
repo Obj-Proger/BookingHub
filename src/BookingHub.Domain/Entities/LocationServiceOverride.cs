@@ -26,11 +26,11 @@ public sealed class LocationServiceOverride : BaseEntity
 
     public static Result<LocationServiceOverride> Create(Guid locationId, Guid serviceId, Money overridePrice)
     {
-        var locationIdResult = Guard.NotEmpty(locationId, "LocationServiceOverride.LocationIdEmpty", "LocationId");
+        var locationIdResult = Guard.NotEmpty(locationId, DomainErrors.LocationServiceOverride.LocationIdEmpty);
         if (locationIdResult.IsFailure)
             return Result.Failure<LocationServiceOverride>(locationIdResult.Error);
 
-        var serviceIdResult = Guard.NotEmpty(serviceId, "LocationServiceOverride.ServiceIdEmpty", "ServiceId");
+        var serviceIdResult = Guard.NotEmpty(serviceId, DomainErrors.LocationServiceOverride.ServiceIdEmpty);
         if (serviceIdResult.IsFailure)
             return Result.Failure<LocationServiceOverride>(serviceIdResult.Error);
 

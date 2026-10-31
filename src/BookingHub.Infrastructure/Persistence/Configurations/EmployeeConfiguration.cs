@@ -10,8 +10,8 @@ internal sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
     {
         builder.ConfigureBaseEntity();
 
-        builder.Property(e => e.FullName).HasMaxLength(200).IsRequired();
-        builder.Property(e => e.PhotoUrl).HasMaxLength(2048);
+        builder.Property(e => e.FullName).HasMaxLength(Employee.MaxFullNameLength).IsRequired();
+        builder.Property(e => e.PhotoUrl).HasMaxLength(Employee.MaxPhotoUrlLength);
 
         builder.HasOne<Organization>().WithMany().HasForeignKey(e => e.OrganizationId).OnDelete(DeleteBehavior.Restrict);
 

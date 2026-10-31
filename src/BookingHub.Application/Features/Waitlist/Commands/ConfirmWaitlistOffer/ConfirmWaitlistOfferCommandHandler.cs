@@ -77,12 +77,12 @@ internal sealed class ConfirmWaitlistOfferCommandHandler(
         var client = await clientRepository.GetByPhoneAsync(entry.ClientContact.Phone, cancellationToken);
         if (client is null)
         {
-            client = Client.Create(entry.ClientContact.Phone, entry.ClientContact.Name, entry.ClientContact.Email);
+            client = Client.Create(entry.ClientContact);
             clientRepository.Add(client);
         }
         else
         {
-            client.UpdateContactInfo(entry.ClientContact.Name, entry.ClientContact.Email);
+            client.UpdateContactInfo(entry.ClientContact);
         }
 
         booking.LinkClient(client.Id);

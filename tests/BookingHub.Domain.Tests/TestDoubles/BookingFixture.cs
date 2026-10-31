@@ -7,7 +7,7 @@ internal static class BookingFixture
     public static readonly Guid LocationId = Guid.CreateVersion7();
     public static readonly Guid EmployeeId = Guid.CreateVersion7();
     public static readonly Guid ServiceId = Guid.CreateVersion7();
-    public static readonly ClientContact ClientContact = ClientContact.Create(PhoneNumber.Create("+14155552671").Value);
+    public static readonly ClientContact ClientContact = ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value;
     public static readonly Money Price = Money.Create(50m, "USD").Value;
     public static readonly DateTime UtcNow = new(2026, 3, 10, 8, 0, 0, DateTimeKind.Utc);
     public static readonly TimeSlot FutureSlot = TimeSlot.Create(UtcNow.AddHours(1), UtcNow.AddHours(2)).Value;

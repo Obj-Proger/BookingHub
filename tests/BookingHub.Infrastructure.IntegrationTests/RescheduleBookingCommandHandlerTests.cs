@@ -26,7 +26,7 @@ public class RescheduleBookingCommandHandlerTests(PostgreSqlFixture fixture)
         var service = Service.Create(
             organization.Id, "Haircut", TimeSpan.FromMinutes(30), Money.Create(50m, "USD").Value, TimeSpan.Zero, TimeSpan.Zero, "#FF5733").Value;
         var booking = Booking.CreatePending(
-            organization.Id, location.Id, employee.Id, service.Id, ClientContact.Create(PhoneNumber.Create(phone).Value),
+            organization.Id, location.Id, employee.Id, service.Id, ClientContact.Create(PhoneNumber.Create(phone).Value).Value,
             TimeSlot.Create(slotStartUtc, slotStartUtc.AddMinutes(30)).Value,
             Money.Create(50m, "USD").Value, BookingSource.Public, DateTime.UtcNow).Value;
         booking.Confirm(DateTime.UtcNow);
@@ -102,7 +102,7 @@ public class RescheduleBookingCommandHandlerTests(PostgreSqlFixture fixture)
         var newStart = originalStart.AddHours(4);
 
         var otherBooking = Booking.CreatePending(
-            f.Organization.Id, f.Location.Id, f.Employee.Id, f.Service.Id, ClientContact.Create(PhoneNumber.Create("+14155552688").Value),
+            f.Organization.Id, f.Location.Id, f.Employee.Id, f.Service.Id, ClientContact.Create(PhoneNumber.Create("+14155552688").Value).Value,
             TimeSlot.Create(newStart, newStart.AddMinutes(30)).Value,
             Money.Create(50m, "USD").Value, BookingSource.Public, DateTime.UtcNow).Value;
         otherBooking.Confirm(DateTime.UtcNow);

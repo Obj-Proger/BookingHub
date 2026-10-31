@@ -10,8 +10,8 @@ internal sealed class OrganizationConfiguration : IEntityTypeConfiguration<Organ
     {
         builder.ConfigureBaseEntity();
 
-        builder.Property(o => o.Name).HasMaxLength(200).IsRequired();
-        builder.Property(o => o.Slug).HasMaxLength(100).IsRequired();
+        builder.Property(o => o.Name).HasMaxLength(Organization.MaxNameLength).IsRequired();
+        builder.Property(o => o.Slug).HasMaxLength(Organization.MaxSlugLength).IsRequired();
 
         builder.HasIndex(o => o.Slug).IsUnique();
     }

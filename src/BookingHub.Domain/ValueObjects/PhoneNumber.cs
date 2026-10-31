@@ -11,6 +11,9 @@ public sealed partial class PhoneNumber : ValueObject
     [GeneratedRegex(@"[\s\-()]")]
     private static partial Regex NormalizationPattern();
 
+    /// <summary>A leading <c>+</c> and at most 15 digits.</summary>
+    public const int MaxLength = 16;
+
     public string Value { get; }
 
     private PhoneNumber(string value)

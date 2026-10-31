@@ -5,7 +5,10 @@ namespace BookingHub.Domain.Entities;
 
 public sealed class Location : BaseEntity
 {
-    private const int MaxNameLength = 200;
+    public const int MaxNameLength = 200;
+
+    /// <summary>Generous upper bound for an IANA time zone identifier (the longest in use is about 30 characters).</summary>
+    public const int MaxTimeZoneLength = 64;
 
     public Guid OrganizationId { get; private set; }
     public string Name { get; private set; } = null!;
@@ -28,9 +31,9 @@ public sealed class Location : BaseEntity
     }
 
     public static Result<Location> Create(
-    Guid organizationId, string? name, Address address, string? timeZone, WeeklyHours workingHours)
+        Guid organizationId, string? name, Address address, string? timeZone, WeeklyHours workingHours)
     {
-        var organizationIdResult = Guard.NotEmpty(organizationId, "Location.OrganizationIdEmpty", "OrganizationId");
+        var organizationIdResult = Guard.NotEmpty(organizationId, DomainErrors.Location.OrganizationIdEmpty);
         if (organizationIdResult.IsFailure)
             return Result.Failure<Location>(organizationIdResult.Error);
 
@@ -59,5 +62,7 @@ public sealed class Location : BaseEntity
     public void UpdateWorkingHours(WeeklyHours newWorkingHours) => WorkingHours = newWorkingHours;
 
     private static bool IsValidTimeZone([NotNullWhen(true)] string? timeZone) =>
-        !string.IsNullOrWhiteSpace(timeZone) && TimeZoneInfo.TryFindSystemTimeZoneById(timeZone, out _);
+        !string.IsNullOrWhiteSpace(timeZone)
+        && timeZone.Length <= MaxTimeZoneLength
+        && TimeZoneInfo.TryFindSystemTimeZoneById(timeZone, out _);
 }

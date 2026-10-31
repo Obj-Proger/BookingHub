@@ -12,6 +12,9 @@ public sealed class SecurityToken : ValueObject
 {
     private const int ByteLength = 32;
 
+    /// <summary>The length of a generated token: 32 random bytes in unpadded Base64Url.</summary>
+    public const int EncodedLength = 43;
+
     public string Value { get; }
 
     private SecurityToken(string value)

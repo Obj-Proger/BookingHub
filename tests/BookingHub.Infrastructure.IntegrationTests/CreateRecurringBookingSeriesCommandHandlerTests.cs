@@ -79,7 +79,7 @@ public class CreateRecurringBookingSeriesCommandHandlerTests(PostgreSqlFixture f
 
         var conflictingBooking = Booking.CreatePending(
             organization.Id, location.Id, employee.Id, service.Id,
-            ClientContact.Create(PhoneNumber.Create("+14155552681").Value),
+            ClientContact.Create(PhoneNumber.Create("+14155552681").Value).Value,
             TimeSlot.Create(secondOccurrenceStart, secondOccurrenceStart.AddMinutes(30)).Value,
             Money.Create(50m, "USD").Value, BookingSource.Public, DateTime.UtcNow).Value;
         conflictingBooking.Confirm(DateTime.UtcNow);

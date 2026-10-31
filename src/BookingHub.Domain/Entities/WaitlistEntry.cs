@@ -59,22 +59,22 @@ public sealed class WaitlistEntry : BaseEntity, IAuditable
         Guid organizationId, Guid locationId, Guid? employeeId, Guid serviceId,
         ClientContact clientContact, TimeSlot desiredWindow, DateTime utcNow)
     {
-        var organizationIdResult = Guard.NotEmpty(organizationId, "WaitlistEntry.OrganizationIdEmpty", "OrganizationId");
+        var organizationIdResult = Guard.NotEmpty(organizationId, DomainErrors.WaitlistEntry.OrganizationIdEmpty);
         if (organizationIdResult.IsFailure)
             return Result.Failure<WaitlistEntry>(organizationIdResult.Error);
 
-        var locationIdResult = Guard.NotEmpty(locationId, "WaitlistEntry.LocationIdEmpty", "LocationId");
+        var locationIdResult = Guard.NotEmpty(locationId, DomainErrors.WaitlistEntry.LocationIdEmpty);
         if (locationIdResult.IsFailure)
             return Result.Failure<WaitlistEntry>(locationIdResult.Error);
 
         if (employeeId is not null)
         {
-            var employeeIdResult = Guard.NotEmpty(employeeId.Value, "WaitlistEntry.EmployeeIdEmpty", "EmployeeId");
+            var employeeIdResult = Guard.NotEmpty(employeeId.Value, DomainErrors.WaitlistEntry.EmployeeIdEmpty);
             if (employeeIdResult.IsFailure)
                 return Result.Failure<WaitlistEntry>(employeeIdResult.Error);
         }
 
-        var serviceIdResult = Guard.NotEmpty(serviceId, "WaitlistEntry.ServiceIdEmpty", "ServiceId");
+        var serviceIdResult = Guard.NotEmpty(serviceId, DomainErrors.WaitlistEntry.ServiceIdEmpty);
         if (serviceIdResult.IsFailure)
             return Result.Failure<WaitlistEntry>(serviceIdResult.Error);
 
@@ -93,7 +93,7 @@ public sealed class WaitlistEntry : BaseEntity, IAuditable
         if (Status != WaitlistEntryStatus.Waiting)
             return Result.Failure(DomainErrors.WaitlistEntry.CannotOffer);
 
-        var employeeIdResult = Guard.NotEmpty(offeredEmployeeId, "WaitlistEntry.OfferedEmployeeIdEmpty", "OfferedEmployeeId");
+        var employeeIdResult = Guard.NotEmpty(offeredEmployeeId, DomainErrors.WaitlistEntry.OfferedEmployeeIdEmpty);
         if (employeeIdResult.IsFailure)
             return Result.Failure(employeeIdResult.Error);
 

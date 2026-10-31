@@ -3,6 +3,8 @@
 /// <summary>A monetary amount in a specific currency.</summary>
 public sealed class Money : ValueObject
 {
+    public const int CurrencyCodeLength = 3;
+
     public decimal Amount { get; }
     public string Currency { get; }
 
@@ -19,10 +21,11 @@ public sealed class Money : ValueObject
         if (amount < 0)
             return Result.Failure<Money>(DomainErrors.Money.NegativeAmount);
 
-        if (string.IsNullOrWhiteSpace(currency) || currency.Trim().Length != 3)
+        var code = currency?.Trim();
+        if (code is not { Length: CurrencyCodeLength } || !code.All(char.IsAsciiLetter))
             return Result.Failure<Money>(DomainErrors.Money.InvalidCurrency);
 
-        return new Money(amount, currency.Trim().ToUpperInvariant());
+        return new Money(amount, code.ToUpperInvariant());
     }
 
     protected override IEnumerable<object?> GetEqualityComponents()

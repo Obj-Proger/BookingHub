@@ -5,7 +5,7 @@ internal static class WaitlistEntryFixture
     public static readonly Guid OrganizationId = Guid.CreateVersion7();
     public static readonly Guid LocationId = Guid.CreateVersion7();
     public static readonly Guid ServiceId = Guid.CreateVersion7();
-    public static readonly ClientContact ClientContact = ClientContact.Create(PhoneNumber.Create("+14155552671").Value);
+    public static readonly ClientContact ClientContact = ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value;
 
     public static readonly DateTime UtcNow = new(2026, 3, 10, 8, 0, 0, DateTimeKind.Utc);
 

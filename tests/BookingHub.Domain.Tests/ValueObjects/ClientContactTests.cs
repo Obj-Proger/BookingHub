@@ -9,7 +9,7 @@ public class ClientContactTests
     {
         var email = Email.Create("user@example.com").Value;
 
-        var contact = ClientContact.Create(SamplePhone, "  Jane Doe  ", email);
+        var contact = ClientContact.Create(SamplePhone, "  Jane Doe  ", email).Value;
 
         contact.Phone.Should().Be(SamplePhone);
         contact.Name.Should().Be("Jane Doe");
@@ -19,7 +19,7 @@ public class ClientContactTests
     [Fact]
     public void Create_WithoutNameOrEmail_LeavesThemNull()
     {
-        var contact = ClientContact.Create(SamplePhone);
+        var contact = ClientContact.Create(SamplePhone).Value;
 
         contact.Name.Should().BeNull();
         contact.Email.Should().BeNull();
@@ -30,7 +30,7 @@ public class ClientContactTests
     [InlineData("   ")]
     public void Create_WhitespaceOnlyName_IsNormalizedToNull(string name)
     {
-        var contact = ClientContact.Create(SamplePhone, name);
+        var contact = ClientContact.Create(SamplePhone, name).Value;
 
         contact.Name.Should().BeNull();
     }
@@ -38,8 +38,8 @@ public class ClientContactTests
     [Fact]
     public void Equals_SamePhoneNameAndEmail_ReturnsTrue()
     {
-        var first = ClientContact.Create(SamplePhone, "Jane Doe");
-        var second = ClientContact.Create(SamplePhone, "Jane Doe");
+        var first = ClientContact.Create(SamplePhone, "Jane Doe").Value;
+        var second = ClientContact.Create(SamplePhone, "Jane Doe").Value;
 
         first.Should().Be(second);
     }

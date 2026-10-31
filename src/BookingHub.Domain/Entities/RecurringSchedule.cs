@@ -29,8 +29,7 @@ public sealed class RecurringSchedule : BaseEntity
     public static Result<RecurringSchedule> Create(
         Guid employeeLocationAssignmentId, DayOfWeek dayOfWeek, TimeOnly startTime, TimeOnly endTime)
     {
-        var assignmentIdResult = Guard.NotEmpty(
-            employeeLocationAssignmentId, "RecurringSchedule.EmployeeLocationAssignmentIdEmpty", "EmployeeLocationAssignmentId");
+        var assignmentIdResult = Guard.NotEmpty(employeeLocationAssignmentId, DomainErrors.RecurringSchedule.EmployeeLocationAssignmentIdEmpty);
         if (assignmentIdResult.IsFailure)
             return Result.Failure<RecurringSchedule>(assignmentIdResult.Error);
 

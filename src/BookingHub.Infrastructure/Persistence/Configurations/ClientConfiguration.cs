@@ -1,4 +1,5 @@
 ﻿using BookingHub.Domain.Entities;
+using BookingHub.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,16 +11,13 @@ internal sealed class ClientConfiguration : IEntityTypeConfiguration<Client>
     {
         builder.ConfigureBaseEntity();
 
-        builder.Property(c => c.Name).HasMaxLength(200);
+        builder.Property(c => c.Name).HasMaxLength(ClientContact.MaxNameLength);
 
-        builder.ComplexProperty(c => c.Phone, phone =>
-        {
-            phone.Property(p => p.Value).HasColumnName("Phone").HasMaxLength(20).IsRequired();
-        });
+        builder.ComplexProperty(c => c.Phone, phone => phone.MapPhoneNumber("Phone"));
 
         builder.ComplexProperty(c => c.Email, email =>
         {
-            email.Property(e => e.Value).HasColumnName("Email").HasMaxLength(320);
+            email.Property(e => e.Value).HasColumnName("Email").HasMaxLength(Email.MaxLength);
         });
 
         // Global uniqueness on Phone — EF Core's HasIndex cannot express a path through a
