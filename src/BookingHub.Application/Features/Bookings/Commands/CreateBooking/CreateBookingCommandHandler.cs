@@ -9,31 +9,33 @@ using BookingHub.Domain.ValueObjects;
 namespace BookingHub.Application.Features.Bookings.Commands.CreateBooking;
 
 internal sealed class CreateBookingCommandHandler(
-    IApplicationDbContext dbContext,
+    SlotAvailabilityService slotAvailability,
     IClientRepository clientRepository,
     IBookingRepository bookingRepository,
     IEmailService emailService,
     ISmsService smsService,
     IWebLinkBuilder linkBuilder,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    TimeProvider timeProvider)
     : ICommandHandler<CreateBookingCommand, BookingCreatedResponse>
 {
-    private static readonly TimeSpan SlotGranularity = TimeSpan.FromMinutes(15);
-
     public async Task<Result<BookingCreatedResponse>> Handle(CreateBookingCommand command, CancellationToken cancellationToken)
     {
-        if (command.StartUtc.Kind != DateTimeKind.Utc)
-            return Result.Failure<BookingCreatedResponse>(DomainErrors.TimeSlot.NotUtc);
-
         var contactResult = ClientContact.Create(command.Phone, command.ClientName, command.ClientEmail);
         if (contactResult.IsFailure)
             return Result.Failure<BookingCreatedResponse>(contactResult.Error);
 
         var clientContact = contactResult.Value;
 
-        var bookingResult = await BookingSlotBuilder.TryCreatePendingBookingAsync(
-            dbContext, command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId,
-            command.StartUtc, clientContact, BookingSource.Public, recurringSeriesId: null, SlotGranularity, cancellationToken);
+        var slotResult = await slotAvailability.CheckSlotAsync(
+            command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId, command.StartUtc,
+            excludeBookingId: null, cancellationToken);
+        if (slotResult.IsFailure)
+            return Result.Failure<BookingCreatedResponse>(slotResult.Error);
+
+        var bookingResult = Booking.CreatePending(
+            command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId, clientContact,
+            slotResult.Value.Slot, slotResult.Value.Price, BookingSource.Public, timeProvider.GetUtcNow().UtcDateTime);
         if (bookingResult.IsFailure)
             return Result.Failure<BookingCreatedResponse>(bookingResult.Error);
 

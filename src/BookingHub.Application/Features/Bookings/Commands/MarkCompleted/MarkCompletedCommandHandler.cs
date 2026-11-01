@@ -7,7 +7,7 @@ namespace BookingHub.Application.Features.Bookings.Commands.MarkCompleted;
 
 internal sealed class MarkCompletedCommandHandler(
     IBookingRepository bookingRepository, IUnitOfWork unitOfWork,
-    IWebLinkBuilder linkBuilder, IEmailService emailService, ISmsService smsService)
+    IWebLinkBuilder linkBuilder, IEmailService emailService, ISmsService smsService, TimeProvider timeProvider)
     : ICommandHandler<MarkCompletedCommand>
 {
     public async Task<Result> Handle(MarkCompletedCommand command, CancellationToken cancellationToken)
@@ -17,7 +17,7 @@ internal sealed class MarkCompletedCommandHandler(
         if (booking is null)
             return Result.Failure(ApplicationErrors.Booking.NotFound);
 
-        var completeResult = booking.Complete(DateTime.UtcNow);
+        var completeResult = booking.Complete(timeProvider.GetUtcNow().UtcDateTime);
         if (completeResult.IsFailure)
             return completeResult;
 

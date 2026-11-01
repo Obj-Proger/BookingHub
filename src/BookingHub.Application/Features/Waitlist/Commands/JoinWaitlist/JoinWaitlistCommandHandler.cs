@@ -12,7 +12,8 @@ internal sealed class JoinWaitlistCommandHandler(
     IServiceRepository serviceRepository,
     IEmployeeRepository employeeRepository,
     IWaitlistEntryRepository waitlistEntryRepository,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    TimeProvider timeProvider)
     : ICommandHandler<JoinWaitlistCommand, WaitlistEntryCreatedResponse>
 {
     public async Task<Result<WaitlistEntryCreatedResponse>> Handle(JoinWaitlistCommand command, CancellationToken cancellationToken)
@@ -44,7 +45,7 @@ internal sealed class JoinWaitlistCommandHandler(
 
         var entryResult = WaitlistEntry.Create(
             command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId,
-            clientContact, windowResult.Value, DateTime.UtcNow);
+            clientContact, windowResult.Value, timeProvider.GetUtcNow().UtcDateTime);
         if (entryResult.IsFailure)
             return Result.Failure<WaitlistEntryCreatedResponse>(entryResult.Error);
 

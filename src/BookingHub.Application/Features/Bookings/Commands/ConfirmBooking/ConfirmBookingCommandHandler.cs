@@ -8,7 +8,7 @@ namespace BookingHub.Application.Features.Bookings.Commands.ConfirmBooking;
 
 internal sealed class ConfirmBookingCommandHandler(
     IBookingRepository bookingRepository, IUnitOfWork unitOfWork,
-    IWebLinkBuilder linkBuilder, IEmailService emailService, ISmsService smsService)
+    IWebLinkBuilder linkBuilder, IEmailService emailService, ISmsService smsService, TimeProvider timeProvider)
     : ICommandHandler<ConfirmBookingCommand>
 {
     public async Task<Result> Handle(ConfirmBookingCommand command, CancellationToken cancellationToken)
@@ -21,7 +21,8 @@ internal sealed class ConfirmBookingCommandHandler(
         if (!booking.ConfirmationToken.Matches(providedToken))
             return Result.Failure(ApplicationErrors.Booking.InvalidConfirmationToken);
 
-        var confirmResult = booking.Confirm(DateTime.UtcNow);
+        var utcNow = timeProvider.GetUtcNow().UtcDateTime;
+        var confirmResult = booking.Confirm(utcNow);
         if (confirmResult.IsFailure)
             return confirmResult;
 
@@ -31,7 +32,7 @@ internal sealed class ConfirmBookingCommandHandler(
                 booking.RecurringSeriesId.Value, booking.Id, cancellationToken);
 
             foreach (var sibling in siblings)
-                sibling.Confirm(DateTime.UtcNow);
+                sibling.Confirm(utcNow);
         }
 
         try

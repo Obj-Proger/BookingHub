@@ -1,6 +1,7 @@
 ﻿using BookingHub.Application.Common.Messaging;
 using BookingHub.Application.Common.Persistence;
-using BookingHub.Application.Features.Bookings.Commands.ExpirePendingBookings;
+
+namespace BookingHub.Application.Features.Bookings.Commands.ExpirePendingBookings;
 
 internal sealed class ExpirePendingBookingsCommandHandler(
     IBookingRepository bookingRepository, IUnitOfWork unitOfWork, TimeProvider timeProvider)

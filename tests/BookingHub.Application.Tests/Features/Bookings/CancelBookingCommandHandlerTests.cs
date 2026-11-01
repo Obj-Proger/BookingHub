@@ -13,7 +13,7 @@ public class CancelBookingCommandHandlerTests
     private readonly IApplicationDbContext _dbContext = Substitute.For<IApplicationDbContext>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
 
-    private CancelBookingCommandHandler CreateSut() => new(_bookingRepository, _dbContext, _unitOfWork);
+    private CancelBookingCommandHandler CreateSut() => new(_bookingRepository, _dbContext, _unitOfWork, TimeProvider.System);
 
     private void SetUpOrganizations(IEnumerable<Organization> organizations) =>
         _dbContext.Organizations.Returns(organizations.ToList().BuildMock());

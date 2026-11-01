@@ -5,7 +5,8 @@ using BookingHub.Domain.ValueObjects;
 
 namespace BookingHub.Application.Features.Waitlist.Commands.LeaveWaitlist;
 
-internal sealed class LeaveWaitlistCommandHandler(IWaitlistEntryRepository waitlistEntryRepository, IUnitOfWork unitOfWork)
+internal sealed class LeaveWaitlistCommandHandler(
+    IWaitlistEntryRepository waitlistEntryRepository, IUnitOfWork unitOfWork, TimeProvider timeProvider)
     : ICommandHandler<LeaveWaitlistCommand>
 {
     public async Task<Result> Handle(LeaveWaitlistCommand command, CancellationToken cancellationToken)
@@ -18,7 +19,7 @@ internal sealed class LeaveWaitlistCommandHandler(IWaitlistEntryRepository waitl
         if (!entry.ManagementToken.Matches(providedToken))
             return Result.Failure(ApplicationErrors.WaitlistEntry.InvalidManagementToken);
 
-        var cancelResult = entry.Cancel(DateTime.UtcNow);
+        var cancelResult = entry.Cancel(timeProvider.GetUtcNow().UtcDateTime);
         if (cancelResult.IsFailure)
             return cancelResult;
 

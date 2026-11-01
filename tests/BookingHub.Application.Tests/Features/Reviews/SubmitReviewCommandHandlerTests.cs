@@ -13,7 +13,7 @@ public class SubmitReviewCommandHandlerTests
     private readonly IReviewRepository _reviewRepository = Substitute.For<IReviewRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
 
-    private SubmitReviewCommandHandler CreateSut() => new(_bookingRepository, _reviewRepository, _unitOfWork);
+    private SubmitReviewCommandHandler CreateSut() => new(_bookingRepository, _reviewRepository, _unitOfWork, TimeProvider.System);
 
     private static Booking CreateCompletedBooking()
     {

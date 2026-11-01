@@ -113,11 +113,23 @@ public sealed class WaitlistEntry : BaseEntity, IAuditable
         return Result.Success();
     }
 
-    /// <summary>Confirms the offer — the Application layer creates the resulting Booking from <see cref="OfferedEmployeeId"/>/<see cref="OfferedSlot"/>.</summary>
-    public Result Convert(DateTime utcNow)
+    /// <summary>Whether the offer can still be accepted: it is the current offer and its window has not elapsed.</summary>
+    public Result CanConvert(DateTime utcNow)
     {
         if (Status != WaitlistEntryStatus.Offered)
             return Result.Failure(DomainErrors.WaitlistEntry.CannotConvert);
+
+        return OfferExpiresAtUtc <= utcNow
+            ? Result.Failure(DomainErrors.WaitlistEntry.OfferExpired)
+            : Result.Success();
+    }
+
+    /// <summary>Confirms the offer — the Application layer creates the resulting Booking from <see cref="OfferedEmployeeId"/>/<see cref="OfferedSlot"/>.</summary>
+    public Result Convert(DateTime utcNow)
+    {
+        var canConvert = CanConvert(utcNow);
+        if (canConvert.IsFailure)
+            return canConvert;
 
         Status = WaitlistEntryStatus.Converted;
         ResolvedAtUtc = utcNow;

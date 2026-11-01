@@ -163,6 +163,7 @@ public static class DomainErrors
         public static readonly Error OfferOutsideDesiredWindow = Error.Validation("WaitlistEntry.OfferOutsideDesiredWindow", "The offered slot falls outside the client's desired window.");
         public static readonly Error CannotOffer = Error.Conflict("WaitlistEntry.CannotOffer", "Only a waiting entry can receive an offer.");
         public static readonly Error CannotConvert = Error.Conflict("WaitlistEntry.CannotConvert", "Only an offered entry can be converted into a booking.");
+        public static readonly Error OfferExpired = Error.Conflict("WaitlistEntry.OfferExpired", "This offer has expired.");
         public static readonly Error CannotExpire = Error.Conflict("WaitlistEntry.CannotExpire", "Only an offered entry can expire.");
         public static readonly Error OfferNotYetExpired = Error.Conflict("WaitlistEntry.OfferNotYetExpired", "The offer's confirmation window has not elapsed yet.");
         public static readonly Error CannotCancel = Error.Conflict("WaitlistEntry.CannotCancel", "Only a waiting or offered entry can be cancelled.");

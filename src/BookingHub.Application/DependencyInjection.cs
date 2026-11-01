@@ -1,6 +1,7 @@
 ﻿using BookingHub.Application.Common.Behaviors;
 using BookingHub.Application.Common.Messaging;
 using BookingHub.Application.Common.Security;
+using BookingHub.Application.Features.Bookings;
 using BookingHub.Application.Features.Waitlist;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,6 +20,7 @@ public static class DependencyInjection
         services.AddScoped<IDispatcher, Dispatcher>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IWaitlistOfferService, WaitlistOfferService>();
+        services.AddScoped<SlotAvailabilityService>();
 
         RegisterOpenGenericImplementations(services, typeof(IRequestHandler<,>));
         RegisterOpenGenericImplementations(services, typeof(IDomainEventHandler<>));

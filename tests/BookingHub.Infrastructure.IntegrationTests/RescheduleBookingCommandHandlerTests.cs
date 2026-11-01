@@ -1,5 +1,6 @@
 ﻿using BookingHub.Application.Common;
 using BookingHub.Application.Features.Bookings.Commands.RescheduleBooking;
+using BookingHub.Application.Features.Bookings;
 using BookingHub.Infrastructure.Persistence.Repositories;
 
 namespace BookingHub.Infrastructure.IntegrationTests;
@@ -52,7 +53,9 @@ public class RescheduleBookingCommandHandlerTests(PostgreSqlFixture fixture)
         var newStart = originalStart.AddHours(2);
 
         await using var dbContext = fixture.CreateDbContext();
-        var handler = new RescheduleBookingCommandHandler(new BookingRepository(dbContext), dbContext, new UnitOfWork(dbContext));
+        var handler = new RescheduleBookingCommandHandler(
+            new BookingRepository(dbContext), dbContext, new SlotAvailabilityService(dbContext, TimeProvider.System),
+            new UnitOfWork(dbContext), TimeProvider.System);
 
         var result = await handler.Handle(
             new RescheduleBookingCommand(f.Booking.Id, f.Booking.CancellationToken.Value, newStart), TestContext.Current.CancellationToken);
@@ -68,7 +71,9 @@ public class RescheduleBookingCommandHandlerTests(PostgreSqlFixture fixture)
         var f = await SeedConfirmedBookingAsync(originalStart, "+14155552685");
 
         await using var dbContext = fixture.CreateDbContext();
-        var handler = new RescheduleBookingCommandHandler(new BookingRepository(dbContext), dbContext, new UnitOfWork(dbContext));
+        var handler = new RescheduleBookingCommandHandler(
+            new BookingRepository(dbContext), dbContext, new SlotAvailabilityService(dbContext, TimeProvider.System),
+            new UnitOfWork(dbContext), TimeProvider.System);
 
         var result = await handler.Handle(
             new RescheduleBookingCommand(f.Booking.Id, "wrong-token", originalStart.AddHours(2)), TestContext.Current.CancellationToken);
@@ -84,7 +89,9 @@ public class RescheduleBookingCommandHandlerTests(PostgreSqlFixture fixture)
         var f = await SeedConfirmedBookingAsync(originalStart, "+14155552686");
 
         await using var dbContext = fixture.CreateDbContext();
-        var handler = new RescheduleBookingCommandHandler(new BookingRepository(dbContext), dbContext, new UnitOfWork(dbContext));
+        var handler = new RescheduleBookingCommandHandler(
+            new BookingRepository(dbContext), dbContext, new SlotAvailabilityService(dbContext, TimeProvider.System),
+            new UnitOfWork(dbContext), TimeProvider.System);
 
         var result = await handler.Handle(
             new RescheduleBookingCommand(f.Booking.Id, f.Booking.CancellationToken.Value, originalStart.AddHours(4)),
@@ -114,7 +121,9 @@ public class RescheduleBookingCommandHandlerTests(PostgreSqlFixture fixture)
         }
 
         await using var dbContext = fixture.CreateDbContext();
-        var handler = new RescheduleBookingCommandHandler(new BookingRepository(dbContext), dbContext, new UnitOfWork(dbContext));
+        var handler = new RescheduleBookingCommandHandler(
+            new BookingRepository(dbContext), dbContext, new SlotAvailabilityService(dbContext, TimeProvider.System),
+            new UnitOfWork(dbContext), TimeProvider.System);
 
         var result = await handler.Handle(
             new RescheduleBookingCommand(f.Booking.Id, f.Booking.CancellationToken.Value, newStart), TestContext.Current.CancellationToken);

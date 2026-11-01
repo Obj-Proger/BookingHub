@@ -1,4 +1,5 @@
 ﻿using BookingHub.Application.Common;
+using BookingHub.Application.Features.Bookings;
 using BookingHub.Application.Features.Waitlist.Commands.ConfirmWaitlistOffer;
 using BookingHub.Infrastructure.Persistence.Repositories;
 
@@ -62,7 +63,8 @@ public class ConfirmWaitlistOfferCommandHandlerTests(PostgreSqlFixture fixture)
 
         await using var dbContext = fixture.CreateDbContext();
         var handler = new ConfirmWaitlistOfferCommandHandler(
-            new WaitlistEntryRepository(dbContext), dbContext, new ClientRepository(dbContext), new BookingRepository(dbContext), new UnitOfWork(dbContext));
+            new WaitlistEntryRepository(dbContext), new SlotAvailabilityService(dbContext, TimeProvider.System), new ClientRepository(dbContext),
+            new BookingRepository(dbContext), new UnitOfWork(dbContext), TimeProvider.System);
 
         var result = await handler.Handle(
             new ConfirmWaitlistOfferCommand(entry.Id, entry.ManagementToken.Value), TestContext.Current.CancellationToken);
@@ -91,7 +93,8 @@ public class ConfirmWaitlistOfferCommandHandlerTests(PostgreSqlFixture fixture)
 
         await using var dbContext = fixture.CreateDbContext();
         var handler = new ConfirmWaitlistOfferCommandHandler(
-            new WaitlistEntryRepository(dbContext), dbContext, new ClientRepository(dbContext), new BookingRepository(dbContext), new UnitOfWork(dbContext));
+            new WaitlistEntryRepository(dbContext), new SlotAvailabilityService(dbContext, TimeProvider.System), new ClientRepository(dbContext),
+            new BookingRepository(dbContext), new UnitOfWork(dbContext), TimeProvider.System);
 
         var result = await handler.Handle(new ConfirmWaitlistOfferCommand(entry.Id, "wrong-token"), TestContext.Current.CancellationToken);
 
@@ -116,7 +119,8 @@ public class ConfirmWaitlistOfferCommandHandlerTests(PostgreSqlFixture fixture)
 
         await using var dbContext = fixture.CreateDbContext();
         var handler = new ConfirmWaitlistOfferCommandHandler(
-            new WaitlistEntryRepository(dbContext), dbContext, new ClientRepository(dbContext), new BookingRepository(dbContext), new UnitOfWork(dbContext));
+            new WaitlistEntryRepository(dbContext), new SlotAvailabilityService(dbContext, TimeProvider.System), new ClientRepository(dbContext),
+            new BookingRepository(dbContext), new UnitOfWork(dbContext), TimeProvider.System);
 
         var result = await handler.Handle(
             new ConfirmWaitlistOfferCommand(entry.Id, entry.ManagementToken.Value), TestContext.Current.CancellationToken);
@@ -146,7 +150,8 @@ public class ConfirmWaitlistOfferCommandHandlerTests(PostgreSqlFixture fixture)
 
         await using var dbContext = fixture.CreateDbContext();
         var handler = new ConfirmWaitlistOfferCommandHandler(
-            new WaitlistEntryRepository(dbContext), dbContext, new ClientRepository(dbContext), new BookingRepository(dbContext), new UnitOfWork(dbContext));
+            new WaitlistEntryRepository(dbContext), new SlotAvailabilityService(dbContext, TimeProvider.System), new ClientRepository(dbContext),
+            new BookingRepository(dbContext), new UnitOfWork(dbContext), TimeProvider.System);
 
         var result = await handler.Handle(
             new ConfirmWaitlistOfferCommand(entry.Id, entry.ManagementToken.Value), TestContext.Current.CancellationToken);

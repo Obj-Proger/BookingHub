@@ -1,5 +1,6 @@
 ﻿using BookingHub.Application.Common;
 using BookingHub.Application.Common.Persistence;
+using BookingHub.Application.Features.Bookings;
 using BookingHub.Application.Features.Waitlist.Commands.ConfirmWaitlistOffer;
 using BookingHub.Domain.Entities;
 using BookingHub.Domain.ValueObjects;
@@ -15,7 +16,8 @@ public class ConfirmWaitlistOfferCommandHandlerTests
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
 
     private ConfirmWaitlistOfferCommandHandler CreateSut() =>
-        new(_waitlistEntryRepository, _dbContext, _clientRepository, _bookingRepository, _unitOfWork);
+        new(_waitlistEntryRepository, new SlotAvailabilityService(_dbContext, TimeProvider.System), _clientRepository, _bookingRepository,
+            _unitOfWork, TimeProvider.System);
 
     private static WaitlistEntry CreateOfferedEntry()
     {

@@ -10,7 +10,8 @@ namespace BookingHub.Application.Features.Waitlist;
 /// longer qualifies (e.g. the freed slot has since slipped into the past).
 /// </summary>
 internal sealed class WaitlistOfferService(
-    IWaitlistEntryRepository waitlistEntryRepository, IApplicationDbContext dbContext, IUnitOfWork unitOfWork)
+    IWaitlistEntryRepository waitlistEntryRepository, IApplicationDbContext dbContext, IUnitOfWork unitOfWork,
+    TimeProvider timeProvider)
     : IWaitlistOfferService
 {
     public async Task TryOfferFreedSlotAsync(
@@ -27,7 +28,7 @@ internal sealed class WaitlistOfferService(
             .Select(o => o.WaitlistOfferWindow)
             .FirstAsync(cancellationToken);
 
-        var utcNow = DateTime.UtcNow;
+        var utcNow = timeProvider.GetUtcNow().UtcDateTime;
 
         foreach (var candidate in candidates)
         {

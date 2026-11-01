@@ -17,7 +17,7 @@ public class JoinWaitlistCommandHandlerTests
     private static readonly Guid ServiceId = Guid.CreateVersion7();
 
     private JoinWaitlistCommandHandler CreateSut() =>
-        new(_locationRepository, _serviceRepository, _employeeRepository, _waitlistEntryRepository, _unitOfWork);
+        new(_locationRepository, _serviceRepository, _employeeRepository, _waitlistEntryRepository, _unitOfWork, TimeProvider.System);
 
     private JoinWaitlistCommand ValidCommand(Guid? employeeId = null) => new(
         OrganizationId, LocationId, employeeId, ServiceId,

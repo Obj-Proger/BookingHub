@@ -10,17 +10,16 @@ using BookingHub.Domain.ValueObjects;
 namespace BookingHub.Application.Features.Bookings.Commands.CreateRecurringBookingSeries;
 
 internal sealed class CreateRecurringBookingSeriesCommandHandler(
-    IApplicationDbContext dbContext,
+    SlotAvailabilityService slotAvailability,
     IClientRepository clientRepository,
     IBookingRepository bookingRepository,
     IEmailService emailService,
     ISmsService smsService,
     IWebLinkBuilder linkBuilder,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    TimeProvider timeProvider)
     : ICommandHandler<CreateRecurringBookingSeriesCommand, RecurringBookingSeriesCreatedResponse>
 {
-    private static readonly TimeSpan SlotGranularity = TimeSpan.FromMinutes(15);
-
     public async Task<Result<RecurringBookingSeriesCreatedResponse>> Handle(
         CreateRecurringBookingSeriesCommand command, CancellationToken cancellationToken)
     {
@@ -33,6 +32,7 @@ internal sealed class CreateRecurringBookingSeriesCommandHandler(
 
         var clientContact = contactResult.Value;
         var seriesId = Guid.CreateVersion7();
+        var utcNow = timeProvider.GetUtcNow().UtcDateTime;
 
         var createdBookings = new List<Booking>();
         var skippedStarts = new List<DateTime>();
@@ -41,9 +41,16 @@ internal sealed class CreateRecurringBookingSeriesCommandHandler(
         {
             var occurrenceStartUtc = command.FirstStartUtc.AddDays(7 * command.IntervalWeeks * occurrence);
 
-            var bookingResult = await BookingSlotBuilder.TryCreatePendingBookingAsync(
-                dbContext, command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId,
-                occurrenceStartUtc, clientContact, BookingSource.Public, seriesId, SlotGranularity, cancellationToken);
+            // Best effort: an occurrence that cannot be booked is skipped and reported, not fatal.
+            var slotResult = await slotAvailability.CheckSlotAsync(
+                command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId, occurrenceStartUtc,
+                excludeBookingId: null, cancellationToken);
+
+            var bookingResult = slotResult.IsSuccess
+                ? Booking.CreatePending(
+                    command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId, clientContact,
+                    slotResult.Value.Slot, slotResult.Value.Price, BookingSource.Public, utcNow, seriesId)
+                : Result.Failure<Booking>(slotResult.Error);
 
             if (bookingResult.IsSuccess)
                 createdBookings.Add(bookingResult.Value);

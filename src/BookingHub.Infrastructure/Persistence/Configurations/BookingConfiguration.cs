@@ -31,7 +31,7 @@ internal sealed class BookingConfiguration : IEntityTypeConfiguration<Booking>
         builder.HasOne<Service>().WithMany().HasForeignKey(b => b.ServiceId).OnDelete(DeleteBehavior.Restrict);
         builder.HasOne<Client>().WithMany().HasForeignKey(b => b.ClientId).OnDelete(DeleteBehavior.Restrict);
 
-        // Supports AvailabilityContextLoader's occupied-window lookup (EmployeeId + Status,
+        // Supports SlotAvailabilityService's occupied-window lookup (EmployeeId + Status,
         // exact overlap is then narrowed further by the EXCLUDE constraint's own GiST index).
         builder.HasIndex(b => new { b.EmployeeId, b.Status });
 

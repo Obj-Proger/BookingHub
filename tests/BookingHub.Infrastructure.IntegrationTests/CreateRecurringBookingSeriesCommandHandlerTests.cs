@@ -1,5 +1,6 @@
 ﻿using BookingHub.Application.Common;
 using BookingHub.Application.Features.Bookings.Commands.CreateRecurringBookingSeries;
+using BookingHub.Application.Features.Bookings;
 using BookingHub.Infrastructure.IntegrationTests.TestDoubles;
 using BookingHub.Infrastructure.Persistence.Repositories;
 
@@ -39,8 +40,8 @@ public class CreateRecurringBookingSeriesCommandHandlerTests(PostgreSqlFixture f
 
         await using var dbContext = fixture.CreateDbContext();
         var handler = new CreateRecurringBookingSeriesCommandHandler(
-            dbContext, new ClientRepository(dbContext), new BookingRepository(dbContext),
-            new NoOpEmailService(), new NoOpSmsService(), new FakeWebLinkBuilder(), new UnitOfWork(dbContext));
+            new SlotAvailabilityService(dbContext, TimeProvider.System), new ClientRepository(dbContext), new BookingRepository(dbContext),
+            new NoOpEmailService(), new NoOpSmsService(), new FakeWebLinkBuilder(), new UnitOfWork(dbContext), TimeProvider.System);
 
         var firstStart = DateTime.UtcNow.Date.AddDays(14).AddHours(10);
         var result = await handler.Handle(
@@ -98,8 +99,8 @@ public class CreateRecurringBookingSeriesCommandHandlerTests(PostgreSqlFixture f
 
         await using var dbContext = fixture.CreateDbContext();
         var handler = new CreateRecurringBookingSeriesCommandHandler(
-            dbContext, new ClientRepository(dbContext), new BookingRepository(dbContext),
-            new NoOpEmailService(), new NoOpSmsService(), new FakeWebLinkBuilder(), new UnitOfWork(dbContext));
+            new SlotAvailabilityService(dbContext, TimeProvider.System), new ClientRepository(dbContext), new BookingRepository(dbContext),
+            new NoOpEmailService(), new NoOpSmsService(), new FakeWebLinkBuilder(), new UnitOfWork(dbContext), TimeProvider.System);
 
         var result = await handler.Handle(
             new CreateRecurringBookingSeriesCommand(
@@ -132,8 +133,8 @@ public class CreateRecurringBookingSeriesCommandHandlerTests(PostgreSqlFixture f
 
         await using var dbContext = fixture.CreateDbContext();
         var handler = new CreateRecurringBookingSeriesCommandHandler(
-            dbContext, new ClientRepository(dbContext), new BookingRepository(dbContext),
-            new NoOpEmailService(), new NoOpSmsService(), new FakeWebLinkBuilder(), new UnitOfWork(dbContext));
+            new SlotAvailabilityService(dbContext, TimeProvider.System), new ClientRepository(dbContext), new BookingRepository(dbContext),
+            new NoOpEmailService(), new NoOpSmsService(), new FakeWebLinkBuilder(), new UnitOfWork(dbContext), TimeProvider.System);
 
         var result = await handler.Handle(
             new CreateRecurringBookingSeriesCommand(

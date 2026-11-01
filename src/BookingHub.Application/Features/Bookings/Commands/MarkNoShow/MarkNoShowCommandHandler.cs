@@ -4,7 +4,8 @@ using BookingHub.Application.Common.Persistence;
 
 namespace BookingHub.Application.Features.Bookings.Commands.MarkNoShow;
 
-internal sealed class MarkNoShowCommandHandler(IBookingRepository bookingRepository, IUnitOfWork unitOfWork)
+internal sealed class MarkNoShowCommandHandler(
+    IBookingRepository bookingRepository, IUnitOfWork unitOfWork, TimeProvider timeProvider)
     : ICommandHandler<MarkNoShowCommand>
 {
     public async Task<Result> Handle(MarkNoShowCommand command, CancellationToken cancellationToken)
@@ -14,7 +15,7 @@ internal sealed class MarkNoShowCommandHandler(IBookingRepository bookingReposit
         if (booking is null)
             return Result.Failure(ApplicationErrors.Booking.NotFound);
 
-        var noShowResult = booking.MarkNoShow(DateTime.UtcNow);
+        var noShowResult = booking.MarkNoShow(timeProvider.GetUtcNow().UtcDateTime);
         if (noShowResult.IsFailure)
             return noShowResult;
 

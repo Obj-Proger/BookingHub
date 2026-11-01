@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace BookingHub.Application.Features.Bookings.Commands.CancelBooking;
 
 internal sealed class CancelBookingCommandHandler(
-    IBookingRepository bookingRepository, IApplicationDbContext dbContext, IUnitOfWork unitOfWork)
+    IBookingRepository bookingRepository, IApplicationDbContext dbContext, IUnitOfWork unitOfWork, TimeProvider timeProvider)
     : ICommandHandler<CancelBookingCommand>
 {
     public async Task<Result> Handle(CancelBookingCommand command, CancellationToken cancellationToken)
@@ -20,15 +20,17 @@ internal sealed class CancelBookingCommandHandler(
         if (!booking.CancellationToken.Matches(providedToken))
             return Result.Failure(ApplicationErrors.Booking.InvalidManagementToken);
 
+        var utcNow = timeProvider.GetUtcNow().UtcDateTime;
+
         var cancellationDeadline = await dbContext.Organizations
             .Where(o => o.Id == booking.OrganizationId)
             .Select(o => o.CancellationDeadline)
             .FirstAsync(cancellationToken);
 
-        if (booking.TimeSlot.StartUtc - DateTime.UtcNow < cancellationDeadline)
+        if (booking.TimeSlot.StartUtc - utcNow < cancellationDeadline)
             return Result.Failure(ApplicationErrors.Booking.CancellationDeadlinePassed);
 
-        var cancelResult = booking.Cancel(command.Reason, DateTime.UtcNow);
+        var cancelResult = booking.Cancel(command.Reason, utcNow);
         if (cancelResult.IsFailure)
             return cancelResult;
 

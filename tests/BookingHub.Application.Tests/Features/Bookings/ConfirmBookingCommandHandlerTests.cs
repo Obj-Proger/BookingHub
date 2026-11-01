@@ -18,7 +18,7 @@ public class ConfirmBookingCommandHandlerTests
 
     private const string OrganizationSlug = "acme";
 
-    private ConfirmBookingCommandHandler CreateSut() => new(_bookingRepository, _unitOfWork, _linkBuilder, _emailService, _smsService);
+    private ConfirmBookingCommandHandler CreateSut() => new(_bookingRepository, _unitOfWork, _linkBuilder, _emailService, _smsService, TimeProvider.System);
 
     private static Booking CreatePendingBooking(Guid? recurringSeriesId = null) => Booking.CreatePending(
         Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(), Guid.CreateVersion7(),

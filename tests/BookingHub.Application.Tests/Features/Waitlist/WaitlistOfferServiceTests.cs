@@ -17,7 +17,7 @@ public class WaitlistOfferServiceTests
     private static readonly Guid ServiceId = Guid.CreateVersion7();
     private static readonly TimeSlot FreedSlot = TimeSlot.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddHours(1)).Value;
 
-    private WaitlistOfferService CreateSut() => new(_waitlistEntryRepository, _dbContext, _unitOfWork);
+    private WaitlistOfferService CreateSut() => new(_waitlistEntryRepository, _dbContext, _unitOfWork, TimeProvider.System);
 
     private static WaitlistEntry CreateWaitingEntry(Guid organizationId) => WaitlistEntry.Create(
         organizationId, LocationId, null, ServiceId,

@@ -9,7 +9,7 @@ using BookingHub.Domain.ValueObjects;
 namespace BookingHub.Application.Features.Reviews.Commands.SubmitReview;
 
 internal sealed class SubmitReviewCommandHandler(
-    IBookingRepository bookingRepository, IReviewRepository reviewRepository, IUnitOfWork unitOfWork)
+    IBookingRepository bookingRepository, IReviewRepository reviewRepository, IUnitOfWork unitOfWork, TimeProvider timeProvider)
     : ICommandHandler<SubmitReviewCommand, ReviewSubmittedResponse>
 {
     public async Task<Result<ReviewSubmittedResponse>> Handle(SubmitReviewCommand command, CancellationToken cancellationToken)
@@ -30,7 +30,7 @@ internal sealed class SubmitReviewCommandHandler(
 
         var reviewResult = Review.Create(
             booking.OrganizationId, booking.LocationId, booking.EmployeeId, booking.Id,
-            command.Rating, command.Comment, DateTime.UtcNow);
+            command.Rating, command.Comment, timeProvider.GetUtcNow().UtcDateTime);
         if (reviewResult.IsFailure)
             return Result.Failure<ReviewSubmittedResponse>(reviewResult.Error);
 

@@ -12,7 +12,7 @@ public class LeaveWaitlistCommandHandlerTests
     private readonly IWaitlistEntryRepository _waitlistEntryRepository = Substitute.For<IWaitlistEntryRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
 
-    private LeaveWaitlistCommandHandler CreateSut() => new(_waitlistEntryRepository, _unitOfWork);
+    private LeaveWaitlistCommandHandler CreateSut() => new(_waitlistEntryRepository, _unitOfWork, TimeProvider.System);
 
     private static WaitlistEntry CreateWaitingEntry() => WaitlistEntry.Create(
         Guid.CreateVersion7(), Guid.CreateVersion7(), null, Guid.CreateVersion7(),

@@ -38,7 +38,7 @@ public class MarkCompletedAndNoShowCommandHandlerTests
     {
         _bookingRepository.GetByIdAsync(OrganizationId, LocationId, EmployeeId, BookingId, Arg.Any<CancellationToken>())
             .Returns(CreateAwaitingReviewBooking());
-        var sut = new MarkCompletedCommandHandler(_bookingRepository, _unitOfWork, _linkBuilder, _emailService, _smsService);
+        var sut = new MarkCompletedCommandHandler(_bookingRepository, _unitOfWork, _linkBuilder, _emailService, _smsService, TimeProvider.System);
 
         var result = await sut.Handle(new MarkCompletedCommand(OrganizationId, LocationId, EmployeeId, BookingId), CancellationToken.None);
 
@@ -53,7 +53,7 @@ public class MarkCompletedAndNoShowCommandHandlerTests
         // indistinguishable here by design — this test only needs to cover the null result.
         _bookingRepository.GetByIdAsync(OrganizationId, LocationId, EmployeeId, BookingId, Arg.Any<CancellationToken>())
             .Returns((Booking?)null);
-        var sut = new MarkCompletedCommandHandler(_bookingRepository, _unitOfWork, _linkBuilder, _emailService, _smsService);
+        var sut = new MarkCompletedCommandHandler(_bookingRepository, _unitOfWork, _linkBuilder, _emailService, _smsService, TimeProvider.System);
 
         var result = await sut.Handle(new MarkCompletedCommand(OrganizationId, LocationId, EmployeeId, BookingId), CancellationToken.None);
 
@@ -66,7 +66,7 @@ public class MarkCompletedAndNoShowCommandHandlerTests
     {
         _bookingRepository.GetByIdAsync(OrganizationId, LocationId, EmployeeId, BookingId, Arg.Any<CancellationToken>())
             .Returns(CreateAwaitingReviewBooking());
-        var sut = new MarkNoShowCommandHandler(_bookingRepository, _unitOfWork);
+        var sut = new MarkNoShowCommandHandler(_bookingRepository, _unitOfWork, TimeProvider.System);
 
         var result = await sut.Handle(new MarkNoShowCommand(OrganizationId, LocationId, EmployeeId, BookingId), CancellationToken.None);
 
@@ -83,7 +83,7 @@ public class MarkCompletedAndNoShowCommandHandlerTests
             BookingSource.Public, DateTime.UtcNow).Value;
         booking.Confirm(DateTime.UtcNow);
         _bookingRepository.GetByIdAsync(OrganizationId, LocationId, EmployeeId, BookingId, Arg.Any<CancellationToken>()).Returns(booking);
-        var sut = new MarkNoShowCommandHandler(_bookingRepository, _unitOfWork);
+        var sut = new MarkNoShowCommandHandler(_bookingRepository, _unitOfWork, TimeProvider.System);
 
         var result = await sut.Handle(new MarkNoShowCommand(OrganizationId, LocationId, EmployeeId, BookingId), CancellationToken.None);
 
