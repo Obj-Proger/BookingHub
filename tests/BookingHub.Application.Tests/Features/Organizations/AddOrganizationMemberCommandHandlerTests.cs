@@ -1,4 +1,5 @@
 ﻿using BookingHub.Application.Common.Persistence;
+using BookingHub.Application.Common.Security;
 using BookingHub.Application.Features.Organizations.Commands.AddOrganizationMember;
 using BookingHub.Application.Tests.TestDoubles;
 using BookingHub.Domain.Entities;
@@ -11,13 +12,18 @@ public class AddOrganizationMemberCommandHandlerTests
     private readonly IOrganizationMemberRepository _organizationMemberRepository = Substitute.For<IOrganizationMemberRepository>();
     private readonly ILocationRepository _locationRepository = Substitute.For<ILocationRepository>();
     private readonly IEmployeeRepository _employeeRepository = Substitute.For<IEmployeeRepository>();
+    private readonly IUserDirectory _userDirectory = Substitute.For<IUserDirectory>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private static readonly Guid OrganizationId = Guid.CreateVersion7();
     private static readonly Guid CallerUserId = Guid.CreateVersion7();
     private static readonly Guid TargetUserId = Guid.CreateVersion7();
 
+    // Every scenario here adds an existing, registered user unless a test says otherwise.
+    public AddOrganizationMemberCommandHandlerTests() =>
+        _userDirectory.ExistsAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>()).Returns(true);
+
     private AddOrganizationMemberCommandHandler CreateSut() =>
-        new(_organizationMemberRepository, _locationRepository, _employeeRepository, new FakeCurrentUser(CallerUserId), _unitOfWork);
+        new(_organizationMemberRepository, _locationRepository, _employeeRepository, _userDirectory, new FakeCurrentUser(CallerUserId), _unitOfWork);
 
     [Fact]
     public async Task Handle_AdministratorRole_Succeeds()
