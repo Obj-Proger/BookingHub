@@ -5,6 +5,10 @@ using BookingHub.Domain.Enums;
 
 namespace BookingHub.Application.Common.Behaviors;
 
+/// <summary>
+/// Enforces the access marker every request declares (see <see cref="RequestAccessValidation"/>).
+/// Fails closed: a request without a marker is a programming error and is never let through.
+/// </summary>
 internal sealed class AuthorizationBehavior<TRequest, TResponse>(
     ICurrentUser currentUser, IOrganizationMemberRepository organizationMemberRepository)
     : IPipelineBehavior<TRequest, TResponse>
@@ -14,38 +18,55 @@ internal sealed class AuthorizationBehavior<TRequest, TResponse>(
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        if (request is not IRequireOrganizationMembership scoped)
-            return await next();
+        switch (request)
+        {
+            case IPublicRequest or ISystemRequest:
+                return await next();
 
+            case IAuthenticatedRequest:
+                // Reading the identity throws when nobody is signed in: an anonymous caller here means an
+                // endpoint is missing [Authorize] — a configuration bug, not a business outcome.
+                _ = currentUser.UserId;
+                return await next();
+
+            case IRequireOrganizationMembership organizationScoped:
+                var failure = await AuthorizeMemberAsync(request, organizationScoped, cancellationToken);
+                return failure is null ? await next() : BuildFailure(failure);
+
+            default:
+                throw new InvalidOperationException(
+                    $"{typeof(TRequest).Name} declares no access marker; see {nameof(RequestAccessValidation)}.");
+        }
+    }
+
+    /// <returns>The reason the caller may not send <paramref name="request"/>, or null when they may.</returns>
+    private async Task<Error?> AuthorizeMemberAsync(
+        TRequest request, IRequireOrganizationMembership organizationScoped, CancellationToken cancellationToken)
+    {
         var member = await organizationMemberRepository.GetByOrganizationAndUserAsync(
-            scoped.OrganizationId, currentUser.UserId, cancellationToken);
+            organizationScoped.OrganizationId, currentUser.UserId, cancellationToken);
 
         if (member is null)
-            return BuildFailure(ApplicationErrors.Authorization.NotAMember);
+            return ApplicationErrors.Authorization.NotAMember;
 
         var isOrgWideManager = member.Role is OrganizationRole.Owner or OrganizationRole.Administrator;
 
-        if (request is IRequireBookingAccess bookingScoped)
+        var allowed = request switch
         {
-            var isOwnBooking = member.Role == OrganizationRole.Employee && member.EmployeeId == bookingScoped.EmployeeId;
-            var isScopedToThisLocation = member.Role == OrganizationRole.LocationManager && member.LocationId == bookingScoped.LocationId;
+            IRequireBookingAccess booking =>
+                isOrgWideManager
+                || (member.Role == OrganizationRole.LocationManager && member.LocationId == booking.LocationId)
+                || (member.Role == OrganizationRole.Employee && member.EmployeeId == booking.EmployeeId),
 
-            if (!isOrgWideManager && !isScopedToThisLocation && !isOwnBooking)
-                return BuildFailure(ApplicationErrors.Authorization.InsufficientRole);
-        }
-        else if (request is IRequireLocationManagement locationScoped)
-        {
-            var isScopedToThisLocation =
-                member.Role == OrganizationRole.LocationManager && member.LocationId == locationScoped.LocationId;
+            IRequireLocationManagement location =>
+                isOrgWideManager
+                || (member.Role == OrganizationRole.LocationManager && member.LocationId == location.LocationId),
 
-            if (!isOrgWideManager && !isScopedToThisLocation)
-                return BuildFailure(ApplicationErrors.Authorization.InsufficientRole);
-        }
-        else if (request is IRequireOrganizationManagement && !isOrgWideManager)
-        {
-            return BuildFailure(ApplicationErrors.Authorization.InsufficientRole);
-        }
+            IRequireOrganizationManagement => isOrgWideManager,
 
-        return await next();
+            _ => true // plain membership, any role
+        };
+
+        return allowed ? null : ApplicationErrors.Authorization.InsufficientRole;
     }
 }

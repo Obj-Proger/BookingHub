@@ -1,4 +1,5 @@
 ﻿using BookingHub.Application.Common.Messaging;
+using BookingHub.Application.Common.Security;
 using BookingHub.Application.Features.Waitlist.DTOs;
 
 namespace BookingHub.Application.Features.Waitlist.Commands.JoinWaitlist;
@@ -9,4 +10,4 @@ namespace BookingHub.Application.Features.Waitlist.Commands.JoinWaitlist;
 public sealed record JoinWaitlistCommand(
     Guid OrganizationId, Guid LocationId, Guid? EmployeeId, Guid ServiceId,
     DateTime DesiredStartUtc, DateTime DesiredEndUtc, string? Phone, string? ClientName, string? ClientEmail)
-    : ICommand<WaitlistEntryCreatedResponse>;
+    : ICommand<WaitlistEntryCreatedResponse>, IPublicRequest;

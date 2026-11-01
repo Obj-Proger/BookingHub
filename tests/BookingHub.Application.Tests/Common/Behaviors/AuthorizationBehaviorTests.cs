@@ -23,11 +23,11 @@ public class AuthorizationBehaviorTests
     private static RequestHandlerDelegate<Result> NextReturningSuccess() => () => Task.FromResult(Result.Success());
 
     [Fact]
-    public async Task Handle_RequestWithoutOrganizationScope_SkipsAuthorizationEntirely()
+    public async Task Handle_PublicRequest_SkipsMembershipCheck()
     {
-        var sut = CreateSut<UnscopedTestRequest>();
+        var sut = CreateSut<PublicTestRequest>();
 
-        var result = await sut.Handle(new UnscopedTestRequest(), NextReturningSuccess(), CancellationToken.None);
+        var result = await sut.Handle(new PublicTestRequest(), NextReturningSuccess(), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
         await _memberRepository.DidNotReceive().GetByOrganizationAndUserAsync(Arg.Any<Guid>(), Arg.Any<Guid>(), Arg.Any<CancellationToken>());

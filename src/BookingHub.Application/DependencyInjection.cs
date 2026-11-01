@@ -12,6 +12,8 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        RequestAccessValidation.EnsureEveryRequestDeclaresAccess(typeof(DependencyInjection).Assembly);
+
         ValidatorOptions.Global.LanguageManager.Enabled = false;
 
         services.AddSingleton(TimeProvider.System);

@@ -2,7 +2,7 @@
 
 namespace BookingHub.Application.Tests.TestDoubles;
 
-internal sealed record UnscopedTestRequest : IRequest<Result>;
+internal sealed record PublicTestRequest : IRequest<Result>, IPublicRequest;
 
 internal sealed record OrgScopedTestRequest(Guid OrganizationId) : IRequest<Result>, IRequireOrganizationMembership;
 
