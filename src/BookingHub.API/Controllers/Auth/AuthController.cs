@@ -1,4 +1,5 @@
 ﻿using BookingHub.API.Common;
+using BookingHub.API.RateLimiting;
 using BookingHub.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -20,7 +21,7 @@ public sealed class AuthController(
     private static readonly string DummyPasswordHash =
         new PasswordHasher<ApplicationUser>().HashPassword(DummyUser, "not-a-real-password");
 
-    [EnableRateLimiting("public-write")]
+    [EnableRateLimiting(RateLimitPolicies.SignIn)]
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequest request)
     {
@@ -43,7 +44,7 @@ public sealed class AuthController(
     /// email — checking a dummy hash in that case, instead of returning immediately — so a
     /// nonexistent email can't be distinguished from a wrong password by response time alone.
     /// </summary>
-    [EnableRateLimiting("public-write")]
+    [EnableRateLimiting(RateLimitPolicies.SignIn)]
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequest request)
     {
@@ -64,7 +65,7 @@ public sealed class AuthController(
         return await IssueTokensAsync(user);
     }
 
-    [EnableRateLimiting("public-write")]
+    [EnableRateLimiting(RateLimitPolicies.Session)]
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh(RefreshRequest request, CancellationToken cancellationToken)
     {
@@ -91,7 +92,7 @@ public sealed class AuthController(
         return Ok(new AuthenticatedResponse(jwtTokenGenerator.GenerateToken(user), validation.NewRawToken!));
     }
 
-    [EnableRateLimiting("public-write")]
+    [EnableRateLimiting(RateLimitPolicies.Session)]
     [HttpPost("logout")]
     public async Task<IActionResult> Logout(LogoutRequest request, CancellationToken cancellationToken)
     {

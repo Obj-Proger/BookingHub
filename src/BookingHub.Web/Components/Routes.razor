@@ -1,4 +1,6 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
+﻿@inject BookingHub.Web.Forwarding.ClientAddress ClientAddress
+
+<Router AppAssembly="typeof(Program).Assembly">
     <Found Context="routeData">
         <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
             <NotAuthorized>
@@ -13,3 +15,10 @@
         </LayoutView>
     </NotFound>
 </Router>
+
+@code {
+    /// <summary>The browser's address, passed down by App from the HTTP request that rendered the page.</summary>
+    [Parameter] public string? RemoteAddress { get; set; }
+
+    protected override void OnInitialized() => ClientAddress.Value = RemoteAddress;
+}

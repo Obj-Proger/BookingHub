@@ -1,4 +1,5 @@
-﻿using BookingHub.Application.Common.Messaging;
+﻿using BookingHub.Application.Common;
+using BookingHub.Application.Common.Messaging;
 using BookingHub.Application.Common.Notifications;
 using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Bookings.DTOs;
@@ -24,6 +25,11 @@ internal sealed class CreateBookingCommandHandler(
             return Result.Failure<BookingCreatedResponse>(contactResult.Error);
 
         var clientContact = contactResult.Value;
+        var utcNow = timeProvider.GetUtcNow().UtcDateTime;
+
+        var client = await clientRepository.GetByPhoneAsync(clientContact.Phone, cancellationToken);
+        if (await BookingRequestLimit.IsReachedAsync(bookingRepository, command.OrganizationId, client, utcNow, cancellationToken))
+            return Result.Failure<BookingCreatedResponse>(ApplicationErrors.Booking.TooManyRequests);
 
         var slotResult = await slotAvailability.CheckSlotAsync(
             command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId, command.StartUtc,
@@ -33,13 +39,12 @@ internal sealed class CreateBookingCommandHandler(
 
         var bookingResult = Booking.CreatePending(
             command.OrganizationId, command.LocationId, command.EmployeeId, command.ServiceId, clientContact,
-            slotResult.Value.Slot, slotResult.Value.Price, BookingSource.Public, timeProvider.GetUtcNow().UtcDateTime);
+            slotResult.Value.Slot, slotResult.Value.Price, BookingSource.Public, utcNow);
         if (bookingResult.IsFailure)
             return Result.Failure<BookingCreatedResponse>(bookingResult.Error);
 
         var booking = bookingResult.Value;
 
-        var client = await clientRepository.GetByPhoneAsync(clientContact.Phone, cancellationToken);
         if (client is null)
         {
             client = Client.Create(clientContact);

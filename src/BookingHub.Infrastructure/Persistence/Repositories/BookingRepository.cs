@@ -47,4 +47,13 @@ internal sealed class BookingRepository(ApplicationDbContext dbContext) : IBooki
         await dbContext.Bookings
             .Where(b => b.RecurringSeriesId == recurringSeriesId && b.Id != excludingBookingId && b.Status == BookingStatus.Pending)
             .ToListAsync(cancellationToken);
+
+    public Task<int> CountPublicRequestsSinceAsync(
+        Guid organizationId, Guid clientId, DateTime sinceUtc, CancellationToken cancellationToken) =>
+        dbContext.Bookings
+            .Where(b => b.OrganizationId == organizationId && b.ClientId == clientId
+                && b.Source == BookingSource.Public && b.CreatedAtUtc >= sinceUtc)
+            .Select(b => b.RecurringSeriesId ?? b.Id)
+            .Distinct()
+            .CountAsync(cancellationToken);
 }

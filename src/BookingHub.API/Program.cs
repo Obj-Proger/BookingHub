@@ -1,14 +1,13 @@
 ﻿using BookingHub.API.BackgroundJobs;
 using BookingHub.API.Common;
+using BookingHub.API.RateLimiting;
 using BookingHub.Application;
 using BookingHub.Infrastructure;
 using BookingHub.Infrastructure.BackgroundJobs;
 using BookingHub.Infrastructure.Identity;
 using BookingHub.Infrastructure.Logging;
 using BookingHub.Infrastructure.Persistence;
-using Microsoft.AspNetCore.HttpOverrides;
 using System.Text.Json.Serialization;
-using System.Threading.RateLimiting;
 using Hangfire;
 using Scalar.AspNetCore;
 using Serilog;
@@ -42,44 +41,8 @@ try
             policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod());
     });
 
-    builder.Services.Configure<ForwardedHeadersOptions>(options =>
-    {
-        options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
-        // KnownProxies/KnownNetworks intentionally left at their defaults (trust none) here —
-        // a real deployment must add its actual reverse proxy's address explicitly; trusting
-        // X-Forwarded-For from an unconfigured wildcard would let any client spoof its own IP
-        // and trivially bypass the per-IP limits below.
-    });
-
-    builder.Services.AddRateLimiter(options =>
-    {
-        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
-        var publicReadLimit = builder.Configuration.GetValue("RateLimiting:PublicReadPermitLimit", 60);
-        var publicWriteLimit = builder.Configuration.GetValue("RateLimiting:PublicWritePermitLimit", 10);
-
-        options.AddPolicy("public-read", context => RateLimitPartition.GetSlidingWindowLimiter(
-            GetPartitionKey(context),
-            _ => new SlidingWindowRateLimiterOptions
-            {
-                Window = TimeSpan.FromMinutes(1),
-                SegmentsPerWindow = 4,
-                PermitLimit = publicReadLimit,
-                QueueLimit = 0
-            }));
-
-        options.AddPolicy("public-write", context => RateLimitPartition.GetSlidingWindowLimiter(
-            GetPartitionKey(context),
-            _ => new SlidingWindowRateLimiterOptions
-            {
-                Window = TimeSpan.FromMinutes(1),
-                SegmentsPerWindow = 4,
-                PermitLimit = publicWriteLimit,
-                QueueLimit = 0
-            }));
-
-        static string GetPartitionKey(HttpContext context) => context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-    });
+    builder.Services.AddTrustedProxies(builder.Configuration);
+    builder.Services.AddApiRateLimiting(builder.Configuration);
 
     var app = builder.Build();
 
@@ -89,9 +52,9 @@ try
     app.UseExceptionHandler();
 
     app.UseRouting();
-    app.UseRateLimiter();
     app.UseCors("Default");
     app.UseAuthentication();
+    app.UseRateLimiter(); // after authentication: signed-in users are limited per user
     app.UseAuthorization();
     app.UseMiddleware<TenantResolutionMiddleware>();
 

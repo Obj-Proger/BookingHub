@@ -1,4 +1,5 @@
-﻿using BookingHub.API.Tests.TestDoubles;
+﻿using BookingHub.API.RateLimiting;
+using BookingHub.API.Tests.TestDoubles;
 using BookingHub.Infrastructure.Notifications;
 using BookingHub.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
@@ -11,6 +12,15 @@ namespace BookingHub.API.Tests;
 
 public sealed class ApiWebApplicationFactory(string connectionString, bool relaxRateLimits = true) : WebApplicationFactory<Program>
 {
+    private static readonly string[] RelaxableLimits =
+    [
+        nameof(RateLimitingOptions.PublicReadPermitLimit),
+        nameof(RateLimitingOptions.PublicWritePermitLimit),
+        nameof(RateLimitingOptions.SignInPermitLimit),
+        nameof(RateLimitingOptions.SessionPermitLimit),
+        nameof(RateLimitingOptions.AuthenticatedPermitLimit)
+    ];
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("ConnectionStrings:Database", connectionString);
@@ -23,7 +33,10 @@ public sealed class ApiWebApplicationFactory(string connectionString, bool relax
         // real limit by accident. RateLimitingTests explicitly passes false because verifying
         // the actual production default is the entire point of that test.
         if (relaxRateLimits)
-            builder.UseSetting("RateLimiting:PublicWritePermitLimit", "10000");
+        {
+            foreach (var limit in RelaxableLimits)
+                builder.UseSetting($"RateLimiting:{limit}", "10000");
+        }
 
         builder.ConfigureServices(services =>
         {

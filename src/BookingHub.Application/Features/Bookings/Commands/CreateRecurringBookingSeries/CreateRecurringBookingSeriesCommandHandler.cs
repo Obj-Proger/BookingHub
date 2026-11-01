@@ -29,8 +29,13 @@ internal sealed class CreateRecurringBookingSeriesCommandHandler(
             return Result.Failure<RecurringBookingSeriesCreatedResponse>(contactResult.Error);
 
         var clientContact = contactResult.Value;
-        var seriesId = Guid.CreateVersion7();
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
+
+        var client = await clientRepository.GetByPhoneAsync(clientContact.Phone, cancellationToken);
+        if (await BookingRequestLimit.IsReachedAsync(bookingRepository, command.OrganizationId, client, utcNow, cancellationToken))
+            return Result.Failure<RecurringBookingSeriesCreatedResponse>(ApplicationErrors.Booking.TooManyRequests);
+
+        var seriesId = Guid.CreateVersion7();
 
         var createdBookings = new List<Booking>();
         var skippedStarts = new List<DateTime>();
@@ -59,7 +64,6 @@ internal sealed class CreateRecurringBookingSeriesCommandHandler(
         if (createdBookings.Count == 0)
             return Result.Failure<RecurringBookingSeriesCreatedResponse>(ApplicationErrors.Booking.NoOccurrenceAvailable);
 
-        var client = await clientRepository.GetByPhoneAsync(clientContact.Phone, cancellationToken);
         if (client is null)
         {
             client = Client.Create(clientContact);

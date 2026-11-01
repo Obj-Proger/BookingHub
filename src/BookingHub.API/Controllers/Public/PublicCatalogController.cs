@@ -1,4 +1,5 @@
 ﻿using BookingHub.API.Common;
+using BookingHub.API.RateLimiting;
 using BookingHub.Application.Common.Security;
 using BookingHub.Application.Features.Public.Queries.GetPublicEmployees;
 using BookingHub.Application.Features.Public.Queries.GetPublicLocations;
@@ -8,7 +9,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace BookingHub.API.Controllers.Public;
 
-[EnableRateLimiting("public-read")]
+[EnableRateLimiting(RateLimitPolicies.PublicRead)]
 [Route("api/v1/public/{organizationSlug}")]
 public sealed class PublicCatalogController(IDispatcher dispatcher, ICurrentTenant currentTenant) : PublicApiControllerBase(currentTenant)
 {

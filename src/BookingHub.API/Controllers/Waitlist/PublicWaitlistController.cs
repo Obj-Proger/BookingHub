@@ -1,4 +1,5 @@
 ﻿using BookingHub.API.Common;
+using BookingHub.API.RateLimiting;
 using BookingHub.Application.Common.Security;
 using BookingHub.Application.Features.Waitlist.Commands.ConfirmWaitlistOffer;
 using BookingHub.Application.Features.Waitlist.Commands.JoinWaitlist;
@@ -11,7 +12,7 @@ namespace BookingHub.API.Controllers.Waitlist;
 [Route("api/v1/public/{organizationSlug}/waitlist")]
 public sealed class PublicWaitlistController(IDispatcher dispatcher, ICurrentTenant currentTenant) : PublicApiControllerBase(currentTenant)
 {
-    [EnableRateLimiting("public-write")]
+    [EnableRateLimiting(RateLimitPolicies.PublicWrite)]
     [HttpPost]
     public async Task<IActionResult> Join(JoinWaitlistRequest request, CancellationToken cancellationToken)
     {
@@ -23,7 +24,7 @@ public sealed class PublicWaitlistController(IDispatcher dispatcher, ICurrentTen
         return HandleResult(result);
     }
 
-    [EnableRateLimiting("public-write")]
+    [EnableRateLimiting(RateLimitPolicies.PublicWrite)]
     [HttpPost("{waitlistEntryId:guid}/confirm")]
     public async Task<IActionResult> ConfirmOffer(Guid waitlistEntryId, ConfirmWaitlistOfferRequest request, CancellationToken cancellationToken)
     {
@@ -31,7 +32,7 @@ public sealed class PublicWaitlistController(IDispatcher dispatcher, ICurrentTen
         return HandleResult(result);
     }
 
-    [EnableRateLimiting("public-write")]
+    [EnableRateLimiting(RateLimitPolicies.PublicWrite)]
     [HttpPost("{waitlistEntryId:guid}/leave")]
     public async Task<IActionResult> Leave(Guid waitlistEntryId, LeaveWaitlistRequest request, CancellationToken cancellationToken)
     {

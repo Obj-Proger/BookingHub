@@ -29,4 +29,11 @@ public interface IBookingRepository
     /// when the guest confirms via the first occurrence's link.</summary>
     Task<IReadOnlyList<Booking>> GetPendingSiblingsInSeriesAsync(
         Guid recurringSeriesId, Guid excludingBookingId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// How many bookings the client requested through the public booking page since
+    /// <paramref name="sinceUtc"/>; a recurring series counts as one request.
+    /// </summary>
+    Task<int> CountPublicRequestsSinceAsync(
+        Guid organizationId, Guid clientId, DateTime sinceUtc, CancellationToken cancellationToken);
 }

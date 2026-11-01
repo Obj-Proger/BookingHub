@@ -9,7 +9,7 @@
     <HeadOutlet @rendermode="RenderModeForPage" />
 </head>
 <body>
-    <Routes @rendermode="RenderModeForPage" />
+    <Routes @rendermode="RenderModeForPage" RemoteAddress="@HttpContext.Connection.RemoteIpAddress?.ToString()" />
     <script src="_framework/blazor.web.js"></script>
 </body>
 </html>

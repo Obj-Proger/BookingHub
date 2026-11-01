@@ -1,4 +1,5 @@
 ﻿using BookingHub.API.Common;
+using BookingHub.API.RateLimiting;
 using BookingHub.Application.Common.Security;
 using BookingHub.Application.Features.Bookings.Commands.CancelBooking;
 using BookingHub.Application.Features.Bookings.Commands.ConfirmBooking;
@@ -15,7 +16,7 @@ namespace BookingHub.API.Controllers.Bookings;
 [Route("api/v1/public/{organizationSlug}")]
 public sealed class PublicBookingsController(IDispatcher dispatcher, ICurrentTenant currentTenant) : PublicApiControllerBase(currentTenant)
 {
-    [EnableRateLimiting("public-read")]
+    [EnableRateLimiting(RateLimitPolicies.PublicRead)]
     [HttpGet("locations/{locationId:guid}/employees/{employeeId:guid}/services/{serviceId:guid}/availability")]
     public async Task<IActionResult> GetAvailableSlots(
         Guid locationId, Guid employeeId, Guid serviceId, [FromQuery] DateOnly date, CancellationToken cancellationToken)
@@ -25,7 +26,7 @@ public sealed class PublicBookingsController(IDispatcher dispatcher, ICurrentTen
         return HandleResult(result);
     }
 
-    [EnableRateLimiting("public-read")]
+    [EnableRateLimiting(RateLimitPolicies.PublicRead)]
     [HttpGet("bookings/{bookingId:guid}")]
     public async Task<IActionResult> Get(Guid bookingId, [FromQuery] string? token, CancellationToken cancellationToken)
     {
@@ -33,7 +34,7 @@ public sealed class PublicBookingsController(IDispatcher dispatcher, ICurrentTen
         return HandleResult(result);
     }
 
-    [EnableRateLimiting("public-write")]
+    [EnableRateLimiting(RateLimitPolicies.PublicWrite)]
     [HttpPost("bookings")]
     public async Task<IActionResult> Create(CreateBookingRequest request, CancellationToken cancellationToken)
     {
@@ -45,7 +46,7 @@ public sealed class PublicBookingsController(IDispatcher dispatcher, ICurrentTen
         return HandleResult(result);
     }
 
-    [EnableRateLimiting("public-write")]
+    [EnableRateLimiting(RateLimitPolicies.PublicWrite)]
     [HttpPost("bookings/series")]
     public async Task<IActionResult> CreateSeries(CreateRecurringBookingSeriesRequest request, CancellationToken cancellationToken)
     {
@@ -57,7 +58,7 @@ public sealed class PublicBookingsController(IDispatcher dispatcher, ICurrentTen
         return HandleResult(result);
     }
 
-    [EnableRateLimiting("public-write")]
+    [EnableRateLimiting(RateLimitPolicies.PublicWrite)]
     [HttpPost("bookings/{bookingId:guid}/confirm")]
     public async Task<IActionResult> Confirm(Guid bookingId, ConfirmBookingRequest request, CancellationToken cancellationToken)
     {
@@ -65,7 +66,7 @@ public sealed class PublicBookingsController(IDispatcher dispatcher, ICurrentTen
         return HandleResult(result);
     }
 
-    [EnableRateLimiting("public-write")]
+    [EnableRateLimiting(RateLimitPolicies.PublicWrite)]
     [HttpPost("bookings/{bookingId:guid}/cancel")]
     public async Task<IActionResult> Cancel(Guid bookingId, CancelBookingRequest request, CancellationToken cancellationToken)
     {
@@ -73,7 +74,7 @@ public sealed class PublicBookingsController(IDispatcher dispatcher, ICurrentTen
         return HandleResult(result);
     }
 
-    [EnableRateLimiting("public-write")]
+    [EnableRateLimiting(RateLimitPolicies.PublicWrite)]
     [HttpPost("bookings/{bookingId:guid}/reschedule")]
     public async Task<IActionResult> Reschedule(Guid bookingId, RescheduleBookingRequest request, CancellationToken cancellationToken)
     {

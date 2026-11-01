@@ -59,6 +59,7 @@ public static class ApplicationErrors
         public static readonly Error InvalidConfirmationToken = Error.Forbidden("Booking.InvalidConfirmationToken", "The confirmation token is invalid.");
         public static readonly Error InvalidManagementToken = Error.Forbidden("Booking.InvalidManagementToken", "The management token is invalid.");
         public static readonly Error CancellationDeadlinePassed = Error.Conflict("Booking.CancellationDeadlinePassed", "This booking can no longer be cancelled or rescheduled — the deadline has passed.");
+        public static readonly Error TooManyRequests = Error.RateLimited("Booking.TooManyRequests", "Too many booking requests for this phone number. Please try again in an hour.");
     }
 
     public static class WaitlistEntry

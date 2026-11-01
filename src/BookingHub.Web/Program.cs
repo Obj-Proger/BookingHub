@@ -1,6 +1,7 @@
 ﻿using BookingHub.Web.Api;
 using BookingHub.Web.Auth;
 using BookingHub.Web.Components;
+using BookingHub.Web.Forwarding;
 using BookingHub.Web.Localization;
 using BookingHub.Web.Services;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -14,6 +15,8 @@ builder.Services.AddLocalization();
 
 builder.Services.TryAddSingleton(TimeProvider.System);
 builder.Services.AddStaffAuthentication();
+builder.Services.AddTrustedProxies(builder.Configuration);
+builder.Services.AddClientAddressForwarding();
 
 var apiBaseUrl = ReadApiBaseUrl(builder.Configuration);
 
@@ -45,6 +48,8 @@ builder.Services.AddScoped<IMembersApiClient, MembersApiClient>();
 builder.Services.AddScoped<MembershipCache>();
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 if (!app.Environment.IsDevelopment())
 {

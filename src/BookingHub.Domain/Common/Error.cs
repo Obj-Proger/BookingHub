@@ -11,7 +11,8 @@ public enum ErrorType
     NotFound,
     Conflict,
     Unauthorized,
-    Forbidden
+    Forbidden,
+    RateLimited
 }
 
 /// <summary>
@@ -47,4 +48,7 @@ public sealed record Error(string Code, string Message, ErrorType Type)
 
     /// <summary>Creates an error indicating the caller is authenticated but lacks permission.</summary>
     public static Error Forbidden(string code, string message) => new(code, message, ErrorType.Forbidden);
+
+    /// <summary>Creates an error indicating the caller has made too many such requests and must wait.</summary>
+    public static Error RateLimited(string code, string message) => new(code, message, ErrorType.RateLimited);
 }

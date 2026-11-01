@@ -6,7 +6,7 @@ using Testcontainers.PostgreSql;
 namespace BookingHub.API.Tests;
 
 /// <summary>
-/// Deliberately not part of ApiCollection. This test intentionally exhausts the "public-write"
+/// Deliberately not part of ApiCollection. This test intentionally exhausts the "sign-in"
 /// rate-limit bucket, which lives as one mutable, per-host singleton — TestServer's in-memory
 /// transport doesn't give each test its own RemoteIpAddress, so every test sharing one host
 /// shares one partition key. Running this against the shared collection host silently ate into
@@ -33,7 +33,7 @@ public sealed class RateLimitingTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task PublicWriteEndpoint_ExceedsLimit_ReturnsTooManyRequests()
+    public async Task SignInEndpoint_ExceedsLimit_ReturnsTooManyRequests()
     {
         var client = _factory.CreateClient();
 
