@@ -1,5 +1,5 @@
-﻿using BookingHub.Application.Common.Notifications;
-using BookingHub.API.Tests.TestDoubles;
+﻿using BookingHub.API.Tests.TestDoubles;
+using BookingHub.Infrastructure.Notifications;
 using BookingHub.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;

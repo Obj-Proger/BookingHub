@@ -10,19 +10,15 @@ namespace BookingHub.Application.Tests.Features.Waitlist;
 public class WaitlistSlotOfferedNotificationHandlerTests
 {
     private readonly IWaitlistEntryRepository _waitlistEntryRepository = Substitute.For<IWaitlistEntryRepository>();
-    private readonly IOrganizationRepository _organizationRepository = Substitute.For<IOrganizationRepository>();
-    private readonly IWebLinkBuilder _linkBuilder = Substitute.For<IWebLinkBuilder>();
-    private readonly IEmailService _emailService = Substitute.For<IEmailService>();
-    private readonly ISmsService _smsService = Substitute.For<ISmsService>();
+    private readonly IGuestMessages _guestMessages = Substitute.For<IGuestMessages>();
 
-    private WaitlistSlotOfferedNotificationHandler CreateSut() =>
-        new(_waitlistEntryRepository, _organizationRepository, _linkBuilder, _emailService, _smsService);
+    private WaitlistSlotOfferedNotificationHandler CreateSut() => new(_waitlistEntryRepository, _guestMessages);
 
-    private static WaitlistEntry CreateOfferedEntry(Email? email = null)
+    private static WaitlistEntry CreateOfferedEntry()
     {
         var entry = WaitlistEntry.Create(
             Guid.CreateVersion7(), Guid.CreateVersion7(), null, Guid.CreateVersion7(),
-            ClientContact.Create(PhoneNumber.Create("+14155552671").Value, email: email).Value,
+            ClientContact.Create(PhoneNumber.Create("+14155552671").Value).Value,
             TimeSlot.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddHours(1)).Value, DateTime.UtcNow).Value;
         entry.Offer(
             Guid.CreateVersion7(), TimeSlot.Create(DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddHours(1)).Value,
@@ -34,20 +30,7 @@ public class WaitlistSlotOfferedNotificationHandlerTests
         new(entry.Id, entry.OrganizationId, entry.ClientContact, entry.OfferedSlot!, entry.OfferExpiresAtUtc!.Value, DateTime.UtcNow);
 
     [Fact]
-    public async Task Handle_EntryHasEmail_SendsBothEmailAndSms()
-    {
-        var entry = CreateOfferedEntry(Email.Create("guest@example.com").Value);
-        _waitlistEntryRepository.GetByIdAsync(entry.Id, Arg.Any<CancellationToken>()).Returns(entry);
-        var sut = CreateSut();
-
-        await sut.Handle(CreateEvent(entry), CancellationToken.None);
-
-        await _emailService.Received(1).SendAsync(Arg.Is<EmailMessage>(m => m!.ToAddress == "guest@example.com"), Arg.Any<CancellationToken>());
-        await _smsService.Received(1).SendAsync(Arg.Any<SmsMessage>(), Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task Handle_EntryHasNoEmail_SendsOnlySms()
+    public async Task Handle_EntryStillOffered_TellsTheGuest()
     {
         var entry = CreateOfferedEntry();
         _waitlistEntryRepository.GetByIdAsync(entry.Id, Arg.Any<CancellationToken>()).Returns(entry);
@@ -55,24 +38,21 @@ public class WaitlistSlotOfferedNotificationHandlerTests
 
         await sut.Handle(CreateEvent(entry), CancellationToken.None);
 
-        await _emailService.DidNotReceive().SendAsync(Arg.Any<EmailMessage>(), Arg.Any<CancellationToken>());
-        await _smsService.Received(1).SendAsync(Arg.Any<SmsMessage>(), Arg.Any<CancellationToken>());
+        await _guestMessages.Received(1).WaitlistSlotOfferedAsync(entry, Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task Handle_EntryExists_SendsAbsoluteLinkToTheOfferPage()
+    public async Task Handle_OfferNoLongerOpen_SendsNothing()
     {
         var entry = CreateOfferedEntry();
+        var domainEvent = CreateEvent(entry);
+        entry.Cancel(DateTime.UtcNow);
         _waitlistEntryRepository.GetByIdAsync(entry.Id, Arg.Any<CancellationToken>()).Returns(entry);
-        _organizationRepository.GetSlugAsync(entry.OrganizationId, Arg.Any<CancellationToken>()).Returns("acme");
-        var expectedPath = $"/book/acme/waitlist/{entry.Id}?token={entry.ManagementToken.Value}";
-        _linkBuilder.Build(expectedPath).Returns($"https://app.test{expectedPath}");
         var sut = CreateSut();
 
-        await sut.Handle(CreateEvent(entry), CancellationToken.None);
+        await sut.Handle(domainEvent, CancellationToken.None);
 
-        await _smsService.Received(1).SendAsync(
-            Arg.Is<SmsMessage>(m => m!.Body.Contains($"https://app.test{expectedPath}")), Arg.Any<CancellationToken>());
+        await _guestMessages.DidNotReceive().WaitlistSlotOfferedAsync(Arg.Any<WaitlistEntry>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -86,7 +66,6 @@ public class WaitlistSlotOfferedNotificationHandlerTests
 
         await sut.Handle(domainEvent, CancellationToken.None);
 
-        await _emailService.DidNotReceive().SendAsync(Arg.Any<EmailMessage>(), Arg.Any<CancellationToken>());
-        await _smsService.DidNotReceive().SendAsync(Arg.Any<SmsMessage>(), Arg.Any<CancellationToken>());
+        await _guestMessages.DidNotReceive().WaitlistSlotOfferedAsync(Arg.Any<WaitlistEntry>(), Arg.Any<CancellationToken>());
     }
 }

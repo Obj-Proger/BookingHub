@@ -1,4 +1,5 @@
-﻿using BookingHub.Application.Common;
+﻿using BookingHub.Application.Common.Notifications;
+using BookingHub.Application.Common;
 using BookingHub.Application.Common.Messaging;
 using BookingHub.Application.Common.Persistence;
 using BookingHub.Domain.ValueObjects;
@@ -7,7 +8,8 @@ using Microsoft.EntityFrameworkCore;
 namespace BookingHub.Application.Features.Bookings.Commands.CancelBooking;
 
 internal sealed class CancelBookingCommandHandler(
-    IBookingRepository bookingRepository, IApplicationDbContext dbContext, IUnitOfWork unitOfWork, TimeProvider timeProvider)
+    IBookingRepository bookingRepository, IApplicationDbContext dbContext, IGuestMessages guestMessages, IUnitOfWork unitOfWork,
+    TimeProvider timeProvider)
     : ICommandHandler<CancelBookingCommand>
 {
     public async Task<Result> Handle(CancelBookingCommand command, CancellationToken cancellationToken)
@@ -34,6 +36,7 @@ internal sealed class CancelBookingCommandHandler(
         if (cancelResult.IsFailure)
             return cancelResult;
 
+        await guestMessages.BookingCancelledAsync(booking, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return Result.Success();
     }

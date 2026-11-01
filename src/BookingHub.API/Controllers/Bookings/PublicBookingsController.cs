@@ -35,11 +35,11 @@ public sealed class PublicBookingsController(IDispatcher dispatcher, ICurrentTen
 
     [EnableRateLimiting("public-write")]
     [HttpPost("bookings")]
-    public async Task<IActionResult> Create(string organizationSlug, CreateBookingRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Create(CreateBookingRequest request, CancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(
             new CreateBookingCommand(
-                OrganizationId, organizationSlug, request.LocationId, request.EmployeeId, request.ServiceId, request.StartUtc,
+                OrganizationId, request.LocationId, request.EmployeeId, request.ServiceId, request.StartUtc,
                 request.Phone, request.ClientName, request.ClientEmail),
             cancellationToken);
         return HandleResult(result);
@@ -47,11 +47,11 @@ public sealed class PublicBookingsController(IDispatcher dispatcher, ICurrentTen
 
     [EnableRateLimiting("public-write")]
     [HttpPost("bookings/series")]
-    public async Task<IActionResult> CreateSeries(string organizationSlug, CreateRecurringBookingSeriesRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateSeries(CreateRecurringBookingSeriesRequest request, CancellationToken cancellationToken)
     {
         var result = await dispatcher.Send(
             new CreateRecurringBookingSeriesCommand(
-                OrganizationId, organizationSlug, request.LocationId, request.EmployeeId, request.ServiceId, request.FirstStartUtc,
+                OrganizationId, request.LocationId, request.EmployeeId, request.ServiceId, request.FirstStartUtc,
                 request.IntervalWeeks, request.OccurrenceCount, request.Phone, request.ClientName, request.ClientEmail),
             cancellationToken);
         return HandleResult(result);
@@ -59,9 +59,9 @@ public sealed class PublicBookingsController(IDispatcher dispatcher, ICurrentTen
 
     [EnableRateLimiting("public-write")]
     [HttpPost("bookings/{bookingId:guid}/confirm")]
-    public async Task<IActionResult> Confirm(string organizationSlug, Guid bookingId, ConfirmBookingRequest request, CancellationToken cancellationToken)
+    public async Task<IActionResult> Confirm(Guid bookingId, ConfirmBookingRequest request, CancellationToken cancellationToken)
     {
-        var result = await dispatcher.Send(new ConfirmBookingCommand(bookingId, organizationSlug, request.Token), cancellationToken);
+        var result = await dispatcher.Send(new ConfirmBookingCommand(bookingId, request.Token), cancellationToken);
         return HandleResult(result);
     }
 

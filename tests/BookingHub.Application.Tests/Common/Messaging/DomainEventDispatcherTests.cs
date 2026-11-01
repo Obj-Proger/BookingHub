@@ -4,7 +4,7 @@ namespace BookingHub.Application.Tests.Common.Messaging;
 
 public class DomainEventDispatcherTests
 {
-    private sealed record TestEvent(DateTime OccurredOnUtc) : IDomainEvent;
+    private sealed record TestEvent(Guid OrganizationId, DateTime OccurredOnUtc) : IDomainEvent;
 
     private sealed class RecordingHandler(List<string> log, string name) : IDomainEventHandler<TestEvent>
     {
@@ -20,7 +20,7 @@ public class DomainEventDispatcherTests
     {
         var dispatcher = new DomainEventDispatcher(new ServiceCollection().BuildServiceProvider());
 
-        var act = async () => await dispatcher.DispatchAsync([new TestEvent(DateTime.UtcNow)], CancellationToken.None);
+        var act = async () => await dispatcher.DispatchAsync([new TestEvent(Guid.CreateVersion7(), DateTime.UtcNow)], CancellationToken.None);
 
         await act.Should().NotThrowAsync();
     }
@@ -34,7 +34,7 @@ public class DomainEventDispatcherTests
         services.AddScoped<IDomainEventHandler<TestEvent>>(_ => new RecordingHandler(log, "Second"));
         var dispatcher = new DomainEventDispatcher(services.BuildServiceProvider());
 
-        await dispatcher.DispatchAsync([new TestEvent(DateTime.UtcNow)], CancellationToken.None);
+        await dispatcher.DispatchAsync([new TestEvent(Guid.CreateVersion7(), DateTime.UtcNow)], CancellationToken.None);
 
         log.Should().Equal("First", "Second");
     }
@@ -47,7 +47,7 @@ public class DomainEventDispatcherTests
         services.AddScoped<IDomainEventHandler<TestEvent>>(_ => new RecordingHandler(log, "Handled"));
         var dispatcher = new DomainEventDispatcher(services.BuildServiceProvider());
 
-        await dispatcher.DispatchAsync([new TestEvent(DateTime.UtcNow), new TestEvent(DateTime.UtcNow)], CancellationToken.None);
+        await dispatcher.DispatchAsync([new TestEvent(Guid.CreateVersion7(), DateTime.UtcNow), new TestEvent(Guid.CreateVersion7(), DateTime.UtcNow)], CancellationToken.None);
 
         log.Should().Equal("Handled", "Handled");
     }

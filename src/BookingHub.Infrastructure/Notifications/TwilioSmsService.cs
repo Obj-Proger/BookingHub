@@ -1,5 +1,4 @@
-﻿using BookingHub.Application.Common.Notifications;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Twilio.Clients;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Types;

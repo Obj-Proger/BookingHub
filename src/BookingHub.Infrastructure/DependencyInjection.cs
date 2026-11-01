@@ -4,6 +4,7 @@ using BookingHub.Application.Common.Security;
 using BookingHub.Infrastructure.BackgroundJobs;
 using BookingHub.Infrastructure.Identity;
 using BookingHub.Infrastructure.Notifications;
+using BookingHub.Infrastructure.Outbox;
 using BookingHub.Infrastructure.Persistence;
 using BookingHub.Infrastructure.Persistence.Interceptors;
 using BookingHub.Infrastructure.Persistence.Repositories;
@@ -25,13 +26,13 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddSingleton<AuditableEntitySaveChangesInterceptor>();
-        services.AddScoped<DomainEventDispatchingSaveChangesInterceptor>();
+        services.AddSingleton<DomainEventOutboxInterceptor>();
 
         services.AddDbContext<ApplicationDbContext>((sp, options) =>
             options.UseNpgsql(configuration.GetConnectionString("Database"))
                 .AddInterceptors(
                     sp.GetRequiredService<AuditableEntitySaveChangesInterceptor>(),
-                    sp.GetRequiredService<DomainEventDispatchingSaveChangesInterceptor>()));
+                    sp.GetRequiredService<DomainEventOutboxInterceptor>()));
 
         services.AddIdentityCore<ApplicationUser>(options =>
         {
@@ -83,6 +84,8 @@ public static class DependencyInjection
         });
 
         services.AddNotifications(configuration);
+        services.AddScoped<IGuestNotifier, OutboxGuestNotifier>();
+        services.AddHostedService<OutboxProcessor>();
 
         services.AddOptions<WebAppOptions>()
             .Bind(configuration.GetSection(WebAppOptions.SectionName))
@@ -120,6 +123,7 @@ public static class DependencyInjection
         services.AddHangfireServer();
         services.AddSingleton<TenantJobRunner>();
         services.AddScoped<BookingLifecycleJobs>();
+        services.AddScoped<OutboxCleanupJob>();
 
         return services;
     }

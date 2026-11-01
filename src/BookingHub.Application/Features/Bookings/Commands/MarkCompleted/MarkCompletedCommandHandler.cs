@@ -6,8 +6,7 @@ using BookingHub.Application.Common.Persistence;
 namespace BookingHub.Application.Features.Bookings.Commands.MarkCompleted;
 
 internal sealed class MarkCompletedCommandHandler(
-    IBookingRepository bookingRepository, IOrganizationRepository organizationRepository, IUnitOfWork unitOfWork,
-    IWebLinkBuilder linkBuilder, IEmailService emailService, ISmsService smsService, TimeProvider timeProvider)
+    IBookingRepository bookingRepository, IGuestMessages guestMessages, IUnitOfWork unitOfWork, TimeProvider timeProvider)
     : ICommandHandler<MarkCompletedCommand>
 {
     public async Task<Result> Handle(MarkCompletedCommand command, CancellationToken cancellationToken)
@@ -21,16 +20,8 @@ internal sealed class MarkCompletedCommandHandler(
         if (completeResult.IsFailure)
             return completeResult;
 
+        await guestMessages.ReviewRequestedAsync(booking, cancellationToken);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-
-        var slug = await organizationRepository.GetSlugAsync(booking.OrganizationId, cancellationToken);
-        var reviewLink = linkBuilder.Build($"/book/{slug}/review/{booking.Id}?token={booking.CancellationToken.Value}");
-        var body = $"Thanks for visiting! Mind leaving a quick review? {reviewLink}";
-
-        if (booking.ClientContact.Email is not null)
-            await emailService.SendAsync(new EmailMessage(booking.OrganizationId, booking.ClientContact.Email.Value, "How was your visit?", body), cancellationToken);
-
-        await smsService.SendAsync(new SmsMessage(booking.OrganizationId, booking.ClientContact.Phone.Value, body), cancellationToken);
 
         return Result.Success();
     }

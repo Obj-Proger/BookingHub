@@ -1,4 +1,5 @@
-﻿using BookingHub.Application.Common.Persistence;
+﻿using BookingHub.Application.Common.Notifications;
+using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Bookings.Commands.CancelBooking;
 using BookingHub.Domain.Entities;
 using BookingHub.Domain.Enums;
@@ -11,9 +12,10 @@ public class CancelBookingCommandHandlerTests
 {
     private readonly IBookingRepository _bookingRepository = Substitute.For<IBookingRepository>();
     private readonly IApplicationDbContext _dbContext = Substitute.For<IApplicationDbContext>();
+    private readonly IGuestMessages _guestMessages = Substitute.For<IGuestMessages>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
 
-    private CancelBookingCommandHandler CreateSut() => new(_bookingRepository, _dbContext, _unitOfWork, TimeProvider.System);
+    private CancelBookingCommandHandler CreateSut() => new(_bookingRepository, _dbContext, _guestMessages, _unitOfWork, TimeProvider.System);
 
     private void SetUpOrganizations(IEnumerable<Organization> organizations) =>
         _dbContext.Organizations.Returns(organizations.ToList().BuildMock());
@@ -42,6 +44,7 @@ public class CancelBookingCommandHandlerTests
 
         result.IsSuccess.Should().BeTrue();
         booking.Status.Should().Be(BookingStatus.Cancelled);
+        await _guestMessages.Received(1).BookingCancelledAsync(booking, Arg.Any<CancellationToken>());
     }
 
     [Fact]

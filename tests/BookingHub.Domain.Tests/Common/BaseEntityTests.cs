@@ -38,7 +38,7 @@ public class BaseEntityTests
     public void RaiseDomainEvent_AddsEventToDomainEvents()
     {
         var entity = new SampleEntity(Guid.CreateVersion7());
-        var domainEvent = new SampleDomainEvent(DateTime.UtcNow);
+        var domainEvent = new SampleDomainEvent(Guid.CreateVersion7(), DateTime.UtcNow);
 
         entity.RaiseSampleEvent(domainEvent);
 
@@ -49,7 +49,7 @@ public class BaseEntityTests
     public void ClearDomainEvents_RemovesAllRaisedEvents()
     {
         var entity = new SampleEntity(Guid.CreateVersion7());
-        entity.RaiseSampleEvent(new SampleDomainEvent(DateTime.UtcNow));
+        entity.RaiseSampleEvent(new SampleDomainEvent(Guid.CreateVersion7(), DateTime.UtcNow));
 
         entity.ClearDomainEvents();
 

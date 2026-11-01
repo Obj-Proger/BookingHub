@@ -1,4 +1,5 @@
-﻿using BookingHub.Application.Common;
+﻿using BookingHub.Application.Common.Notifications;
+using BookingHub.Application.Common;
 using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Bookings.Commands.RescheduleBooking;
 using BookingHub.Application.Features.Bookings;
@@ -13,10 +14,11 @@ public class RescheduleBookingCommandHandlerTests
 {
     private readonly IBookingRepository _bookingRepository = Substitute.For<IBookingRepository>();
     private readonly IApplicationDbContext _dbContext = Substitute.For<IApplicationDbContext>();
+    private readonly IGuestMessages _guestMessages = Substitute.For<IGuestMessages>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
 
     private RescheduleBookingCommandHandler CreateSut() =>
-        new(_bookingRepository, _dbContext, new SlotAvailabilityService(_dbContext, TimeProvider.System), _unitOfWork, TimeProvider.System);
+        new(_bookingRepository, _dbContext, new SlotAvailabilityService(_dbContext, TimeProvider.System), _guestMessages, _unitOfWork, TimeProvider.System);
 
     [Fact]
     public async Task Handle_NonUtcNewStartTime_FailsWithNotUtcError()

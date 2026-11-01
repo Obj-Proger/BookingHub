@@ -41,12 +41,12 @@ public class CreateRecurringBookingSeriesCommandHandlerTests(PostgreSqlFixture f
         await using var dbContext = fixture.CreateDbContext();
         var handler = new CreateRecurringBookingSeriesCommandHandler(
             new SlotAvailabilityService(dbContext, TimeProvider.System), new ClientRepository(dbContext), new BookingRepository(dbContext),
-            new NoOpEmailService(), new NoOpSmsService(), new FakeWebLinkBuilder(), new UnitOfWork(dbContext), TimeProvider.System);
+            new NoOpGuestMessages(), new UnitOfWork(dbContext), TimeProvider.System);
 
         var firstStart = DateTime.UtcNow.Date.AddDays(14).AddHours(10);
         var result = await handler.Handle(
             new CreateRecurringBookingSeriesCommand(
-                organization.Id, organization.Slug, location.Id, employee.Id, service.Id, firstStart,
+                organization.Id, location.Id, employee.Id, service.Id, firstStart,
                 IntervalWeeks: 1, OccurrenceCount: 3, Phone: "+14155552680", ClientName: "Jane Doe", ClientEmail: null),
             TestContext.Current.CancellationToken);
 
@@ -100,11 +100,11 @@ public class CreateRecurringBookingSeriesCommandHandlerTests(PostgreSqlFixture f
         await using var dbContext = fixture.CreateDbContext();
         var handler = new CreateRecurringBookingSeriesCommandHandler(
             new SlotAvailabilityService(dbContext, TimeProvider.System), new ClientRepository(dbContext), new BookingRepository(dbContext),
-            new NoOpEmailService(), new NoOpSmsService(), new FakeWebLinkBuilder(), new UnitOfWork(dbContext), TimeProvider.System);
+            new NoOpGuestMessages(), new UnitOfWork(dbContext), TimeProvider.System);
 
         var result = await handler.Handle(
             new CreateRecurringBookingSeriesCommand(
-                organization.Id, organization.Slug, location.Id, employee.Id, service.Id, firstStart,
+                organization.Id, location.Id, employee.Id, service.Id, firstStart,
                 IntervalWeeks: 1, OccurrenceCount: 3, Phone: "+14155552682", ClientName: "Jane Doe", ClientEmail: null),
             TestContext.Current.CancellationToken);
 
@@ -134,11 +134,11 @@ public class CreateRecurringBookingSeriesCommandHandlerTests(PostgreSqlFixture f
         await using var dbContext = fixture.CreateDbContext();
         var handler = new CreateRecurringBookingSeriesCommandHandler(
             new SlotAvailabilityService(dbContext, TimeProvider.System), new ClientRepository(dbContext), new BookingRepository(dbContext),
-            new NoOpEmailService(), new NoOpSmsService(), new FakeWebLinkBuilder(), new UnitOfWork(dbContext), TimeProvider.System);
+            new NoOpGuestMessages(), new UnitOfWork(dbContext), TimeProvider.System);
 
         var result = await handler.Handle(
             new CreateRecurringBookingSeriesCommand(
-                organization.Id, organization.Slug, location.Id, employee.Id, service.Id, DateTime.UtcNow.Date.AddDays(14).AddHours(10),
+                organization.Id, location.Id, employee.Id, service.Id, DateTime.UtcNow.Date.AddDays(14).AddHours(10),
                 IntervalWeeks: 1, OccurrenceCount: 3, Phone: "+14155552683", ClientName: "Jane Doe", ClientEmail: null),
             TestContext.Current.CancellationToken);
 

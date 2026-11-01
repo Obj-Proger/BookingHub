@@ -1,10 +1,11 @@
 ﻿using BookingHub.Application.Common.Messaging;
+using BookingHub.Application.Common.Notifications;
 using BookingHub.Application.Common.Persistence;
 
 namespace BookingHub.Application.Features.Bookings.Commands.AutoCompleteBookings;
 
 internal sealed class AutoCompleteBookingsCommandHandler(
-    IBookingRepository bookingRepository, IUnitOfWork unitOfWork, TimeProvider timeProvider)
+    IBookingRepository bookingRepository, IGuestMessages guestMessages, IUnitOfWork unitOfWork, TimeProvider timeProvider)
     : ICommandHandler<AutoCompleteBookingsCommand, int>
 {
     public async Task<Result<int>> Handle(AutoCompleteBookingsCommand command, CancellationToken cancellationToken)
@@ -15,8 +16,12 @@ internal sealed class AutoCompleteBookingsCommandHandler(
         var completedCount = 0;
         foreach (var booking in bookings)
         {
-            if (booking.Complete(utcNow).IsSuccess)
-                completedCount++;
+            if (booking.Complete(utcNow).IsFailure)
+                continue;
+
+            // Same review request as when staff mark the visit completed themselves.
+            await guestMessages.ReviewRequestedAsync(booking, cancellationToken);
+            completedCount++;
         }
 
         await unitOfWork.SaveChangesAsync(cancellationToken);

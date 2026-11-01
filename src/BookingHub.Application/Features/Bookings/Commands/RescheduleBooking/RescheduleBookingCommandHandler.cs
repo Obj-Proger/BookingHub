@@ -1,4 +1,5 @@
-﻿using BookingHub.Application.Common;
+﻿using BookingHub.Application.Common.Notifications;
+using BookingHub.Application.Common;
 using BookingHub.Application.Common.Messaging;
 using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Bookings.DTOs;
@@ -11,6 +12,7 @@ internal sealed class RescheduleBookingCommandHandler(
     IBookingRepository bookingRepository,
     IApplicationDbContext dbContext,
     SlotAvailabilityService slotAvailability,
+    IGuestMessages guestMessages,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider)
     : ICommandHandler<RescheduleBookingCommand, BookingCreatedResponse>
@@ -48,6 +50,8 @@ internal sealed class RescheduleBookingCommandHandler(
         var rescheduleResult = booking.Reschedule(slotResult.Value.Slot, utcNow);
         if (rescheduleResult.IsFailure)
             return Result.Failure<BookingCreatedResponse>(rescheduleResult.Error);
+
+        await guestMessages.BookingRescheduledAsync(booking, cancellationToken);
 
         try
         {

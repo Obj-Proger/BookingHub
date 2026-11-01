@@ -6,6 +6,6 @@ public interface IHasDomainEvents
     /// <summary>Gets the collection of domain events raised by this aggregate.</summary>
     IReadOnlyList<IDomainEvent> DomainEvents { get; }
 
-    /// <summary>Clears all domain events after they have been dispatched.</summary>
+    /// <summary>Clears all domain events once they have been stored for dispatch.</summary>
     void ClearDomainEvents();
 }

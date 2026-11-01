@@ -1,4 +1,5 @@
-﻿using BookingHub.Application.Common.Persistence;
+﻿using BookingHub.Application.Common.Notifications;
+using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Bookings.Commands.AutoCompleteBookings;
 using BookingHub.Application.Features.Bookings.Commands.ExpirePendingBookings;
 using BookingHub.Application.Features.Bookings.Commands.TransitionBookingsToAwaitingReview;
@@ -77,11 +78,13 @@ public class BackgroundLifecycleCommandHandlerTests
         booking.TransitionToAwaitingReview(DateTime.UtcNow.AddHours(4));
         _bookingRepository.GetAwaitingReviewBookingsPastAutoCompleteWindowAsync(OrganizationId, Arg.Any<DateTime>(), Arg.Any<CancellationToken>())
             .Returns([booking]);
-        var sut = new AutoCompleteBookingsCommandHandler(_bookingRepository, _unitOfWork, TimeProvider.System);
+        var guestMessages = Substitute.For<IGuestMessages>();
+        var sut = new AutoCompleteBookingsCommandHandler(_bookingRepository, guestMessages, _unitOfWork, TimeProvider.System);
 
         var result = await sut.Handle(new AutoCompleteBookingsCommand(OrganizationId), CancellationToken.None);
 
         result.Value.Should().Be(1);
         booking.Status.Should().Be(BookingStatus.Completed);
+        await guestMessages.Received(1).ReviewRequestedAsync(booking, Arg.Any<CancellationToken>());
     }
 }

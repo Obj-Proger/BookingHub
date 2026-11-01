@@ -3,6 +3,7 @@ using BookingHub.Application.Common.Security;
 using BookingHub.Domain.Entities;
 using BookingHub.Domain.Enums;
 using BookingHub.Infrastructure.Identity;
+using BookingHub.Infrastructure.Outbox;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -25,6 +26,7 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
     public DbSet<WaitlistEntry> WaitlistEntries => Set<WaitlistEntry>();
     public DbSet<Review> Reviews => Set<Review>();
     internal DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    internal DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     // DbSet<T> implements IQueryable<T>, but a property declared as DbSet<T> does not
     // automatically satisfy an interface member declared as IQueryable<T> — the two are

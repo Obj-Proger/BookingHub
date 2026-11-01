@@ -1,31 +1,27 @@
 ﻿using BookingHub.Application.Common.Messaging;
 using BookingHub.Application.Common.Notifications;
 using BookingHub.Application.Common.Persistence;
+using BookingHub.Domain.Enums;
 using BookingHub.Domain.Events;
 
 namespace BookingHub.Application.Features.Waitlist.EventHandlers;
 
+/// <summary>
+/// Tells the guest about the offer. The event is handled after the offer was committed, possibly
+/// seconds later, so the entry is read again: an offer that has since been accepted, cancelled or
+/// expired is not announced.
+/// </summary>
 internal sealed class WaitlistSlotOfferedNotificationHandler(
-    IWaitlistEntryRepository waitlistEntryRepository,
-    IOrganizationRepository organizationRepository,
-    IWebLinkBuilder linkBuilder,
-    IEmailService emailService,
-    ISmsService smsService)
+    IWaitlistEntryRepository waitlistEntryRepository, IGuestMessages guestMessages)
     : IDomainEventHandler<WaitlistSlotOfferedEvent>
 {
     public async Task Handle(WaitlistSlotOfferedEvent domainEvent, CancellationToken cancellationToken)
     {
         var entry = await waitlistEntryRepository.GetByIdAsync(domainEvent.WaitlistEntryId, cancellationToken);
-        if (entry is null)
+        if (entry is null || entry.Status != WaitlistEntryStatus.Offered)
             return;
 
-        var slug = await organizationRepository.GetSlugAsync(entry.OrganizationId, cancellationToken);
-        var link = linkBuilder.Build($"/book/{slug}/waitlist/{entry.Id}?token={entry.ManagementToken.Value}");
-        var body = $"A slot opened up: {domainEvent.OfferedSlot.StartUtc:u}. Confirm by {domainEvent.OfferExpiresAtUtc:u}: {link}";
-
-        if (domainEvent.ClientContact.Email is not null)
-            await emailService.SendAsync(new EmailMessage(domainEvent.OrganizationId, domainEvent.ClientContact.Email.Value, "A slot opened up", body), cancellationToken);
-
-        await smsService.SendAsync(new SmsMessage(domainEvent.OrganizationId, domainEvent.ClientContact.Phone.Value, body), cancellationToken);
+        // Saved by the outbox processor together with marking this event processed.
+        await guestMessages.WaitlistSlotOfferedAsync(entry, cancellationToken);
     }
 }

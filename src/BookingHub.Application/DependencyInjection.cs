@@ -1,5 +1,6 @@
 ﻿using BookingHub.Application.Common.Behaviors;
 using BookingHub.Application.Common.Messaging;
+using BookingHub.Application.Common.Notifications;
 using BookingHub.Application.Common.Security;
 using BookingHub.Application.Features.Bookings;
 using BookingHub.Application.Features.Waitlist;
@@ -22,6 +23,7 @@ public static class DependencyInjection
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IWaitlistOfferService, WaitlistOfferService>();
         services.AddScoped<SlotAvailabilityService>();
+        services.AddScoped<IGuestMessages, GuestMessages>();
 
         RegisterOpenGenericImplementations(services, typeof(IRequestHandler<,>));
         RegisterOpenGenericImplementations(services, typeof(IDomainEventHandler<>));

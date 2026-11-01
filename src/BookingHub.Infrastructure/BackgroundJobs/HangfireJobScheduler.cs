@@ -31,5 +31,10 @@ public static class HangfireJobScheduler
             "auto-complete-bookings",
             job => job.AutoCompleteBookingsAsync(JobCancellationToken.Null),
             Cron.Hourly());
+
+        RecurringJob.AddOrUpdate<OutboxCleanupJob>(
+            "purge-processed-outbox-messages",
+            job => job.PurgeProcessedMessagesAsync(JobCancellationToken.Null),
+            Cron.Daily());
     }
 }

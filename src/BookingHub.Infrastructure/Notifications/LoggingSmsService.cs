@@ -1,5 +1,4 @@
-﻿using BookingHub.Application.Common.Notifications;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace BookingHub.Infrastructure.Notifications;
 

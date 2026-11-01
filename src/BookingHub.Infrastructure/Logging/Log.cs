@@ -24,9 +24,15 @@ internal static partial class Log
     [LoggerMessage(Level = LogLevel.Error, Message = "{CommandType} failed for organization {OrganizationId}")]
     public static partial void BackgroundCommandFailed(ILogger logger, Exception exception, string commandType, Guid organizationId);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Dispatching domain event {DomainEventType}")]
-    public static partial void DispatchingDomainEvent(ILogger logger, string domainEventType);
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Outbox message {MessageId} ({MessageType}) failed on attempt {Attempts}; it will be retried")]
+    public static partial void OutboxMessageFailed(ILogger logger, Exception exception, string messageType, Guid messageId, int attempts);
 
-    [LoggerMessage(Level = LogLevel.Error, Message = "Domain event dispatch failed for: {EventTypes}")]
-    public static partial void DomainEventDispatchFailed(ILogger logger, Exception exception, string eventTypes);
+    [LoggerMessage(Level = LogLevel.Error, Message = "Outbox message {MessageId} ({MessageType}) failed {Attempts} times and was abandoned")]
+    public static partial void OutboxMessageAbandoned(ILogger logger, Exception exception, string messageType, Guid messageId, int attempts);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Polling the outbox failed")]
+    public static partial void OutboxPollingFailed(ILogger logger, Exception exception);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Purged {Count} processed outbox messages")]
+    public static partial void PurgedOutboxMessages(ILogger logger, int count);
 }

@@ -13,9 +13,7 @@ internal sealed class CreateRecurringBookingSeriesCommandHandler(
     SlotAvailabilityService slotAvailability,
     IClientRepository clientRepository,
     IBookingRepository bookingRepository,
-    IEmailService emailService,
-    ISmsService smsService,
-    IWebLinkBuilder linkBuilder,
+    IGuestMessages guestMessages,
     IUnitOfWork unitOfWork,
     TimeProvider timeProvider)
     : ICommandHandler<CreateRecurringBookingSeriesCommand, RecurringBookingSeriesCreatedResponse>
@@ -78,24 +76,14 @@ internal sealed class CreateRecurringBookingSeriesCommandHandler(
             bookingRepository.Add(booking);
         }
 
+        // One message for the whole series: confirming the first visit confirms the rest.
+        await guestMessages.BookingRequestedAsync(createdBookings[0], createdBookings.Count, cancellationToken);
+
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        await SendConfirmationAsync(createdBookings[0], clientContact, createdBookings.Count, command.OrganizationSlug, cancellationToken);
 
         return new RecurringBookingSeriesCreatedResponse(
             seriesId,
             [.. createdBookings.Select(b => new BookingCreatedResponse(b.Id, b.TimeSlot.StartUtc, b.TimeSlot.EndUtc, b.Status))],
             skippedStarts);
-    }
-
-    private async Task SendConfirmationAsync(
-        Booking firstBooking, ClientContact clientContact, int occurrenceCount, string organizationSlug, CancellationToken cancellationToken)
-    {
-        var confirmationLink = linkBuilder.Build($"/book/{organizationSlug}/confirm/{firstBooking.Id}?token={firstBooking.ConfirmationToken.Value}");
-        var body = $"Confirm your {occurrenceCount}-visit series: {confirmationLink}";
-
-        if (clientContact.Email is not null)
-            await emailService.SendAsync(new EmailMessage(firstBooking.OrganizationId, clientContact.Email.Value, "Confirm your bookings", body), cancellationToken);
-
-        await smsService.SendAsync(new SmsMessage(firstBooking.OrganizationId, clientContact.Phone.Value, body), cancellationToken);
     }
 }
