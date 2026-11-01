@@ -1,4 +1,5 @@
-﻿using BookingHub.Application.Common;
+﻿using BookingHub.Application.Common.Security;
+using BookingHub.Application.Common;
 using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Organizations.Commands.CreateOrganization;
 using BookingHub.Application.Tests.TestDoubles;
@@ -11,11 +12,12 @@ public class CreateOrganizationCommandHandlerTests
 {
     private readonly IOrganizationRepository _organizationRepository = Substitute.For<IOrganizationRepository>();
     private readonly IOrganizationMemberRepository _organizationMemberRepository = Substitute.For<IOrganizationMemberRepository>();
+    private readonly ITenantScope _tenantScope = Substitute.For<ITenantScope>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private static readonly Guid CallerUserId = Guid.CreateVersion7();
 
     private CreateOrganizationCommandHandler CreateSut() =>
-        new(_organizationRepository, _organizationMemberRepository, new FakeCurrentUser(CallerUserId), _unitOfWork);
+        new(_organizationRepository, _organizationMemberRepository, new FakeCurrentUser(CallerUserId), _tenantScope, _unitOfWork);
 
     [Fact]
     public async Task Handle_ValidCommand_CreatesOrganizationAndOwnerMember()

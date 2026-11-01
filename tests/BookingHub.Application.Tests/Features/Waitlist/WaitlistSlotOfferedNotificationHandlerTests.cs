@@ -10,12 +10,13 @@ namespace BookingHub.Application.Tests.Features.Waitlist;
 public class WaitlistSlotOfferedNotificationHandlerTests
 {
     private readonly IWaitlistEntryRepository _waitlistEntryRepository = Substitute.For<IWaitlistEntryRepository>();
+    private readonly IOrganizationRepository _organizationRepository = Substitute.For<IOrganizationRepository>();
     private readonly IWebLinkBuilder _linkBuilder = Substitute.For<IWebLinkBuilder>();
     private readonly IEmailService _emailService = Substitute.For<IEmailService>();
     private readonly ISmsService _smsService = Substitute.For<ISmsService>();
 
     private WaitlistSlotOfferedNotificationHandler CreateSut() =>
-        new(_waitlistEntryRepository, _linkBuilder, _emailService, _smsService);
+        new(_waitlistEntryRepository, _organizationRepository, _linkBuilder, _emailService, _smsService);
 
     private static WaitlistEntry CreateOfferedEntry(Email? email = null)
     {
@@ -63,7 +64,8 @@ public class WaitlistSlotOfferedNotificationHandlerTests
     {
         var entry = CreateOfferedEntry();
         _waitlistEntryRepository.GetByIdAsync(entry.Id, Arg.Any<CancellationToken>()).Returns(entry);
-        var expectedPath = $"/book/waitlist/{entry.Id}?token={entry.ManagementToken.Value}";
+        _organizationRepository.GetSlugAsync(entry.OrganizationId, Arg.Any<CancellationToken>()).Returns("acme");
+        var expectedPath = $"/book/acme/waitlist/{entry.Id}?token={entry.ManagementToken.Value}";
         _linkBuilder.Build(expectedPath).Returns($"https://app.test{expectedPath}");
         var sut = CreateSut();
 

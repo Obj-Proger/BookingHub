@@ -1,4 +1,4 @@
-﻿@page "/book/waitlist/{WaitlistEntryId:guid}"
+﻿@page "/book/{OrganizationSlug}/waitlist/{WaitlistEntryId:guid}"
 @inject IPublicWaitlistApiClient WaitlistApiClient
 
 <PageTitle>A spot opened up</PageTitle>
@@ -22,6 +22,7 @@ else
 }
 
 @code {
+    [Parameter] public string OrganizationSlug { get; set; } = string.Empty;
     [Parameter] public Guid WaitlistEntryId { get; set; }
     [SupplyParameterFromQuery] public string? Token { get; set; }
 
@@ -35,7 +36,7 @@ else
         _errorMessage = null;
         try
         {
-            var succeeded = await WaitlistApiClient.ConfirmOfferAsync(WaitlistEntryId, Token, CancellationToken.None);
+            var succeeded = await WaitlistApiClient.ConfirmOfferAsync(OrganizationSlug, WaitlistEntryId, Token, CancellationToken.None);
             _outcome = succeeded ? "Booked! See you then." : null;
             if (!succeeded)
                 _errorMessage = "This offer may have expired or already been taken.";
@@ -52,7 +53,7 @@ else
         _errorMessage = null;
         try
         {
-            var succeeded = await WaitlistApiClient.LeaveAsync(WaitlistEntryId, Token, CancellationToken.None);
+            var succeeded = await WaitlistApiClient.LeaveAsync(OrganizationSlug, WaitlistEntryId, Token, CancellationToken.None);
             _outcome = succeeded ? "You've been removed from the waitlist." : null;
             if (!succeeded)
                 _errorMessage = "Couldn't update your waitlist entry — this link may be invalid.";

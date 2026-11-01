@@ -7,6 +7,7 @@ namespace BookingHub.Application.Features.Waitlist.EventHandlers;
 
 internal sealed class WaitlistSlotOfferedNotificationHandler(
     IWaitlistEntryRepository waitlistEntryRepository,
+    IOrganizationRepository organizationRepository,
     IWebLinkBuilder linkBuilder,
     IEmailService emailService,
     ISmsService smsService)
@@ -18,7 +19,8 @@ internal sealed class WaitlistSlotOfferedNotificationHandler(
         if (entry is null)
             return;
 
-        var link = linkBuilder.Build($"/book/waitlist/{entry.Id}?token={entry.ManagementToken.Value}");
+        var slug = await organizationRepository.GetSlugAsync(entry.OrganizationId, cancellationToken);
+        var link = linkBuilder.Build($"/book/{slug}/waitlist/{entry.Id}?token={entry.ManagementToken.Value}");
         var body = $"A slot opened up: {domainEvent.OfferedSlot.StartUtc:u}. Confirm by {domainEvent.OfferExpiresAtUtc:u}: {link}";
 
         if (domainEvent.ClientContact.Email is not null)

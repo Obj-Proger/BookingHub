@@ -1,4 +1,4 @@
-﻿@page "/book/review/{BookingId:guid}"
+﻿@page "/book/{OrganizationSlug}/review/{BookingId:guid}"
 @inject IPublicReviewsApiClient ReviewsApiClient
 
 <PageTitle>Leave a review</PageTitle>
@@ -32,6 +32,7 @@ else
 }
 
 @code {
+    [Parameter] public string OrganizationSlug { get; set; } = string.Empty;
     [Parameter] public Guid BookingId { get; set; }
     [SupplyParameterFromQuery] public string? Token { get; set; }
 
@@ -47,7 +48,7 @@ else
         _errorMessage = null;
         try
         {
-            var result = await ReviewsApiClient.SubmitReviewAsync(BookingId, Token, _rating, _comment, CancellationToken.None);
+            var result = await ReviewsApiClient.SubmitReviewAsync(OrganizationSlug, BookingId, Token, _rating, _comment, CancellationToken.None);
             if (result is null)
             {
                 _errorMessage = "Couldn't submit your review — this link may be invalid, expired, or already used.";

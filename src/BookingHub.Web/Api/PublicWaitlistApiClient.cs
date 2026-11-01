@@ -14,18 +14,18 @@ internal sealed class PublicWaitlistApiClient(HttpClient httpClient) : IPublicWa
             : null;
     }
 
-    public async Task<bool> ConfirmOfferAsync(Guid waitlistEntryId, string? token, CancellationToken cancellationToken)
+    public async Task<bool> ConfirmOfferAsync(string organizationSlug, Guid waitlistEntryId, string? token, CancellationToken cancellationToken)
     {
         var response = await httpClient.PostAsJsonAsync(
-            $"api/v1/public/waitlist/{waitlistEntryId}/confirm",
+            $"api/v1/public/{organizationSlug}/waitlist/{waitlistEntryId}/confirm",
             new ConfirmWaitlistOfferRequest(token), ApiJsonOptions.Default, cancellationToken);
         return response.IsSuccessStatusCode;
     }
 
-    public async Task<bool> LeaveAsync(Guid waitlistEntryId, string? token, CancellationToken cancellationToken)
+    public async Task<bool> LeaveAsync(string organizationSlug, Guid waitlistEntryId, string? token, CancellationToken cancellationToken)
     {
         var response = await httpClient.PostAsJsonAsync(
-            $"api/v1/public/waitlist/{waitlistEntryId}/leave",
+            $"api/v1/public/{organizationSlug}/waitlist/{waitlistEntryId}/leave",
             new LeaveWaitlistRequest(token), ApiJsonOptions.Default, cancellationToken);
         return response.IsSuccessStatusCode;
     }

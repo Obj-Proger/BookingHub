@@ -58,7 +58,6 @@ public static class DomainErrors
         public static readonly Error NameTooLong = Error.Validation("Organization.NameTooLong", $"Organization name cannot exceed {Entities.Organization.MaxNameLength} characters.");
         public static readonly Error SlugEmpty = Error.Validation("Organization.SlugEmpty", "Organization slug cannot be empty.");
         public static readonly Error SlugInvalidFormat = Error.Validation("Organization.SlugInvalidFormat", $"Slug must be at most {Entities.Organization.MaxSlugLength} characters of lowercase letters, digits and hyphens, and cannot start or end with a hyphen.");
-        public static readonly Error SlugReserved = Error.Validation("Organization.SlugReserved", "This address is reserved. Please choose another one.");
         public static readonly Error CancellationDeadlineNegative = Error.Validation("Organization.CancellationDeadlineNegative", "Cancellation deadline cannot be negative.");
         public static readonly Error PendingConfirmationWindowNotPositive = Error.Validation("Organization.PendingConfirmationWindowNotPositive", "Pending confirmation window must be greater than zero.");
         public static readonly Error AutoCompleteWindowNotPositive = Error.Validation("Organization.AutoCompleteWindowNotPositive", "Auto-complete window must be greater than zero.");

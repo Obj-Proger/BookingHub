@@ -12,6 +12,7 @@ namespace BookingHub.Application.Tests.Features.Bookings;
 public class MarkCompletedAndNoShowCommandHandlerTests
 {
     private readonly IBookingRepository _bookingRepository = Substitute.For<IBookingRepository>();
+    private readonly IOrganizationRepository _organizationRepository = Substitute.For<IOrganizationRepository>();
     private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
     private readonly IWebLinkBuilder _linkBuilder = Substitute.For<IWebLinkBuilder>();
     private readonly IEmailService _emailService = Substitute.For<IEmailService>();
@@ -38,7 +39,7 @@ public class MarkCompletedAndNoShowCommandHandlerTests
     {
         _bookingRepository.GetByIdAsync(OrganizationId, LocationId, EmployeeId, BookingId, Arg.Any<CancellationToken>())
             .Returns(CreateAwaitingReviewBooking());
-        var sut = new MarkCompletedCommandHandler(_bookingRepository, _unitOfWork, _linkBuilder, _emailService, _smsService, TimeProvider.System);
+        var sut = new MarkCompletedCommandHandler(_bookingRepository, _organizationRepository, _unitOfWork, _linkBuilder, _emailService, _smsService, TimeProvider.System);
 
         var result = await sut.Handle(new MarkCompletedCommand(OrganizationId, LocationId, EmployeeId, BookingId), CancellationToken.None);
 
@@ -53,7 +54,7 @@ public class MarkCompletedAndNoShowCommandHandlerTests
         // indistinguishable here by design — this test only needs to cover the null result.
         _bookingRepository.GetByIdAsync(OrganizationId, LocationId, EmployeeId, BookingId, Arg.Any<CancellationToken>())
             .Returns((Booking?)null);
-        var sut = new MarkCompletedCommandHandler(_bookingRepository, _unitOfWork, _linkBuilder, _emailService, _smsService, TimeProvider.System);
+        var sut = new MarkCompletedCommandHandler(_bookingRepository, _organizationRepository, _unitOfWork, _linkBuilder, _emailService, _smsService, TimeProvider.System);
 
         var result = await sut.Handle(new MarkCompletedCommand(OrganizationId, LocationId, EmployeeId, BookingId), CancellationToken.None);
 

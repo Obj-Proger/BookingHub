@@ -16,6 +16,12 @@ internal sealed class OrganizationRepository(ApplicationDbContext dbContext) : I
     public Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken) =>
         dbContext.Organizations.AnyAsync(o => o.Slug == slug, cancellationToken);
 
+    public Task<string?> GetSlugAsync(Guid organizationId, CancellationToken cancellationToken) =>
+        dbContext.Organizations
+            .Where(o => o.Id == organizationId)
+            .Select(o => o.Slug)
+            .FirstOrDefaultAsync(cancellationToken);
+
     public async Task DeleteAllDataAsync(Guid organizationId, CancellationToken cancellationToken)
     {
         // Every foreign key in this schema is DeleteBehavior.Restrict, so nothing cascades on its own:

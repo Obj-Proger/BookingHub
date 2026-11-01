@@ -18,7 +18,6 @@ public static class DependencyInjection
 
         services.AddSingleton(TimeProvider.System);
 
-        services.AddScoped<TenantContext>();
         services.AddScoped<IDispatcher, Dispatcher>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IWaitlistOfferService, WaitlistOfferService>();

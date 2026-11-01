@@ -12,6 +12,7 @@ internal sealed class CreateOrganizationCommandHandler(
     IOrganizationRepository organizationRepository,
     IOrganizationMemberRepository organizationMemberRepository,
     ICurrentUser currentUser,
+    ITenantScope tenantScope,
     IUnitOfWork unitOfWork)
     : ICommandHandler<CreateOrganizationCommand, OrganizationCreatedResponse>
 {
@@ -29,6 +30,9 @@ internal sealed class CreateOrganizationCommandHandler(
         var memberResult = OrganizationMember.Create(organization.Id, currentUser.UserId, OrganizationRole.Owner);
         if (memberResult.IsFailure)
             return Result.Failure<OrganizationCreatedResponse>(memberResult.Error);
+
+        // The new organization's rows can only be written from inside its own scope.
+        await tenantScope.EnterAsync(organization.Id, cancellationToken);
 
         organizationRepository.Add(organization);
         organizationMemberRepository.Add(memberResult.Value);

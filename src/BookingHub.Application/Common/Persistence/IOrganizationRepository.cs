@@ -9,6 +9,9 @@ public interface IOrganizationRepository
     Task<Organization?> GetByIdAsync(Guid organizationId, CancellationToken cancellationToken);
     Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken);
 
+    /// <summary>The organization's slug — the first segment of every guest URL — or null if it does not exist.</summary>
+    Task<string?> GetSlugAsync(Guid organizationId, CancellationToken cancellationToken);
+
     /// <summary>
     /// Deletes everything that belongs to the organization, without loading it. Does not delete the
     /// organization itself (call <see cref="Remove"/> and save in the same unit of work) and never

@@ -91,9 +91,9 @@ try
     app.UseRouting();
     app.UseRateLimiter();
     app.UseCors("Default");
-    app.UseMiddleware<TenantResolutionMiddleware>();
     app.UseAuthentication();
     app.UseAuthorization();
+    app.UseMiddleware<TenantResolutionMiddleware>();
 
     app.UseHangfireDashboard(options: new DashboardOptions
     {

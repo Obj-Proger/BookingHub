@@ -7,9 +7,6 @@ public sealed partial class Organization : BaseEntity
     public const int MaxNameLength = 200;
     public const int MaxSlugLength = 100;
 
-    /// <summary>Slugs that guest-facing URLs already use as their second segment (/book/waitlist/…, /book/review/…).</summary>
-    private static readonly HashSet<string> ReservedSlugs = ["waitlist", "review"];
-
     [GeneratedRegex(@"^[a-z0-9]+(-[a-z0-9]+)*$")]
     private static partial Regex SlugPattern();
 
@@ -105,11 +102,8 @@ public sealed partial class Organization : BaseEntity
 
         var trimmed = slug.Trim();
 
-        if (trimmed.Length > MaxSlugLength || !SlugPattern().IsMatch(trimmed))
-            return Result.Failure<string>(DomainErrors.Organization.SlugInvalidFormat);
-
-        return ReservedSlugs.Contains(trimmed)
-            ? Result.Failure<string>(DomainErrors.Organization.SlugReserved)
+        return trimmed.Length > MaxSlugLength || !SlugPattern().IsMatch(trimmed)
+            ? Result.Failure<string>(DomainErrors.Organization.SlugInvalidFormat)
             : trimmed;
     }
 }

@@ -707,6 +707,12 @@ namespace BookingHub.Infrastructure.Migrations
                 CREATE POLICY tenant_isolation ON "OrganizationMembers"
                     USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
                 """);
+            // A signed-in user may read their own memberships in every organization (the /me routes);
+            // permissive policies are OR-ed, and a FOR SELECT policy never allows writes.
+            migrationBuilder.Sql("""
+                CREATE POLICY member_self_read ON "OrganizationMembers" FOR SELECT
+                    USING ("UserId" = NULLIF(current_setting('app.current_user_id', true), '')::uuid);
+                """);
 
             migrationBuilder.Sql("""ALTER TABLE "Employees" ENABLE ROW LEVEL SECURITY;""");
             migrationBuilder.Sql("""
@@ -823,6 +829,7 @@ namespace BookingHub.Infrastructure.Migrations
             migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "Employees";""");
             migrationBuilder.Sql("""ALTER TABLE "Employees" DISABLE ROW LEVEL SECURITY;""");
             migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "OrganizationMembers";""");
+            migrationBuilder.Sql("""DROP POLICY member_self_read ON "OrganizationMembers";""");
             migrationBuilder.Sql("""ALTER TABLE "OrganizationMembers" DISABLE ROW LEVEL SECURITY;""");
             migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "Locations";""");
             migrationBuilder.Sql("""ALTER TABLE "Locations" DISABLE ROW LEVEL SECURITY;""");

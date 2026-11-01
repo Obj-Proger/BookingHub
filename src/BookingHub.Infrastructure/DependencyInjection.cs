@@ -47,7 +47,10 @@ public static class DependencyInjection
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
-        services.AddScoped<ICurrentTenant, CurrentTenant>();
+        services.AddScoped<TenantContext>();
+        services.AddScoped<ICurrentTenant>(sp => sp.GetRequiredService<TenantContext>());
+        services.AddScoped<RowLevelSecuritySession>();
+        services.AddScoped<ITenantScope>(sp => sp.GetRequiredService<RowLevelSecuritySession>());
 
         var jwtOptions = configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
             ?? throw new InvalidOperationException("The \"Jwt\" configuration section is missing.");

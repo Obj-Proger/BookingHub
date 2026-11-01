@@ -6,7 +6,7 @@ using BookingHub.Application.Common.Persistence;
 namespace BookingHub.Application.Features.Bookings.Commands.MarkCompleted;
 
 internal sealed class MarkCompletedCommandHandler(
-    IBookingRepository bookingRepository, IUnitOfWork unitOfWork,
+    IBookingRepository bookingRepository, IOrganizationRepository organizationRepository, IUnitOfWork unitOfWork,
     IWebLinkBuilder linkBuilder, IEmailService emailService, ISmsService smsService, TimeProvider timeProvider)
     : ICommandHandler<MarkCompletedCommand>
 {
@@ -23,7 +23,8 @@ internal sealed class MarkCompletedCommandHandler(
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
 
-        var reviewLink = linkBuilder.Build($"/book/review/{booking.Id}?token={booking.CancellationToken.Value}");
+        var slug = await organizationRepository.GetSlugAsync(booking.OrganizationId, cancellationToken);
+        var reviewLink = linkBuilder.Build($"/book/{slug}/review/{booking.Id}?token={booking.CancellationToken.Value}");
         var body = $"Thanks for visiting! Mind leaving a quick review? {reviewLink}";
 
         if (booking.ClientContact.Email is not null)

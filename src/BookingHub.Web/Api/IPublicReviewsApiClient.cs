@@ -4,5 +4,5 @@ namespace BookingHub.Web.Api;
 
 public interface IPublicReviewsApiClient
 {
-    Task<ReviewSubmittedResponse?> SubmitReviewAsync(Guid bookingId, string? token, int rating, string? comment, CancellationToken cancellationToken);
+    Task<ReviewSubmittedResponse?> SubmitReviewAsync(string organizationSlug, Guid bookingId, string? token, int rating, string? comment, CancellationToken cancellationToken);
 }
