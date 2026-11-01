@@ -17,4 +17,8 @@ public interface IWaitlistEntryRepository
     Task<IReadOnlyList<WaitlistEntry>> GetWaitingCandidatesAsync(
         Guid organizationId, Guid locationId, Guid serviceId, Guid employeeId, TimeSlot freedSlot,
         CancellationToken cancellationToken);
+
+    /// <summary>The organization's entries holding an offer whose confirmation window has elapsed.</summary>
+    Task<IReadOnlyList<WaitlistEntry>> GetOffersPastExpiryAsync(
+        Guid organizationId, DateTime utcNow, CancellationToken cancellationToken);
 }

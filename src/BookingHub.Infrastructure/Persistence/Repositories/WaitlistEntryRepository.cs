@@ -22,4 +22,12 @@ internal sealed class WaitlistEntryRepository(ApplicationDbContext dbContext) : 
                 && e.DesiredWindow.StartUtc < freedSlot.EndUtc && freedSlot.StartUtc < e.DesiredWindow.EndUtc)
             .OrderBy(e => e.CreatedAtUtc)
             .ToListAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<WaitlistEntry>> GetOffersPastExpiryAsync(
+        Guid organizationId, DateTime utcNow, CancellationToken cancellationToken) =>
+        await dbContext.WaitlistEntries
+            .Where(e => e.OrganizationId == organizationId
+                && e.Status == WaitlistEntryStatus.Offered
+                && e.OfferExpiresAtUtc <= utcNow)
+            .ToListAsync(cancellationToken);
 }

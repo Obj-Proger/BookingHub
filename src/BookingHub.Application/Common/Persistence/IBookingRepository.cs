@@ -13,14 +13,17 @@ public interface IBookingRepository
     Task<Booking?> GetByIdAsync(
         Guid organizationId, Guid locationId, Guid employeeId, Guid bookingId, CancellationToken cancellationToken);
 
-    /// <summary>Pending bookings whose owning organization's confirmation window has elapsed.</summary>
-    Task<IReadOnlyList<Booking>> GetPendingBookingsPastConfirmationWindowAsync(DateTime utcNow, CancellationToken cancellationToken);
+    /// <summary>The organization's pending bookings whose confirmation window has elapsed.</summary>
+    Task<IReadOnlyList<Booking>> GetPendingBookingsPastConfirmationWindowAsync(
+        Guid organizationId, DateTime utcNow, CancellationToken cancellationToken);
 
-    /// <summary>Confirmed bookings whose time slot has already ended.</summary>
-    Task<IReadOnlyList<Booking>> GetConfirmedBookingsWithEndedSlotsAsync(DateTime utcNow, CancellationToken cancellationToken);
+    /// <summary>The organization's confirmed bookings whose time slot has already ended.</summary>
+    Task<IReadOnlyList<Booking>> GetConfirmedBookingsWithEndedSlotsAsync(
+        Guid organizationId, DateTime utcNow, CancellationToken cancellationToken);
 
-    /// <summary>AwaitingReview bookings whose owning organization's auto-complete window has elapsed.</summary>
-    Task<IReadOnlyList<Booking>> GetAwaitingReviewBookingsPastAutoCompleteWindowAsync(DateTime utcNow, CancellationToken cancellationToken);
+    /// <summary>The organization's AwaitingReview bookings whose auto-complete window has elapsed.</summary>
+    Task<IReadOnlyList<Booking>> GetAwaitingReviewBookingsPastAutoCompleteWindowAsync(
+        Guid organizationId, DateTime utcNow, CancellationToken cancellationToken);
 
     /// <summary>Other Pending bookings in the same recurring series — for cascading confirmation
     /// when the guest confirms via the first occurrence's link.</summary>

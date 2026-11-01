@@ -18,6 +18,12 @@ internal static partial class Log
     [LoggerMessage(Level = LogLevel.Information, Message = "Auto-completed {Count} bookings past their auto-complete window")]
     public static partial void AutoCompletedBookings(ILogger logger, int count);
 
+    [LoggerMessage(Level = LogLevel.Information, Message = "Expired {Count} waitlist offers past their confirmation window")]
+    public static partial void ExpiredWaitlistOffers(ILogger logger, int count);
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "{CommandType} failed for organization {OrganizationId}")]
+    public static partial void BackgroundCommandFailed(ILogger logger, Exception exception, string commandType, Guid organizationId);
+
     [LoggerMessage(Level = LogLevel.Information, Message = "Dispatching domain event {DomainEventType}")]
     public static partial void DispatchingDomainEvent(ILogger logger, string domainEventType);
 

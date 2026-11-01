@@ -10,7 +10,7 @@ internal sealed class AutoCompleteBookingsCommandHandler(
     public async Task<Result<int>> Handle(AutoCompleteBookingsCommand command, CancellationToken cancellationToken)
     {
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
-        var bookings = await bookingRepository.GetAwaitingReviewBookingsPastAutoCompleteWindowAsync(utcNow, cancellationToken);
+        var bookings = await bookingRepository.GetAwaitingReviewBookingsPastAutoCompleteWindowAsync(command.OrganizationId, utcNow, cancellationToken);
 
         var completedCount = 0;
         foreach (var booking in bookings)

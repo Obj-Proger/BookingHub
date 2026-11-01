@@ -118,6 +118,7 @@ public static class DependencyInjection
             .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(configuration.GetConnectionString("Database"))));
 
         services.AddHangfireServer();
+        services.AddSingleton<TenantJobRunner>();
         services.AddScoped<BookingLifecycleJobs>();
 
         return services;

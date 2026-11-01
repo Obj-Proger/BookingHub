@@ -10,7 +10,7 @@ internal sealed class TransitionBookingsToAwaitingReviewCommandHandler(
     public async Task<Result<int>> Handle(TransitionBookingsToAwaitingReviewCommand command, CancellationToken cancellationToken)
     {
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
-        var bookings = await bookingRepository.GetConfirmedBookingsWithEndedSlotsAsync(utcNow, cancellationToken);
+        var bookings = await bookingRepository.GetConfirmedBookingsWithEndedSlotsAsync(command.OrganizationId, utcNow, cancellationToken);
 
         var transitionedCount = 0;
         foreach (var booking in bookings)

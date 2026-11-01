@@ -10,7 +10,7 @@ internal sealed class ExpirePendingBookingsCommandHandler(
     public async Task<Result<int>> Handle(ExpirePendingBookingsCommand command, CancellationToken cancellationToken)
     {
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
-        var bookings = await bookingRepository.GetPendingBookingsPastConfirmationWindowAsync(utcNow, cancellationToken);
+        var bookings = await bookingRepository.GetPendingBookingsPastConfirmationWindowAsync(command.OrganizationId, utcNow, cancellationToken);
 
         var expiredCount = 0;
         foreach (var booking in bookings)

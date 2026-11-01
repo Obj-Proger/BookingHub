@@ -18,22 +18,25 @@ internal sealed class BookingRepository(ApplicationDbContext dbContext) : IBooki
             b => b.Id == bookingId && b.OrganizationId == organizationId && b.LocationId == locationId && b.EmployeeId == employeeId,
             cancellationToken);
 
-    public async Task<IReadOnlyList<Booking>> GetPendingBookingsPastConfirmationWindowAsync(DateTime utcNow, CancellationToken cancellationToken) =>
+    public async Task<IReadOnlyList<Booking>> GetPendingBookingsPastConfirmationWindowAsync(
+        Guid organizationId, DateTime utcNow, CancellationToken cancellationToken) =>
         await dbContext.Bookings
-            .Where(b => b.Status == BookingStatus.Pending)
+            .Where(b => b.OrganizationId == organizationId && b.Status == BookingStatus.Pending)
             .Join(dbContext.Organizations, b => b.OrganizationId, o => o.Id, (b, o) => new { Booking = b, o.PendingConfirmationWindow })
             .Where(x => x.Booking.CreatedAtUtc + x.PendingConfirmationWindow < utcNow)
             .Select(x => x.Booking)
             .ToListAsync(cancellationToken);
 
-    public async Task<IReadOnlyList<Booking>> GetConfirmedBookingsWithEndedSlotsAsync(DateTime utcNow, CancellationToken cancellationToken) =>
+    public async Task<IReadOnlyList<Booking>> GetConfirmedBookingsWithEndedSlotsAsync(
+        Guid organizationId, DateTime utcNow, CancellationToken cancellationToken) =>
         await dbContext.Bookings
-            .Where(b => b.Status == BookingStatus.Confirmed && b.TimeSlot.EndUtc <= utcNow)
+            .Where(b => b.OrganizationId == organizationId && b.Status == BookingStatus.Confirmed && b.TimeSlot.EndUtc <= utcNow)
             .ToListAsync(cancellationToken);
 
-    public async Task<IReadOnlyList<Booking>> GetAwaitingReviewBookingsPastAutoCompleteWindowAsync(DateTime utcNow, CancellationToken cancellationToken) =>
+    public async Task<IReadOnlyList<Booking>> GetAwaitingReviewBookingsPastAutoCompleteWindowAsync(
+        Guid organizationId, DateTime utcNow, CancellationToken cancellationToken) =>
         await dbContext.Bookings
-            .Where(b => b.Status == BookingStatus.AwaitingReview)
+            .Where(b => b.OrganizationId == organizationId && b.Status == BookingStatus.AwaitingReview)
             .Join(dbContext.Organizations, b => b.OrganizationId, o => o.Id, (b, o) => new { Booking = b, o.AutoCompleteWindow })
             .Where(x => x.Booking.TimeSlot.EndUtc + x.AutoCompleteWindow < utcNow)
             .Select(x => x.Booking)
