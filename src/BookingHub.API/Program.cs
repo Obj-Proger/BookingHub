@@ -6,6 +6,7 @@ using BookingHub.Infrastructure;
 using BookingHub.Infrastructure.BackgroundJobs;
 using BookingHub.Infrastructure.Logging;
 using BookingHub.Infrastructure.Persistence;
+using BookingHub.Infrastructure.Persistence.Seeding;
 using System.Text.Json.Serialization;
 using Hangfire;
 using Scalar.AspNetCore;
@@ -44,6 +45,16 @@ try
     builder.Services.AddApiRateLimiting(builder.Configuration);
 
     var app = builder.Build();
+
+    // dotnet run --project src/BookingHub.API -- seed: fills an empty development database and exits.
+    if (args.Contains("seed", StringComparer.OrdinalIgnoreCase))
+    {
+        if (!app.Environment.IsDevelopment())
+            throw new InvalidOperationException("The seed command runs only in the Development environment.");
+
+        await DevelopmentSeeder.SeedAsync(app.Services, Console.Out, CancellationToken.None);
+        return;
+    }
 
     app.UseForwardedHeaders();
 

@@ -35,6 +35,12 @@ API at it without committing anything:
 
     dotnet user-secrets set "ConnectionStrings:Database" "Host=<server>;Port=5432;Database=bookinghub;Username=bookinghub_app;Password=<password>" --project src/BookingHub.API
 
+Optionally fill the empty database with demo data — an organization with two locations, staff
+accounts for every role, services, schedules, bookings and reviews. It prints the accounts and a
+few guest links to try:
+
+    dotnet run --project src/BookingHub.API -- seed
+
 ## 3. Run
 
     dotnet run --project src/BookingHub.API    # https://localhost:7117, Scalar UI at /scalar/v1
@@ -48,7 +54,9 @@ API's console output.
     docker compose down -v
     docker compose up -d
 
-Then repeat the `dotnet ef database update` and `ALTER ROLE` steps from section 2.
+Then repeat the `dotnet ef database update` and `ALTER ROLE` steps (and the seed) from section 2.
+
+To check the whole application by hand, follow [docs/manual-testing.md](docs/manual-testing.md).
 
 ## 5. Tests
 
