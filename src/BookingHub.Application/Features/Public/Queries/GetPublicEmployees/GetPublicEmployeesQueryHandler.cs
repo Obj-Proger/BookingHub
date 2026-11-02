@@ -15,8 +15,9 @@ internal sealed class GetPublicEmployeesQueryHandler(IApplicationDbContext dbCon
             .Where(a => a.LocationId == query.LocationId && a.IsActive)
             .Join(
                 dbContext.Employees.Where(e => e.OrganizationId == query.OrganizationId && e.IsBookable),
-                a => a.EmployeeId, e => e.Id, (a, e) => new PublicEmployeeResponse(e.Id, e.FullName))
+                a => a.EmployeeId, e => e.Id, (a, e) => e)
             .OrderBy(e => e.FullName)
+            .Select(e => new PublicEmployeeResponse(e.Id, e.FullName))
             .ToListAsync(cancellationToken);
 
         return employees;
