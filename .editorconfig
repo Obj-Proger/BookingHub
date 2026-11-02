@@ -1,5 +1,7 @@
 # Code style for the whole repository. Rules here describe the conventions the code already
-# follows; most are suggestions until analyzers are enforced at build time.
+# follows. Those marked :warning (or with a warning severity) are checked on every build
+# (EnforceCodeStyleInBuild, see Directory.Build.props) and fail the CI build; suggestions only
+# show in the editor.
 root = true
 
 [*]
@@ -23,11 +25,16 @@ indent_size = 2
 
 [*.cs]
 # Namespaces and usings
-csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_style_namespace_declarations = file_scoped:warning
 csharp_using_directive_placement = outside_namespace:suggestion
 dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
 dotnet_style_namespace_match_folder = true:suggestion
+
+# Unnecessary usings and unused private members
+dotnet_diagnostic.IDE0005.severity = warning
+dotnet_diagnostic.IDE0051.severity = warning
+dotnet_diagnostic.IDE0052.severity = warning
 
 # 'var' everywhere the type is clear from the code around it
 csharp_style_var_for_built_in_types = true:suggestion
@@ -61,8 +68,8 @@ csharp_style_expression_bodied_local_functions = when_on_single_line:silent
 csharp_prefer_braces = when_multiline:silent
 
 # Modifiers
-dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
-dotnet_style_readonly_field = true:suggestion
+dotnet_style_require_accessibility_modifiers = for_non_interface_members:warning
+dotnet_style_readonly_field = true:warning
 csharp_style_prefer_readonly_struct = true:suggestion
 csharp_preferred_modifier_order = public,private,protected,internal,file,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,required,volatile,async:suggestion
 
@@ -94,21 +101,21 @@ dotnet_naming_style.prefix_i.required_prefix = I
 dotnet_naming_style.prefix_i.capitalization = pascal_case
 dotnet_naming_rule.interfaces_start_with_i.symbols = interfaces
 dotnet_naming_rule.interfaces_start_with_i.style = prefix_i
-dotnet_naming_rule.interfaces_start_with_i.severity = suggestion
+dotnet_naming_rule.interfaces_start_with_i.severity = warning
 
 dotnet_naming_symbols.type_parameters.applicable_kinds = type_parameter
 dotnet_naming_style.prefix_t.required_prefix = T
 dotnet_naming_style.prefix_t.capitalization = pascal_case
 dotnet_naming_rule.type_parameters_start_with_t.symbols = type_parameters
 dotnet_naming_rule.type_parameters_start_with_t.style = prefix_t
-dotnet_naming_rule.type_parameters_start_with_t.severity = suggestion
+dotnet_naming_rule.type_parameters_start_with_t.severity = warning
 
 dotnet_naming_symbols.constants.applicable_kinds = field, local
 dotnet_naming_symbols.constants.required_modifiers = const
 dotnet_naming_style.pascal.capitalization = pascal_case
 dotnet_naming_rule.constants_are_pascal_case.symbols = constants
 dotnet_naming_rule.constants_are_pascal_case.style = pascal
-dotnet_naming_rule.constants_are_pascal_case.severity = suggestion
+dotnet_naming_rule.constants_are_pascal_case.severity = warning
 
 dotnet_naming_symbols.private_fields.applicable_kinds = field
 dotnet_naming_symbols.private_fields.applicable_accessibilities = private, private_protected
@@ -116,16 +123,20 @@ dotnet_naming_style.underscore_camel.required_prefix = _
 dotnet_naming_style.underscore_camel.capitalization = camel_case
 dotnet_naming_rule.private_fields_are_underscore_camel_case.symbols = private_fields
 dotnet_naming_rule.private_fields_are_underscore_camel_case.style = underscore_camel
-dotnet_naming_rule.private_fields_are_underscore_camel_case.severity = suggestion
+dotnet_naming_rule.private_fields_are_underscore_camel_case.severity = warning
 
 dotnet_naming_symbols.private_static_readonly_fields.applicable_kinds = field
 dotnet_naming_symbols.private_static_readonly_fields.applicable_accessibilities = private
 dotnet_naming_symbols.private_static_readonly_fields.required_modifiers = static, readonly
 dotnet_naming_rule.private_static_readonly_fields_are_pascal_case.symbols = private_static_readonly_fields
 dotnet_naming_rule.private_static_readonly_fields_are_pascal_case.style = pascal
-dotnet_naming_rule.private_static_readonly_fields_are_pascal_case.severity = suggestion
+dotnet_naming_rule.private_static_readonly_fields_are_pascal_case.severity = warning
 
 dotnet_naming_symbols.members.applicable_kinds = class, struct, enum, delegate, method, property, event, namespace
 dotnet_naming_rule.members_are_pascal_case.symbols = members
 dotnet_naming_rule.members_are_pascal_case.style = pascal
-dotnet_naming_rule.members_are_pascal_case.severity = suggestion
+dotnet_naming_rule.members_are_pascal_case.severity = warning
+
+[tests/**/*.cs]
+# Test names read as Method_Scenario_ExpectedResult.
+dotnet_diagnostic.CA1707.severity = none

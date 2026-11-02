@@ -1,7 +1,22 @@
 <Project>
   <PropertyGroup>
-	<Nullable>enable</Nullable>
-	<ImplicitUsings>enable</ImplicitUsings>
-	<LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <!-- Code analysis on every build: the .NET analyzers at their recommended set, plus the code-style
+       rules .editorconfig marks as warnings. Locally they stay warnings; in CI (GitHub Actions sets
+       CI=true) every warning is an error, so nothing is merged with one. -->
+  <PropertyGroup>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <TreatWarningsAsErrors Condition="'$(CI)' == 'true'">true</TreatWarningsAsErrors>
+
+    <!-- The compiler reports unnecessary usings (IDE0005) only when it builds the XML documentation,
+         which also checks every doc comment that is written. A missing doc comment (CS1591) is not
+         a warning: comments are written where they explain something, not on every public member. -->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 </Project>
