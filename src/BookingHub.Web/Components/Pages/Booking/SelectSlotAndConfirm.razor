@@ -1,4 +1,5 @@
 ﻿@page "/book/{OrganizationSlug}/{LocationId:guid}/{ServiceId:guid}/{EmployeeId:guid}"
+@using System.Net
 @inject IPublicCatalogApiClient CatalogApiClient
 @inject IPublicBookingsApiClient BookingsApiClient
 @inject IPublicWaitlistApiClient WaitlistApiClient
@@ -6,14 +7,14 @@
 
 <PageTitle>Pick a time</PageTitle>
 
-@if (_locationNotFound)
+@if (_locationError is not null)
 {
-    <p>This location isn't available for booking.</p>
+    <ErrorState Error="_locationError" OnRetry="InitializeAsync" />
     <a class="back-link" href="@($"/book/{OrganizationSlug}")">&larr; Back to locations</a>
 }
 else if (_locationTime is null)
 {
-    <p>Loading…</p>
+    <LoadingState />
 }
 else if (_confirmedBooking is not null)
 {
@@ -29,9 +30,13 @@ else
            min="@_locationTime.Today(Clock).ToString("yyyy-MM-dd")" />
     <p>Times are shown in the location's time zone (@_locationTime.ZoneId).</p>
 
-    @if (_slots is null)
+    @if (_slotsError is not null)
     {
-        <p>Loading…</p>
+        <ErrorState Error="_slotsError" OnRetry="LoadSlotsAsync" />
+    }
+    else if (_slots is null)
+    {
+        <LoadingState />
     }
     else if (_slots.Count == 0)
     {
@@ -58,10 +63,6 @@ else
                         <InputText @bind-Value="_guestDetails.Name" />
                     </div>
                     <ValidationSummary />
-                    @if (_errorMessage is not null)
-                    {
-                        <p class="error-text">@_errorMessage</p>
-                    }
                     <button type="submit" disabled="@_isSubmitting">@(_isSubmitting ? "Joining…" : "Join waitlist")</button>
                 </EditForm>
             }
@@ -78,6 +79,11 @@ else
                 </button>
             }
         </div>
+    }
+
+    @if (_submitError is not null)
+    {
+        <ErrorState Error="_submitError" />
     }
 
     @if (_selectedSlot is not null)
@@ -97,11 +103,7 @@ else
                 <InputText @bind-Value="_guestDetails.Email" />
             </div>
             <ValidationSummary />
-            @if (_errorMessage is not null)
-            {
-                <p class="error-text">@_errorMessage</p>
-            }
-            <button type="submit" disabled="@_isSubmitting">@(_isSubmitting ? "Booking…" : "Confirm booking")</button>
+            <button type="submit" disabled="@_isSubmitting">@(_isSubmitting ? "Booking…" : "Book this time")</button>
         </EditForm>
     }
 
@@ -115,27 +117,32 @@ else
     [Parameter] public Guid EmployeeId { get; set; }
 
     private LocationTime? _locationTime;
-    private bool _locationNotFound;
+    private ApiError? _locationError;
     private DateOnly _selectedDate;
     private IReadOnlyList<AvailableSlotResponse>? _slots;
+    private ApiError? _slotsError;
     private AvailableSlotResponse? _selectedSlot;
     private readonly GuestDetails _guestDetails = new();
-    private string? _errorMessage;
+    private ApiError? _submitError;
     private bool _isSubmitting;
     private BookingCreatedResponse? _confirmedBooking;
     private bool _showWaitlistForm;
     private bool _waitlistJoined;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => InitializeAsync();
+
+    private async Task InitializeAsync()
     {
+        _locationError = null;
+
         var location = await CatalogApiClient.GetLocationAsync(OrganizationSlug, LocationId, CancellationToken.None);
-        if (location is null)
+        if (!location.IsSuccess)
         {
-            _locationNotFound = true;
+            _locationError = location.Error;
             return;
         }
 
-        _locationTime = LocationTime.FromZoneId(location.TimeZone);
+        _locationTime = LocationTime.FromZoneId(location.Value.TimeZone);
         _selectedDate = _locationTime.Today(Clock);
         await LoadSlotsAsync();
     }
@@ -145,7 +152,15 @@ else
         _selectedSlot = null;
         _showWaitlistForm = false;
         _waitlistJoined = false;
-        _slots = await BookingsApiClient.GetAvailableSlotsAsync(OrganizationSlug, LocationId, EmployeeId, ServiceId, _selectedDate, CancellationToken.None) ?? [];
+        _slots = null;
+        _slotsError = null;
+
+        var result = await BookingsApiClient.GetAvailableSlotsAsync(
+            OrganizationSlug, LocationId, EmployeeId, ServiceId, _selectedDate, CancellationToken.None);
+        if (result.IsSuccess)
+            _slots = result.Value;
+        else
+            _slotsError = result.Error;
     }
 
     private async Task SubmitAsync()
@@ -154,22 +169,25 @@ else
             return;
 
         _isSubmitting = true;
-        _errorMessage = null;
+        _submitError = null;
         try
         {
-            var booking = await BookingsApiClient.CreateBookingAsync(
+            var result = await BookingsApiClient.CreateBookingAsync(
                 OrganizationSlug,
                 new CreateBookingRequest(LocationId, EmployeeId, ServiceId, _selectedSlot.StartUtc, _guestDetails.Phone, _guestDetails.Name, _guestDetails.Email),
                 CancellationToken.None);
 
-            if (booking is null)
+            if (result.IsSuccess)
             {
-                _errorMessage = "This time just became unavailable — please pick another slot.";
-                await LoadSlotsAsync();
+                _confirmedBooking = result.Value;
                 return;
             }
 
-            _confirmedBooking = booking;
+            _submitError = result.Error;
+
+            // Someone else just took the time: show what is still free.
+            if (result.Error!.StatusCode == HttpStatusCode.Conflict)
+                await LoadSlotsAsync();
         }
         finally
         {
@@ -183,23 +201,20 @@ else
             return;
 
         _isSubmitting = true;
-        _errorMessage = null;
+        _submitError = null;
         try
         {
             var (windowStartUtc, windowEndUtc) = _locationTime.GetRemainingDayWindowUtc(_selectedDate, Clock);
 
-            var entry = await WaitlistApiClient.JoinAsync(
+            var result = await WaitlistApiClient.JoinAsync(
                 OrganizationSlug,
                 new JoinWaitlistRequest(LocationId, EmployeeId, ServiceId, windowStartUtc, windowEndUtc, _guestDetails.Phone, _guestDetails.Name, null),
                 CancellationToken.None);
 
-            if (entry is null)
-            {
-                _errorMessage = "Couldn't join the waitlist — check your phone number and try again.";
-                return;
-            }
-
-            _waitlistJoined = true;
+            if (result.IsSuccess)
+                _waitlistJoined = true;
+            else
+                _submitError = result.Error;
         }
         finally
         {

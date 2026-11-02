@@ -5,9 +5,13 @@
 
 <h1>Choose a specialist</h1>
 
-@if (_employees is null)
+@if (_error is not null)
 {
-    <p>Loading…</p>
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_employees is null)
+{
+    <LoadingState />
 }
 else if (_employees.Count == 0)
 {
@@ -33,9 +37,19 @@ else
     [Parameter] public Guid ServiceId { get; set; }
 
     private IReadOnlyList<PublicEmployeeResponse>? _employees;
+    private ApiError? _error;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
     {
-        _employees = await CatalogApiClient.GetEmployeesAsync(OrganizationSlug, LocationId, CancellationToken.None) ?? [];
+        _error = null;
+        _employees = null;
+
+        var result = await CatalogApiClient.GetEmployeesAsync(OrganizationSlug, LocationId, CancellationToken.None);
+        if (result.IsSuccess)
+            _employees = result.Value;
+        else
+            _error = result.Error;
     }
 }

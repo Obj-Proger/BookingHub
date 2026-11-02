@@ -5,9 +5,13 @@
 
 <h1>Choose a location</h1>
 
-@if (_locations is null)
+@if (_error is not null)
 {
-    <p>Loading…</p>
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_locations is null)
+{
+    <LoadingState />
 }
 else if (_locations.Count == 0)
 {
@@ -30,9 +34,19 @@ else
     [Parameter] public string OrganizationSlug { get; set; } = string.Empty;
 
     private IReadOnlyList<PublicLocationResponse>? _locations;
+    private ApiError? _error;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
     {
-        _locations = await CatalogApiClient.GetLocationsAsync(OrganizationSlug, CancellationToken.None) ?? [];
+        _error = null;
+        _locations = null;
+
+        var result = await CatalogApiClient.GetLocationsAsync(OrganizationSlug, CancellationToken.None);
+        if (result.IsSuccess)
+            _locations = result.Value;
+        else
+            _error = result.Error;
     }
 }

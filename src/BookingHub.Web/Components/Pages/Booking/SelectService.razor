@@ -5,9 +5,13 @@
 
 <h1>Choose a service</h1>
 
-@if (_services is null)
+@if (_error is not null)
 {
-    <p>Loading…</p>
+    <ErrorState Error="_error" OnRetry="LoadAsync" />
+}
+else if (_services is null)
+{
+    <LoadingState />
 }
 else if (_services.Count == 0)
 {
@@ -33,9 +37,19 @@ else
     [Parameter] public Guid LocationId { get; set; }
 
     private IReadOnlyList<PublicServiceResponse>? _services;
+    private ApiError? _error;
 
-    protected override async Task OnInitializedAsync()
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
     {
-        _services = await CatalogApiClient.GetServicesAsync(OrganizationSlug, LocationId, CancellationToken.None) ?? [];
+        _error = null;
+        _services = null;
+
+        var result = await CatalogApiClient.GetServicesAsync(OrganizationSlug, LocationId, CancellationToken.None);
+        if (result.IsSuccess)
+            _services = result.Value;
+        else
+            _error = result.Error;
     }
 }

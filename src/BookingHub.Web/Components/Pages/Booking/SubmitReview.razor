@@ -21,9 +21,9 @@ else
 
     <textarea @bind="_comment" placeholder="Anything you'd like to add? (optional)" rows="4"></textarea>
 
-    @if (_errorMessage is not null)
+    @if (_error is not null)
     {
-        <p class="error-text">@_errorMessage</p>
+        <ErrorState Error="_error" />
     }
 
     <button type="button" @onclick="SubmitAsync" disabled="@(_rating == 0 || _isSubmitting)">
@@ -40,22 +40,19 @@ else
     private string? _comment;
     private bool _isSubmitting;
     private bool _submitted;
-    private string? _errorMessage;
+    private ApiError? _error;
 
     private async Task SubmitAsync()
     {
         _isSubmitting = true;
-        _errorMessage = null;
+        _error = null;
         try
         {
             var result = await ReviewsApiClient.SubmitReviewAsync(OrganizationSlug, BookingId, Token, _rating, _comment, CancellationToken.None);
-            if (result is null)
-            {
-                _errorMessage = "Couldn't submit your review — this link may be invalid, expired, or already used.";
-                return;
-            }
-
-            _submitted = true;
+            if (result.IsSuccess)
+                _submitted = true;
+            else
+                _error = result.Error;
         }
         finally
         {

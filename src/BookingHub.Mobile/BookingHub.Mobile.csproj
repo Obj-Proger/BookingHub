@@ -19,6 +19,19 @@
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 	</PropertyGroup>
 
+	<!-- The API the app talks to, read at runtime by Api/ApiSettings.cs. Override per build:
+	     dotnet build -f net10.0-android -p:ApiBaseUrl=https://api.example.com/
+	     The defaults target the API's launch profile on this machine: the Android emulator reaches the
+	     host as 10.0.2.2 and, lacking a certificate for that name, uses the API's plain-HTTP port
+	     (allowed for that address only — Platforms/Android/Resources/xml/network_security_config.xml). -->
+	<PropertyGroup>
+		<ApiBaseUrl Condition="'$(ApiBaseUrl)' == '' And $([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">http://10.0.2.2:5053/</ApiBaseUrl>
+		<ApiBaseUrl Condition="'$(ApiBaseUrl)' == ''">https://localhost:7117/</ApiBaseUrl>
+	</PropertyGroup>
+	<ItemGroup>
+		<AssemblyMetadata Include="ApiBaseUrl" Value="$(ApiBaseUrl)" />
+	</ItemGroup>
+
 	<!-- Real MAUI targets. The plain net10.0 below exists only so BookingHub.Mobile.Tests
      can reference this same project — everything MAUI-specific is excluded from it
      (see the Compile Remove group). -->

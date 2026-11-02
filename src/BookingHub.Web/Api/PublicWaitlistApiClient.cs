@@ -1,32 +1,21 @@
-﻿using System.Net.Http.Json;
-using BookingHub.Web.Api.Contracts;
+﻿using BookingHub.Web.Api.Contracts;
 
 namespace BookingHub.Web.Api;
 
 internal sealed class PublicWaitlistApiClient(HttpClient httpClient) : IPublicWaitlistApiClient
 {
-    public async Task<WaitlistEntryCreatedResponse?> JoinAsync(string organizationSlug, JoinWaitlistRequest request, CancellationToken cancellationToken)
-    {
-        var response = await httpClient.PostAsJsonAsync(
-            $"api/v1/public/{organizationSlug}/waitlist", request, ApiJsonOptions.Default, cancellationToken);
-        return response.IsSuccessStatusCode
-            ? await response.Content.ReadFromJsonAsync<WaitlistEntryCreatedResponse>(ApiJsonOptions.Default, cancellationToken)
-            : null;
-    }
+    public Task<ApiResult<WaitlistEntryCreatedResponse>> JoinAsync(
+        string organizationSlug, JoinWaitlistRequest request, CancellationToken cancellationToken) =>
+        httpClient.PostApiResultAsync<WaitlistEntryCreatedResponse>(
+            $"api/v1/public/{organizationSlug}/waitlist", request, cancellationToken);
 
-    public async Task<bool> ConfirmOfferAsync(string organizationSlug, Guid waitlistEntryId, string? token, CancellationToken cancellationToken)
-    {
-        var response = await httpClient.PostAsJsonAsync(
+    public Task<ApiResult> ConfirmOfferAsync(string organizationSlug, Guid waitlistEntryId, string? token, CancellationToken cancellationToken) =>
+        httpClient.PostApiResultAsync(
             $"api/v1/public/{organizationSlug}/waitlist/{waitlistEntryId}/confirm",
-            new ConfirmWaitlistOfferRequest(token), ApiJsonOptions.Default, cancellationToken);
-        return response.IsSuccessStatusCode;
-    }
+            new ConfirmWaitlistOfferRequest(token), cancellationToken);
 
-    public async Task<bool> LeaveAsync(string organizationSlug, Guid waitlistEntryId, string? token, CancellationToken cancellationToken)
-    {
-        var response = await httpClient.PostAsJsonAsync(
+    public Task<ApiResult> LeaveAsync(string organizationSlug, Guid waitlistEntryId, string? token, CancellationToken cancellationToken) =>
+        httpClient.PostApiResultAsync(
             $"api/v1/public/{organizationSlug}/waitlist/{waitlistEntryId}/leave",
-            new LeaveWaitlistRequest(token), ApiJsonOptions.Default, cancellationToken);
-        return response.IsSuccessStatusCode;
-    }
+            new LeaveWaitlistRequest(token), cancellationToken);
 }

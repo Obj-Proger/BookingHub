@@ -22,5 +22,6 @@ public sealed record PublicBookingDetailsResponse(
     Guid BookingId, Guid LocationId, Guid EmployeeId, Guid ServiceId, string ServiceName,
     DateTime StartUtc, DateTime EndUtc, BookingStatus Status);
 
+public sealed record ConfirmBookingRequest(string? Token);
 public sealed record CancelBookingRequest(string? Token, string? Reason);
 public sealed record RescheduleBookingRequest(string? Token, DateTime NewStartUtc);

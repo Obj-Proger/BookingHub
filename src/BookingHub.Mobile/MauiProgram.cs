@@ -39,14 +39,14 @@ public static class MauiProgram
         builder.Services.AddSingleton<ILocalizationService, LocalizationServiceAdapter>();
 
         builder.Services.AddHttpClient<IAuthApiClient, AuthApiClient>(client =>
-            client.BaseAddress = new Uri(ApiConstants.BaseUrl));
+            client.BaseAddress = ApiSettings.BaseUrl);
 
         builder.Services.AddTransient<AuthTokenHandler>();
 
-        builder.Services.AddHttpClient<IMeApiClient, MeApiClient>(client => client.BaseAddress = new Uri(ApiConstants.BaseUrl))
+        builder.Services.AddHttpClient<IMeApiClient, MeApiClient>(client => client.BaseAddress = ApiSettings.BaseUrl)
             .AddHttpMessageHandler<AuthTokenHandler>();
 
-        builder.Services.AddHttpClient<IBookingsApiClient, BookingsApiClient>(client => client.BaseAddress = new Uri(ApiConstants.BaseUrl))
+        builder.Services.AddHttpClient<IBookingsApiClient, BookingsApiClient>(client => client.BaseAddress = ApiSettings.BaseUrl)
             .AddHttpMessageHandler<AuthTokenHandler>();
 
         builder.Services.AddTransient<LoginViewModel>();

@@ -15,9 +15,9 @@ else
     <button type="button" @onclick="ConfirmAsync" disabled="@_isBusy">Take this slot</button>
     <button type="button" @onclick="LeaveAsync" disabled="@_isBusy">Leave the waitlist</button>
 
-    @if (_errorMessage is not null)
+    @if (_error is not null)
     {
-        <p class="error-text">@_errorMessage</p>
+        <ErrorState Error="_error" />
     }
 }
 
@@ -28,35 +28,27 @@ else
 
     private bool _isBusy;
     private string? _outcome;
-    private string? _errorMessage;
+    private ApiError? _error;
 
-    private async Task ConfirmAsync()
+    private Task ConfirmAsync() => RunAsync(
+        () => WaitlistApiClient.ConfirmOfferAsync(OrganizationSlug, WaitlistEntryId, Token, CancellationToken.None),
+        "Booked! See you then.");
+
+    private Task LeaveAsync() => RunAsync(
+        () => WaitlistApiClient.LeaveAsync(OrganizationSlug, WaitlistEntryId, Token, CancellationToken.None),
+        "You've been removed from the waitlist.");
+
+    private async Task RunAsync(Func<Task<ApiResult>> action, string successOutcome)
     {
         _isBusy = true;
-        _errorMessage = null;
+        _error = null;
         try
         {
-            var succeeded = await WaitlistApiClient.ConfirmOfferAsync(OrganizationSlug, WaitlistEntryId, Token, CancellationToken.None);
-            _outcome = succeeded ? "Booked! See you then." : null;
-            if (!succeeded)
-                _errorMessage = "This offer may have expired or already been taken.";
-        }
-        finally
-        {
-            _isBusy = false;
-        }
-    }
-
-    private async Task LeaveAsync()
-    {
-        _isBusy = true;
-        _errorMessage = null;
-        try
-        {
-            var succeeded = await WaitlistApiClient.LeaveAsync(OrganizationSlug, WaitlistEntryId, Token, CancellationToken.None);
-            _outcome = succeeded ? "You've been removed from the waitlist." : null;
-            if (!succeeded)
-                _errorMessage = "Couldn't update your waitlist entry — this link may be invalid.";
+            var result = await action();
+            if (result.IsSuccess)
+                _outcome = successOutcome;
+            else
+                _error = result.Error;
         }
         finally
         {

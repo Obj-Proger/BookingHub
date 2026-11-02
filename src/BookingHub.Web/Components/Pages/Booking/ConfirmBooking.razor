@@ -1,0 +1,55 @@
+﻿@page "/book/{OrganizationSlug}/confirm/{BookingId:guid}"
+@inject IPublicBookingsApiClient BookingsApiClient
+
+<PageTitle>Confirm your booking</PageTitle>
+
+@if (_confirmed)
+{
+    <h1>Booking confirmed</h1>
+    <p>See you then! We've sent you a link to manage your booking — use it to cancel or reschedule.</p>
+}
+else
+{
+    <h1>Confirm your booking</h1>
+    <p>The time is reserved for you once you confirm it.</p>
+
+    @if (_error is not null)
+    {
+        <ErrorState Error="_error" />
+    }
+
+    <button type="button" @onclick="ConfirmAsync" disabled="@_isBusy">
+        @(_isBusy ? "Confirming…" : "Confirm booking")
+    </button>
+}
+
+@code {
+    // Confirmed by a button, not on page load: messaging apps open links to build previews,
+    // which would confirm bookings the guest never looked at.
+
+    [Parameter] public string OrganizationSlug { get; set; } = string.Empty;
+    [Parameter] public Guid BookingId { get; set; }
+    [SupplyParameterFromQuery] public string? Token { get; set; }
+
+    private bool _isBusy;
+    private bool _confirmed;
+    private ApiError? _error;
+
+    private async Task ConfirmAsync()
+    {
+        _isBusy = true;
+        _error = null;
+        try
+        {
+            var result = await BookingsApiClient.ConfirmBookingAsync(OrganizationSlug, BookingId, Token, CancellationToken.None);
+            if (result.IsSuccess)
+                _confirmed = true;
+            else
+                _error = result.Error;
+        }
+        finally
+        {
+            _isBusy = false;
+        }
+    }
+}

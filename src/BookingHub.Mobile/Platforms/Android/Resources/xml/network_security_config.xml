@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Plain HTTP only to 10.0.2.2, the Android emulator's alias for the development machine
+     (see ApiBaseUrl in BookingHub.Mobile.csproj). Every other host still requires HTTPS. -->
+<network-security-config>
+	<domain-config cleartextTrafficPermitted="true">
+		<domain includeSubdomains="false">10.0.2.2</domain>
+	</domain-config>
+</network-security-config>
