@@ -13,8 +13,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace BookingHub.API.Tests;
 
 /// <summary>
-/// Calls every GET endpoint of the API, as the owner, against the demo data. Each one has to answer
-/// successfully: a query EF Core cannot translate, or any other failure that only shows on a real
+/// Calls every GET endpoint of the API against the demo data — the caller's own (<c>me</c>) endpoints as
+/// the employee Anna, every other one as the owner. Each one has to answer successfully: a query EF Core cannot translate, or any other failure that only shows on a real
 /// database, is caught here rather than by hand. New endpoints are picked up automatically; one with
 /// a route value this test does not know fails until <see cref="RouteValuesAsync"/> supplies it.
 /// </summary>
@@ -27,12 +27,13 @@ public partial class ReadEndpointTests(SeededApiFixture fixture) : IClassFixture
     private static partial Regex ManageLink();
 
     [Fact]
-    public async Task EveryGetEndpoint_AsOwnerOnTheDemoData_Succeeds()
+    public async Task EveryGetEndpoint_OnTheDemoData_Succeeds()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
         using var client = fixture.Factory.CreateClient();
 
-        var accessToken = await SignInAsOwnerAsync(client, cancellationToken);
+        var ownerToken = await SignInAsync(client, "owner@demo.test", cancellationToken);
+        var employeeToken = await SignInAsync(client, "anna@demo.test", cancellationToken);
         var (routeValues, guestToken) = await RouteValuesAsync(cancellationToken);
         var query = QueryString(guestToken);
 
@@ -46,6 +47,9 @@ public partial class ReadEndpointTests(SeededApiFixture fixture) : IClassFixture
                 routeValues.TryGetValue(match.Groups["name"].Value, out var value)
                     ? value
                     : throw new InvalidOperationException($"No value for {{{match.Groups["name"].Value}}} in {route}: add one to the route values."));
+
+            // The "me" endpoints answer for the caller's own employee record, which the owner does not have.
+            var accessToken = route.StartsWith("api/v1/me/", StringComparison.Ordinal) ? employeeToken : ownerToken;
 
             using var request = new HttpRequestMessage(HttpMethod.Get, path + query).WithBearerToken(accessToken);
             using var response = await client.SendAsync(request, cancellationToken);
@@ -68,10 +72,10 @@ public partial class ReadEndpointTests(SeededApiFixture fixture) : IClassFixture
             .Order(StringComparer.Ordinal)
     ];
 
-    private static async Task<string> SignInAsOwnerAsync(HttpClient client, CancellationToken cancellationToken)
+    private static async Task<string> SignInAsync(HttpClient client, string email, CancellationToken cancellationToken)
     {
         using var response = await client.PostAsJsonAsync(
-            "api/v1/auth/login", new LoginRequest("owner@demo.test", DevelopmentSeeder.Password), cancellationToken);
+            "api/v1/auth/login", new LoginRequest(email, DevelopmentSeeder.Password), cancellationToken);
         response.EnsureSuccessStatusCode();
 
         var body = await response.Content.ReadFromJsonAsync<AuthenticatedResponse>(cancellationToken);
