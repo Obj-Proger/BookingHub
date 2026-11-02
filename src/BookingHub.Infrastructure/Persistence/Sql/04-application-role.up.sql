@@ -2,12 +2,16 @@
 -- database owner), which bypasses row-level security; bookinghub_app does not, so every query the
 -- application makes is subject to the policies above. The password is set outside the migration
 -- (see README), so no secret is committed. Roles are cluster-wide: the role may already exist from
--- another database on the same server.
+-- another database on the same server, or be created this very moment by a migration of another
+-- database running alongside (parallel test runs). Checking first and creating second would race,
+-- so the role is created outright and "already exists" (a duplicate or, mid-race, a unique
+-- violation in the role catalog) is accepted.
 DO $$
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'bookinghub_app') THEN
-        CREATE ROLE bookinghub_app WITH LOGIN;
-    END IF;
+    CREATE ROLE bookinghub_app WITH LOGIN;
+EXCEPTION
+    WHEN duplicate_object OR unique_violation THEN
+        NULL;
 END
 $$;
 
