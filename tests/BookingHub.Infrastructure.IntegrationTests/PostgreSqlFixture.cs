@@ -1,39 +1,38 @@
 ﻿using BookingHub.Infrastructure.IntegrationTests.TestDoubles;
+using BookingHub.Tests.Shared;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using Testcontainers.PostgreSql;
 
 namespace BookingHub.Infrastructure.IntegrationTests;
 
 public sealed class PostgreSqlFixture : IAsyncLifetime
 {
-    private const string AppRolePassword = "test-only-password";
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:18")
-    .Build();
+    private TestPostgreSql _database = null!;
 
-    public string ConnectionString => _container.GetConnectionString();
+    public string ConnectionString => _database.ConnectionString;
 
-    public string AppRoleConnectionString =>
-        new NpgsqlConnectionStringBuilder(ConnectionString) { Username = "bookinghub_app", Password = AppRolePassword }.ConnectionString;
+    /// <summary>A login in the application role — subject to row-level security, unlike <see cref="ConnectionString"/>.</summary>
+    public string AppRoleConnectionString { get; private set; } = null!;
 
-    /// <summary>Owner-role context — bypasses RLS, used for seeding and for tests unrelated to it (unchanged behavior from before this commit).</summary>
+    /// <summary>Superuser context — bypasses RLS, used for seeding and for tests unrelated to it.</summary>
     public ApplicationDbContext CreateDbContext() =>
         new(new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(ConnectionString).Options, new FixedCurrentTenant(null));
 
-    /// <summary>Least-privilege role context — actually subject to RLS, unlike the owner above.</summary>
+    /// <summary>Least-privilege context — actually subject to RLS, unlike the superuser above.</summary>
     public ApplicationDbContext CreateAppRoleDbContext() =>
         new(new DbContextOptionsBuilder<ApplicationDbContext>().UseNpgsql(AppRoleConnectionString).Options, new FixedCurrentTenant(null));
 
     public async ValueTask InitializeAsync()
     {
-        await _container.StartAsync();
+        var cancellationToken = TestContext.Current.CancellationToken;
+        _database = await TestPostgreSql.StartAsync(cancellationToken);
 
         await using var dbContext = CreateDbContext();
-        await dbContext.Database.MigrateAsync();
-        await dbContext.Database.ExecuteSqlRawAsync($"ALTER ROLE bookinghub_app WITH PASSWORD '{AppRolePassword}';");
+        await dbContext.Database.MigrateAsync(cancellationToken);
+
+        AppRoleConnectionString = await _database.CreateApplicationLoginAsync(cancellationToken);
     }
 
-    public async ValueTask DisposeAsync() => await _container.DisposeAsync();
+    public async ValueTask DisposeAsync() => await _database.DisposeAsync();
 }
 
 [CollectionDefinition(nameof(DatabaseCollection))]

@@ -1,24 +1,24 @@
-﻿using Testcontainers.PostgreSql;
+﻿using BookingHub.Tests.Shared;
 
 namespace BookingHub.API.Tests;
 
 public sealed class ApiTestFixture : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:18").Build();
+    private TestPostgreSql _database = null!;
 
     public ApiWebApplicationFactory Factory { get; private set; } = null!;
 
     public async ValueTask InitializeAsync()
     {
-        await _container.StartAsync();
-        Factory = new ApiWebApplicationFactory(_container.GetConnectionString());
+        _database = await TestPostgreSql.StartAsync(TestContext.Current.CancellationToken);
+        Factory = new ApiWebApplicationFactory(_database.ConnectionString);
         await Factory.MigrateDatabaseAsync();
     }
 
     public async ValueTask DisposeAsync()
     {
         await Factory.DisposeAsync();
-        await _container.DisposeAsync();
+        await _database.DisposeAsync();
     }
 }
 

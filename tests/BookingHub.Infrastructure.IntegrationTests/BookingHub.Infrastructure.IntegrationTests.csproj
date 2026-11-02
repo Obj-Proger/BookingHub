@@ -18,6 +18,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<!-- Shared with the other database-backed test project. -->
+		<Compile Include="..\Shared\TestPostgreSql.cs" Link="Shared\TestPostgreSql.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\..\src\BookingHub.Application\BookingHub.Application.csproj" />
 		<ProjectReference Include="..\..\src\BookingHub.Domain\BookingHub.Domain.csproj" />
 		<ProjectReference Include="..\..\src\BookingHub.Infrastructure\BookingHub.Infrastructure.csproj" />

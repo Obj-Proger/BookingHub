@@ -29,6 +29,12 @@ Then give that role the password `appsettings.Development.json` expects:
 
     docker exec -it bookinghub-pg psql -U postgres -d bookinghub -c "ALTER ROLE bookinghub_app WITH PASSWORD 'bookinghub_app_password';"
 
+**PostgreSQL on another machine instead of the compose container:** create an empty `bookinghub`
+database there, run the same two steps against it with a superuser of that server, and point the
+API at it without committing anything:
+
+    dotnet user-secrets set "ConnectionStrings:Database" "Host=<server>;Port=5432;Database=bookinghub;Username=bookinghub_app;Password=<password>" --project src/BookingHub.API
+
 ## 3. Run
 
     dotnet run --project src/BookingHub.API    # https://localhost:7117, Scalar UI at /scalar/v1
@@ -43,3 +49,21 @@ API's console output.
     docker compose up -d
 
 Then repeat the `dotnet ef database update` and `ALTER ROLE` steps from section 2.
+
+## 5. Tests
+
+    dotnet test --project tests/BookingHub.Domain.Tests
+    dotnet test --project tests/BookingHub.Application.Tests
+    dotnet test --project tests/BookingHub.Mobile.Tests
+    dotnet test --project tests/BookingHub.Infrastructure.IntegrationTests
+    dotnet test --project tests/BookingHub.API.Tests
+
+The last two need PostgreSQL. By default each test run starts a throwaway PostgreSQL 18 container
+through Testcontainers, which needs Docker on this machine. To use an existing PostgreSQL server
+instead, give the tests a superuser connection string; every run then creates its own
+`bookinghub_test_*` database and login on that server and drops them when it finishes:
+
+    $env:BOOKINGHUB_TEST_POSTGRES = "Host=<server>;Port=5432;Database=postgres;Username=<superuser>;Password=<password>"
+
+A run that is killed halfway leaves its `bookinghub_test_*` database and login behind; drop them by
+hand (`\l` and `\du` in psql list them).

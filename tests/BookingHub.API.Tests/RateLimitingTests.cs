@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using BookingHub.API.Controllers.Auth;
-using Testcontainers.PostgreSql;
+using BookingHub.Tests.Shared;
 
 namespace BookingHub.API.Tests;
 
@@ -11,25 +11,25 @@ namespace BookingHub.API.Tests;
 /// transport doesn't give each test its own RemoteIpAddress, so every test sharing one host
 /// shares one partition key. Running this against the shared collection host silently ate into
 /// unrelated AuthenticationTests' quota (confirmed by an actual run where they started failing
-/// with 429 instead of their expected status codes). A dedicated container+factory, paid for
+/// with 429 instead of their expected status codes). A dedicated database+factory, paid for
 /// once here, keeps that blast radius contained to this one class.
 /// </summary>
 public sealed class RateLimitingTests : IAsyncLifetime
 {
-    private readonly PostgreSqlContainer _container = new PostgreSqlBuilder("postgres:18").Build();
+    private TestPostgreSql _database = null!;
     private ApiWebApplicationFactory _factory = null!;
 
     public async ValueTask InitializeAsync()
     {
-        await _container.StartAsync();
-        _factory = new ApiWebApplicationFactory(_container.GetConnectionString(), relaxRateLimits: false);
+        _database = await TestPostgreSql.StartAsync(TestContext.Current.CancellationToken);
+        _factory = new ApiWebApplicationFactory(_database.ConnectionString, relaxRateLimits: false);
         await _factory.MigrateDatabaseAsync();
     }
 
     public async ValueTask DisposeAsync()
     {
         await _factory.DisposeAsync();
-        await _container.DisposeAsync();
+        await _database.DisposeAsync();
     }
 
     [Fact]
