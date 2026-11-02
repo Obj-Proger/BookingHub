@@ -23,7 +23,7 @@ internal sealed class GetLocationReviewsQueryHandler(IApplicationDbContext dbCon
         var skip = Math.Max(query.Skip, 0);
         var take = Math.Clamp(query.Take, 1, MaxPageSize);
 
-        // The id is only a tie-breaker: reviews created by the same migration share one timestamp.
+        // The id is only a tie-breaker, for reviews created at the same instant.
         var reviews = await (
             from r in dbContext.Reviews
             join e in dbContext.Employees on r.EmployeeId equals e.Id

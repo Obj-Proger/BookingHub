@@ -1,4 +1,5 @@
 ﻿using System;
+using BookingHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -35,37 +36,6 @@ namespace BookingHub.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Clients",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: true),
-                    Email = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: true),
-                    Phone = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Clients", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Locations",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
-                    TimeZone = table.Column<string>(type: "text", nullable: false),
-                    WorkingHours = table.Column<string>(type: "jsonb", nullable: false),
-                    Address = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Locations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -148,6 +118,27 @@ namespace BookingHub.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Clients",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Email = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: true),
+                    Phone = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Clients", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Clients_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "RefreshTokens",
                 columns: table => new
                 {
@@ -184,6 +175,12 @@ namespace BookingHub.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_Employees", x => x.Id);
                     table.ForeignKey(
+                        name: "FK_Employees_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
                         name: "FK_Employees_Organizations_OrganizationId",
                         column: x => x.OrganizationId,
                         principalTable: "Organizations",
@@ -192,25 +189,50 @@ namespace BookingHub.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "OrganizationMembers",
+                name: "Locations",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Role = table.Column<string>(type: "text", nullable: false),
-                    LocationId = table.Column<Guid>(type: "uuid", nullable: true),
-                    EmployeeId = table.Column<Guid>(type: "uuid", nullable: true)
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    TimeZone = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    WorkingHours = table.Column<string>(type: "jsonb", nullable: false),
+                    Address = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OrganizationMembers", x => x.Id);
+                    table.PrimaryKey("PK_Locations", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_OrganizationMembers_Organizations_OrganizationId",
+                        name: "FK_Locations_Organizations_OrganizationId",
                         column: x => x.OrganizationId,
                         principalTable: "Organizations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OutboxMessages",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Type = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Payload = table.Column<string>(type: "jsonb", nullable: false),
+                    OccurredOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ProcessedOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    Attempts = table.Column<int>(type: "integer", nullable: false),
+                    NextAttemptOnUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    LastError = table.Column<string>(type: "character varying(4000)", maxLength: 4000, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OutboxMessages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OutboxMessages_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -265,6 +287,46 @@ namespace BookingHub.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OrganizationMembers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Role = table.Column<string>(type: "text", nullable: false),
+                    LocationId = table.Column<Guid>(type: "uuid", nullable: true),
+                    EmployeeId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrganizationMembers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrganizationMembers_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_OrganizationMembers_Employees_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "Employees",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_OrganizationMembers_Locations_LocationId",
+                        column: x => x.LocationId,
+                        principalTable: "Locations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_OrganizationMembers_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Bookings",
                 columns: table => new
                 {
@@ -277,16 +339,16 @@ namespace BookingHub.Infrastructure.Migrations
                     Status = table.Column<string>(type: "text", nullable: false),
                     Source = table.Column<string>(type: "text", nullable: false),
                     RecurringSeriesId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CancellationReason = table.Column<string>(type: "text", nullable: true),
+                    CancellationReason = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
                     ConfirmedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ResolvedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     CreatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     ModifiedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    CancellationToken = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    CancellationToken = table.Column<string>(type: "character varying(43)", maxLength: 43, nullable: false),
                     ClientName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     ClientEmail = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: true),
-                    ClientPhone = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
-                    ConfirmationToken = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    ClientPhone = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
+                    ConfirmationToken = table.Column<string>(type: "character varying(43)", maxLength: 43, nullable: false),
                     PriceAmount = table.Column<decimal>(type: "numeric(18,2)", precision: 18, scale: 2, nullable: false),
                     PriceCurrency = table.Column<string>(type: "character varying(3)", maxLength: 3, nullable: false),
                     TimeSlot_EndUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
@@ -371,10 +433,10 @@ namespace BookingHub.Infrastructure.Migrations
                     ModifiedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     ClientName = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: true),
                     ClientEmail = table.Column<string>(type: "character varying(320)", maxLength: 320, nullable: true),
-                    ClientPhone = table.Column<string>(type: "character varying(20)", maxLength: 20, nullable: false),
+                    ClientPhone = table.Column<string>(type: "character varying(16)", maxLength: 16, nullable: false),
                     DesiredWindow_EndUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     DesiredWindow_StartUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    ManagementToken = table.Column<string>(type: "character varying(64)", maxLength: 64, nullable: false),
+                    ManagementToken = table.Column<string>(type: "character varying(43)", maxLength: 43, nullable: false),
                     OfferedSlot_EndUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
                     OfferedSlot_StartUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
@@ -467,7 +529,9 @@ namespace BookingHub.Infrastructure.Migrations
                     BookingId = table.Column<Guid>(type: "uuid", nullable: false),
                     Rating = table.Column<int>(type: "integer", nullable: false),
                     Comment = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: true),
-                    IsHidden = table.Column<bool>(type: "boolean", nullable: false)
+                    IsHidden = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    ModifiedAtUtc = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -583,6 +647,11 @@ namespace BookingHub.Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Employees_UserId",
+                table: "Employees",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Locations_OrganizationId",
                 table: "Locations",
                 column: "OrganizationId");
@@ -599,16 +668,42 @@ namespace BookingHub.Infrastructure.Migrations
                 column: "ServiceId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrganizationMembers_EmployeeId",
+                table: "OrganizationMembers",
+                column: "EmployeeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrganizationMembers_LocationId",
+                table: "OrganizationMembers",
+                column: "LocationId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_OrganizationMembers_OrganizationId_UserId",
                 table: "OrganizationMembers",
                 columns: new[] { "OrganizationId", "UserId" },
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_OrganizationMembers_UserId",
+                table: "OrganizationMembers",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Organizations_Slug",
                 table: "Organizations",
                 column: "Slug",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OutboxMessages_NextAttemptOnUtc",
+                table: "OutboxMessages",
+                column: "NextAttemptOnUtc",
+                filter: "\"ProcessedOnUtc\" IS NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OutboxMessages_OrganizationId",
+                table: "OutboxMessages",
+                column: "OrganizationId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RecurringSchedules_EmployeeLocationAssignmentId_DayOfWeek",
@@ -683,158 +778,13 @@ namespace BookingHub.Infrastructure.Migrations
                 table: "WaitlistEntries",
                 column: "ServiceId");
 
-            migrationBuilder.Sql("CREATE EXTENSION IF NOT EXISTS btree_gist;");
-
-            migrationBuilder.Sql("""
-                ALTER TABLE "Bookings" ADD CONSTRAINT "EX_Bookings_NoOverlapPerEmployee"
-                EXCLUDE USING gist (
-                    "EmployeeId" WITH =,
-                    tstzrange("TimeSlot_StartUtc", "TimeSlot_EndUtc", '[)') WITH &&
-                )
-                WHERE ("Status" = 'Confirmed');
-                """);
-
-            migrationBuilder.Sql("""CREATE UNIQUE INDEX "IX_Clients_Phone" ON "Clients" ("Phone");""");
-
-            migrationBuilder.Sql("""ALTER TABLE "Locations" ENABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""
-                CREATE POLICY tenant_isolation ON "Locations"
-                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
-                """);
-
-            migrationBuilder.Sql("""ALTER TABLE "OrganizationMembers" ENABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""
-                CREATE POLICY tenant_isolation ON "OrganizationMembers"
-                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
-                """);
-            // A signed-in user may read their own memberships in every organization (the /me routes);
-            // permissive policies are OR-ed, and a FOR SELECT policy never allows writes.
-            migrationBuilder.Sql("""
-                CREATE POLICY member_self_read ON "OrganizationMembers" FOR SELECT
-                    USING ("UserId" = NULLIF(current_setting('app.current_user_id', true), '')::uuid);
-                """);
-
-            migrationBuilder.Sql("""ALTER TABLE "Employees" ENABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""
-                CREATE POLICY tenant_isolation ON "Employees"
-                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
-                """);
-
-            migrationBuilder.Sql("""ALTER TABLE "Services" ENABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""
-                CREATE POLICY tenant_isolation ON "Services"
-                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
-                """);
-
-            migrationBuilder.Sql("""ALTER TABLE "Bookings" ENABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""
-                CREATE POLICY tenant_isolation ON "Bookings"
-                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
-                """);
-
-            migrationBuilder.Sql("""ALTER TABLE "WaitlistEntries" ENABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""
-                CREATE POLICY tenant_isolation ON "WaitlistEntries"
-                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
-                """);
-
-            migrationBuilder.Sql("""ALTER TABLE "Reviews" ENABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""
-            CREATE POLICY tenant_isolation ON "Reviews"
-                    USING ("OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid);
-            """);
-
-            migrationBuilder.Sql("""ALTER TABLE "EmployeeLocationAssignments" ENABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""
-                CREATE POLICY tenant_isolation ON "EmployeeLocationAssignments"
-                    USING (EXISTS (
-                        SELECT 1 FROM "Locations" l
-                        WHERE l."Id" = "LocationId" AND l."OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid
-                    ));
-                """);
-
-            migrationBuilder.Sql("""ALTER TABLE "RecurringSchedules" ENABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""
-                CREATE POLICY tenant_isolation ON "RecurringSchedules"
-                    USING (EXISTS (
-                        SELECT 1 FROM "EmployeeLocationAssignments" a
-                        JOIN "Locations" l ON l."Id" = a."LocationId"
-                        WHERE a."Id" = "EmployeeLocationAssignmentId" AND l."OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid
-                    ));
-                """);
-
-            migrationBuilder.Sql("""ALTER TABLE "ScheduleExceptions" ENABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""
-                CREATE POLICY tenant_isolation ON "ScheduleExceptions"
-                    USING (EXISTS (
-                        SELECT 1 FROM "EmployeeLocationAssignments" a
-                        JOIN "Locations" l ON l."Id" = a."LocationId"
-                        WHERE a."Id" = "EmployeeLocationAssignmentId" AND l."OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid
-                    ));
-                """);
-
-            migrationBuilder.Sql("""ALTER TABLE "LocationServiceOverrides" ENABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""
-                CREATE POLICY tenant_isolation ON "LocationServiceOverrides"
-                    USING (EXISTS (
-                        SELECT 1 FROM "Locations" l
-                        WHERE l."Id" = "LocationId" AND l."OrganizationId" = NULLIF(current_setting('app.current_organization_id', true), '')::uuid
-                    ));
-                """);
-
-            migrationBuilder.Sql("""CREATE ROLE bookinghub_app WITH LOGIN;""");
-            migrationBuilder.Sql("""GRANT USAGE ON SCHEMA public TO bookinghub_app;""");
-            migrationBuilder.Sql("""GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO bookinghub_app;""");
-            migrationBuilder.Sql("""ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO bookinghub_app;""");
-            migrationBuilder.Sql("""
-                DO $$
-                BEGIN
-                    EXECUTE format('GRANT CREATE ON DATABASE %I TO bookinghub_app', current_database());
-                END
-                $$;
-                """);
+            DatabaseObjects.Create(migrationBuilder);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql("""
-                DO $$
-                BEGIN
-                    EXECUTE format('REVOKE CREATE ON DATABASE %I FROM bookinghub_app', current_database());
-                END
-                $$;
-                """);
-            migrationBuilder.Sql("""ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE SELECT, INSERT, UPDATE, DELETE ON TABLES FROM bookinghub_app;""");
-            migrationBuilder.Sql("""REVOKE ALL ON ALL TABLES IN SCHEMA public FROM bookinghub_app;""");
-            migrationBuilder.Sql("""REVOKE USAGE ON SCHEMA public FROM bookinghub_app;""");
-            migrationBuilder.Sql("""DROP ROLE bookinghub_app;""");
-
-            migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "LocationServiceOverrides";""");
-            migrationBuilder.Sql("""ALTER TABLE "LocationServiceOverrides" DISABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "ScheduleExceptions";""");
-            migrationBuilder.Sql("""ALTER TABLE "ScheduleExceptions" DISABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "RecurringSchedules";""");
-            migrationBuilder.Sql("""ALTER TABLE "RecurringSchedules" DISABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "EmployeeLocationAssignments";""");
-            migrationBuilder.Sql("""ALTER TABLE "EmployeeLocationAssignments" DISABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "Reviews";""");
-            migrationBuilder.Sql("""ALTER TABLE "Reviews" DISABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "WaitlistEntries";""");
-            migrationBuilder.Sql("""ALTER TABLE "WaitlistEntries" DISABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "Bookings";""");
-            migrationBuilder.Sql("""ALTER TABLE "Bookings" DISABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "Services";""");
-            migrationBuilder.Sql("""ALTER TABLE "Services" DISABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "Employees";""");
-            migrationBuilder.Sql("""ALTER TABLE "Employees" DISABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "OrganizationMembers";""");
-            migrationBuilder.Sql("""DROP POLICY member_self_read ON "OrganizationMembers";""");
-            migrationBuilder.Sql("""ALTER TABLE "OrganizationMembers" DISABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""DROP POLICY tenant_isolation ON "Locations";""");
-            migrationBuilder.Sql("""ALTER TABLE "Locations" DISABLE ROW LEVEL SECURITY;""");
-            migrationBuilder.Sql("""DROP INDEX "IX_Clients_Phone";""");
-            migrationBuilder.Sql("""ALTER TABLE "Bookings" DROP CONSTRAINT "EX_Bookings_NoOverlapPerEmployee";""");
+            DatabaseObjects.Drop(migrationBuilder);
 
             migrationBuilder.DropTable(
                 name: "AspNetUserClaims");
@@ -852,6 +802,9 @@ namespace BookingHub.Infrastructure.Migrations
                 name: "OrganizationMembers");
 
             migrationBuilder.DropTable(
+                name: "OutboxMessages");
+
+            migrationBuilder.DropTable(
                 name: "RecurringSchedules");
 
             migrationBuilder.DropTable(
@@ -865,9 +818,6 @@ namespace BookingHub.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "WaitlistEntries");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "Bookings");
@@ -886,6 +836,9 @@ namespace BookingHub.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "Locations");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "Organizations");

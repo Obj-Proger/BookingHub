@@ -32,6 +32,11 @@
   </ItemGroup>
 
 	<ItemGroup>
+		<!-- Applied by the InitialCreate migration through Persistence/DatabaseObjects.cs. -->
+		<EmbeddedResource Include="Persistence\Sql\*.sql" LogicalName="Sql/%(Filename)%(Extension)" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<InternalsVisibleTo Include="BookingHub.Infrastructure.IntegrationTests" />
 	</ItemGroup>
 

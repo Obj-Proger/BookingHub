@@ -29,7 +29,8 @@ namespace BookingHub.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("CancellationReason")
-                        .HasColumnType("text");
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
 
                     b.Property<Guid?>("ClientId")
                         .HasColumnType("uuid");
@@ -75,8 +76,8 @@ namespace BookingHub.Infrastructure.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(64)
-                                .HasColumnType("character varying(64)")
+                                .HasMaxLength(43)
+                                .HasColumnType("character varying(43)")
                                 .HasColumnName("CancellationToken");
                         });
 
@@ -104,8 +105,8 @@ namespace BookingHub.Infrastructure.Migrations
 
                                     b2.Property<string>("Value")
                                         .IsRequired()
-                                        .HasMaxLength(20)
-                                        .HasColumnType("character varying(20)")
+                                        .HasMaxLength(16)
+                                        .HasColumnType("character varying(16)")
                                         .HasColumnName("ClientPhone");
                                 });
                         });
@@ -116,8 +117,8 @@ namespace BookingHub.Infrastructure.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(64)
-                                .HasColumnType("character varying(64)")
+                                .HasMaxLength(43)
+                                .HasColumnType("character varying(43)")
                                 .HasColumnName("ConfirmationToken");
                         });
 
@@ -196,8 +197,8 @@ namespace BookingHub.Infrastructure.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(20)
-                                .HasColumnType("character varying(20)")
+                                .HasMaxLength(16)
+                                .HasColumnType("character varying(16)")
                                 .HasColumnName("Phone");
                         });
 
@@ -235,6 +236,8 @@ namespace BookingHub.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("OrganizationId");
+
+                    b.HasIndex("UserId");
 
                     b.HasIndex("OrganizationId", "UserId")
                         .IsUnique();
@@ -281,7 +284,8 @@ namespace BookingHub.Infrastructure.Migrations
 
                     b.Property<string>("TimeZone")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
 
                     b.Property<string>("WorkingHours")
                         .IsRequired()
@@ -404,6 +408,12 @@ namespace BookingHub.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("LocationId");
+
+                    b.HasIndex("UserId");
+
                     b.HasIndex("OrganizationId", "UserId")
                         .IsUnique();
 
@@ -458,6 +468,9 @@ namespace BookingHub.Infrastructure.Migrations
 
                     b.Property<Guid>("LocationId")
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("ModifiedAtUtc")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("OrganizationId")
                         .HasColumnType("uuid");
@@ -618,8 +631,8 @@ namespace BookingHub.Infrastructure.Migrations
 
                                     b2.Property<string>("Value")
                                         .IsRequired()
-                                        .HasMaxLength(20)
-                                        .HasColumnType("character varying(20)")
+                                        .HasMaxLength(16)
+                                        .HasColumnType("character varying(16)")
                                         .HasColumnName("ClientPhone");
                                 });
                         });
@@ -643,8 +656,8 @@ namespace BookingHub.Infrastructure.Migrations
 
                             b1.Property<string>("Value")
                                 .IsRequired()
-                                .HasMaxLength(64)
-                                .HasColumnType("character varying(64)")
+                                .HasMaxLength(43)
+                                .HasColumnType("character varying(43)")
                                 .HasColumnName("ManagementToken");
                         });
 
@@ -771,6 +784,49 @@ namespace BookingHub.Infrastructure.Migrations
                     b.ToTable("RefreshTokens");
                 });
 
+            modelBuilder.Entity("BookingHub.Infrastructure.Outbox.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(4000)
+                        .HasColumnType("character varying(4000)");
+
+                    b.Property<DateTime>("NextAttemptOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("OccurredOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("jsonb");
+
+                    b.Property<DateTime?>("ProcessedOnUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NextAttemptOnUtc")
+                        .HasFilter("\"ProcessedOnUtc\" IS NULL");
+
+                    b.HasIndex("OrganizationId");
+
+                    b.ToTable("OutboxMessages");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
@@ -867,6 +923,14 @@ namespace BookingHub.Infrastructure.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("BookingHub.Domain.Entities.Client", b =>
+                {
+                    b.HasOne("BookingHub.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
             modelBuilder.Entity("BookingHub.Domain.Entities.Employee", b =>
                 {
                     b.HasOne("BookingHub.Domain.Entities.Organization", null)
@@ -874,6 +938,11 @@ namespace BookingHub.Infrastructure.Migrations
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("BookingHub.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("BookingHub.Domain.Entities.EmployeeLocationAssignment", b =>
@@ -887,6 +956,15 @@ namespace BookingHub.Infrastructure.Migrations
                     b.HasOne("BookingHub.Domain.Entities.Location", null)
                         .WithMany()
                         .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("BookingHub.Domain.Entities.Location", b =>
+                {
+                    b.HasOne("BookingHub.Domain.Entities.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -908,9 +986,25 @@ namespace BookingHub.Infrastructure.Migrations
 
             modelBuilder.Entity("BookingHub.Domain.Entities.OrganizationMember", b =>
                 {
+                    b.HasOne("BookingHub.Domain.Entities.Employee", null)
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("BookingHub.Domain.Entities.Location", null)
+                        .WithMany()
+                        .HasForeignKey("LocationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("BookingHub.Domain.Entities.Organization", null)
                         .WithMany()
                         .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("BookingHub.Infrastructure.Identity.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -1007,6 +1101,15 @@ namespace BookingHub.Infrastructure.Migrations
                     b.HasOne("BookingHub.Infrastructure.Identity.ApplicationUser", null)
                         .WithMany()
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("BookingHub.Infrastructure.Outbox.OutboxMessage", b =>
+                {
+                    b.HasOne("BookingHub.Domain.Entities.Organization", null)
+                        .WithMany()
+                        .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

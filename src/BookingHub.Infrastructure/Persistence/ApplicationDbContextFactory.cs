@@ -5,11 +5,10 @@ using Microsoft.EntityFrameworkCore.Design;
 namespace BookingHub.Infrastructure.Persistence;
 
 /// <summary>
-/// Used only by EF Core design-time tooling (`dotnet ef migrations add`/`database update`) —
-/// Infrastructure is a class library with no host of its own, and API's Program.cs doesn't yet
-/// call AddInfrastructure (not written yet), so neither can supply DbContextOptions the normal
-/// way. The connection string below is a design-time placeholder only: `migrations add` never
-/// actually connects, it only needs to know the provider (Npgsql) to generate the right SQL.
+/// Used only by EF Core design-time tooling (`dotnet ef migrations add`/`database update`), so the
+/// tools need no startup project: Infrastructure is a class library without a host of its own.
+/// The connection string is a placeholder — `migrations add` never connects, it only needs the
+/// provider — and `database update` is always given the real one with --connection (see README).
 /// </summary>
 public sealed class ApplicationDbContextFactory : IDesignTimeDbContextFactory<ApplicationDbContext>
 {
