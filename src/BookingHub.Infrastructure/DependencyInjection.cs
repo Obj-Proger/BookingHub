@@ -85,6 +85,10 @@ public static class DependencyInjection
 
         services.AddNotifications(configuration);
         services.AddScoped<IGuestNotifier, OutboxGuestNotifier>();
+        services.AddOptions<OutboxOptions>()
+            .Bind(configuration.GetSection(OutboxOptions.SectionName))
+            .Validate(options => options.PollingInterval > TimeSpan.Zero, "Outbox:PollingInterval must be positive.")
+            .ValidateOnStart();
         services.AddHostedService<OutboxProcessor>();
 
         services.AddOptions<WebAppOptions>()

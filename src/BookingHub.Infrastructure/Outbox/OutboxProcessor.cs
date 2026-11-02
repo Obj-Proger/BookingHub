@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace BookingHub.Infrastructure.Outbox;
 
@@ -17,13 +18,11 @@ namespace BookingHub.Infrastructure.Outbox;
 /// after <see cref="MaxAttempts"/>; delivery is at-least-once, so handlers must tolerate a repeat.
 /// </summary>
 internal sealed class OutboxProcessor(
-    IServiceScopeFactory scopeFactory, TimeProvider timeProvider, ILogger<OutboxProcessor> logger)
+    IServiceScopeFactory scopeFactory, TimeProvider timeProvider, IOptions<OutboxOptions> options,
+    ILogger<OutboxProcessor> logger)
     : BackgroundService
 {
     public const int MaxAttempts = 10;
-
-    /// <summary>How often the table is checked once it has been drained — short, so a guest gets their SMS within seconds.</summary>
-    private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(5);
 
     private static readonly TimeSpan FirstRetryDelay = TimeSpan.FromSeconds(30);
     private static readonly TimeSpan MaxRetryDelay = TimeSpan.FromHours(1);
@@ -32,7 +31,7 @@ internal sealed class OutboxProcessor(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var timer = new PeriodicTimer(PollingInterval, timeProvider);
+        using var timer = new PeriodicTimer(options.Value.PollingInterval, timeProvider);
 
         do
         {

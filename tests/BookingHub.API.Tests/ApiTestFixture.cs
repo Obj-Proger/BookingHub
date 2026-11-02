@@ -12,7 +12,6 @@ public sealed class ApiTestFixture : IAsyncLifetime
     {
         _database = await TestPostgreSql.StartAsync(TestContext.Current.CancellationToken);
         Factory = new ApiWebApplicationFactory(_database.ConnectionString);
-        await Factory.MigrateDatabaseAsync();
     }
 
     public async ValueTask DisposeAsync()

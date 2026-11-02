@@ -66,6 +66,10 @@ To check the whole application by hand, follow [docs/manual-testing.md](docs/man
     dotnet test --project tests/BookingHub.Infrastructure.IntegrationTests
     dotnet test --project tests/BookingHub.API.Tests
 
+The API tests include runs over the demo data of the seed command: every GET endpoint is called, and a
+guest books, confirms, reschedules, cancels, takes a time freed for the waitlist and leaves a review,
+following the links the API texts them.
+
 The last two need PostgreSQL. By default each test run starts a throwaway PostgreSQL 18 container
 through Testcontainers, which needs Docker on this machine. To use an existing PostgreSQL server
 instead, give the tests a superuser connection string; every run then creates its own

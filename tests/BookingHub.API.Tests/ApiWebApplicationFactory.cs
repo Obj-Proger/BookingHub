@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 
 namespace BookingHub.API.Tests;
 
@@ -38,18 +39,34 @@ public sealed class ApiWebApplicationFactory(string connectionString, bool relax
                 builder.UseSetting($"RateLimiting:{limit}", "10000");
         }
 
+        // Guest messages go out within a fraction of a second, so tests that wait for one stay fast.
+        builder.UseSetting("Outbox:PollingInterval", "00:00:00.2");
+
         builder.ConfigureServices(services =>
         {
+            // First of all hosted services: the outbox processor and Hangfire query the schema as soon as they start.
+            services.Insert(0, ServiceDescriptor.Singleton<IHostedService, DatabaseMigrator>());
+
+            services.AddSingleton<GuestInbox>();
             services.RemoveAll<IEmailService>();
-            services.AddScoped<IEmailService, NoOpEmailService>();
+            services.AddScoped<IEmailService, RecordingEmailService>();
             services.RemoveAll<ISmsService>();
-            services.AddScoped<ISmsService, NoOpSmsService>();
+            services.AddScoped<ISmsService, RecordingSmsService>();
         });
     }
 
-    public async Task MigrateDatabaseAsync()
+    /// <summary>Every message the API has sent to guests.</summary>
+    public GuestInbox Inbox => Services.GetRequiredService<GuestInbox>();
+
+    /// <summary>Brings the test database up to date when the host starts.</summary>
+    private sealed class DatabaseMigrator(IServiceScopeFactory scopeFactory) : IHostedService
     {
-        using var scope = Services.CreateScope();
-        await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.MigrateAsync();
+        public async Task StartAsync(CancellationToken cancellationToken)
+        {
+            await using var scope = scopeFactory.CreateAsyncScope();
+            await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.MigrateAsync(cancellationToken);
+        }
+
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

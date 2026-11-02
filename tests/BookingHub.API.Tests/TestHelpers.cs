@@ -25,6 +25,16 @@ internal static class TestHelpers
         return (body!.AccessToken, body.RefreshToken);
     }
 
+    /// <returns>The access token of an existing account.</returns>
+    public static async Task<string> SignInAsync(HttpClient client, string email, string password, CancellationToken cancellationToken)
+    {
+        using var response = await client.PostAsJsonAsync("api/v1/auth/login", new LoginRequest(email, password), cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var body = await response.Content.ReadFromJsonAsync<AuthenticatedResponse>(cancellationToken);
+        return body!.AccessToken;
+    }
+
     public static async Task<Guid> CreateOrganizationAsync(HttpClient client, string token, string name, string slug)
     {
         using var request = new HttpRequestMessage(HttpMethod.Post, "api/v1/organizations")

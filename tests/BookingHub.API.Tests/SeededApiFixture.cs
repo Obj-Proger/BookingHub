@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using BookingHub.API.Tests.TestDoubles;
 using BookingHub.Infrastructure.Persistence.Seeding;
 using BookingHub.Tests.Shared;
 
@@ -6,7 +7,8 @@ namespace BookingHub.API.Tests;
 
 /// <summary>
 /// An API over a database of its own filled by the development seed — the same demo data the app is
-/// tried with by hand. The seed needs an empty database, so this cannot share <see cref="ApiTestFixture"/>.
+/// tried with by hand. The seed needs an empty database, so this cannot share <see cref="ApiTestFixture"/>;
+/// as a class fixture, every test class that uses it gets a fresh copy.
 /// </summary>
 public sealed class SeededApiFixture : IAsyncLifetime
 {
@@ -14,8 +16,9 @@ public sealed class SeededApiFixture : IAsyncLifetime
 
     public ApiWebApplicationFactory Factory { get; private set; } = null!;
 
-    /// <summary>What the seed printed: the accounts and the guest links with their tokens.</summary>
-    public string SeedOutput { get; private set; } = null!;
+    public DemoData Demo { get; private set; } = null!;
+
+    public GuestInbox Inbox => Factory.Inbox;
 
     public async ValueTask InitializeAsync()
     {
@@ -23,13 +26,12 @@ public sealed class SeededApiFixture : IAsyncLifetime
 
         _database = await TestPostgreSql.StartAsync(cancellationToken);
         Factory = new ApiWebApplicationFactory(_database.ConnectionString);
-        await Factory.MigrateDatabaseAsync();
 
         await using var output = new StringWriter(CultureInfo.InvariantCulture);
         if (!await DevelopmentSeeder.SeedAsync(Factory.Services, output, cancellationToken))
             throw new InvalidOperationException($"The seed did not run: {output}");
 
-        SeedOutput = output.ToString();
+        Demo = await DemoData.LoadAsync(Factory.Services, output.ToString(), cancellationToken);
     }
 
     public async ValueTask DisposeAsync()

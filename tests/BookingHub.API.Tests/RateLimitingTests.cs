@@ -23,7 +23,6 @@ public sealed class RateLimitingTests : IAsyncLifetime
     {
         _database = await TestPostgreSql.StartAsync(TestContext.Current.CancellationToken);
         _factory = new ApiWebApplicationFactory(_database.ConnectionString, relaxRateLimits: false);
-        await _factory.MigrateDatabaseAsync();
     }
 
     public async ValueTask DisposeAsync()
