@@ -1,5 +1,4 @@
-﻿using BookingHub.Application.Common;
-using BookingHub.Application.Common.Persistence;
+﻿using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Waitlist.Commands.JoinWaitlist;
 using BookingHub.Domain.Entities;
 
@@ -19,7 +18,7 @@ public class JoinWaitlistCommandHandlerTests
     private JoinWaitlistCommandHandler CreateSut() =>
         new(_locationRepository, _serviceRepository, _employeeRepository, _waitlistEntryRepository, _unitOfWork, TimeProvider.System);
 
-    private JoinWaitlistCommand ValidCommand(Guid? employeeId = null) => new(
+    private static JoinWaitlistCommand ValidCommand(Guid? employeeId = null) => new(
         OrganizationId, LocationId, employeeId, ServiceId,
         DateTime.UtcNow.AddDays(1), DateTime.UtcNow.AddDays(1).AddHours(1), "+14155552671", "Jane Doe", null);
 

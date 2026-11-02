@@ -1,4 +1,6 @@
-﻿namespace BookingHub.Web.Services;
+﻿using System.Globalization;
+
+namespace BookingHub.Web.Services;
 
 internal sealed record TimeZoneOption(string Id, string Label);
 
@@ -28,7 +30,7 @@ internal static class TimeZoneCatalog
             : TimeZoneInfo.TryConvertWindowsIdToIanaId(zone.Id, out var ianaId) ? ianaId : null;
 
     private static string FormatOffset(TimeSpan offset) =>
-        (offset < TimeSpan.Zero ? "-" : "+") + offset.ToString(@"hh\:mm");
+        (offset < TimeSpan.Zero ? "-" : "+") + offset.ToString(@"hh\:mm", CultureInfo.InvariantCulture);
 
     private sealed record ZoneEntry(string IanaId, TimeZoneInfo Zone);
 }

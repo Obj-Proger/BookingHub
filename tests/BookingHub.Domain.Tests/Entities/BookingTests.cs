@@ -1,5 +1,4 @@
-﻿using BookingHub.Domain.Events;
-using BookingHub.Domain.Tests.TestDoubles;
+﻿using BookingHub.Domain.Tests.TestDoubles;
 
 namespace BookingHub.Domain.Tests.Entities;
 

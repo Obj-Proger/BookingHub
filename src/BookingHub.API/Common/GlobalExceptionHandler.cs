@@ -7,11 +7,11 @@ namespace BookingHub.API.Common;
 /// Catches anything that reaches this point unhandled — a genuine infrastructure failure, not
 /// a business error (those are always a Result by now, translated by ApiControllerBase).
 /// </summary>
-internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
+internal sealed partial class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        logger.LogError(exception, "Unhandled exception on {Path}", httpContext.Request.Path);
+        LogUnhandledException(logger, exception, httpContext.Request.Path.Value);
 
         httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
 
@@ -21,4 +21,7 @@ internal sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> log
 
         return true;
     }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "Unhandled exception on {Path}")]
+    private static partial void LogUnhandledException(ILogger logger, Exception exception, string? path);
 }

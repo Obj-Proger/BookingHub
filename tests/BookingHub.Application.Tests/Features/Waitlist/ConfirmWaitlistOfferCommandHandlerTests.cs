@@ -1,5 +1,4 @@
-﻿using BookingHub.Application.Common;
-using BookingHub.Application.Common.Persistence;
+﻿using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Bookings;
 using BookingHub.Application.Features.Waitlist.Commands.ConfirmWaitlistOffer;
 using BookingHub.Domain.Entities;

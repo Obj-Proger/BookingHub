@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using BookingHub.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace BookingHub.Infrastructure.Notifications;
 
@@ -7,7 +8,7 @@ internal sealed class LoggingSmsService(ILogger<LoggingSmsService> logger) : ISm
 {
     public Task SendAsync(SmsMessage message, CancellationToken cancellationToken)
     {
-        logger.LogInformation("SMS to {ToPhoneNumber}: {Body}", message.ToPhoneNumber, message.Body);
+        Log.SmsNotSent(logger, message.ToPhoneNumber, message.Body);
         return Task.CompletedTask;
     }
 }

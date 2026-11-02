@@ -1,5 +1,4 @@
-﻿using BookingHub.Application.Common.Security;
-using BookingHub.Application.Features.Clients.Queries.GetClientProfile;
+﻿using BookingHub.Application.Features.Clients.Queries.GetClientProfile;
 using BookingHub.Application.Features.Clients.DTOs;
 using BookingHub.Infrastructure.IntegrationTests.TestDoubles;
 using BookingHub.Infrastructure.Persistence.Repositories;

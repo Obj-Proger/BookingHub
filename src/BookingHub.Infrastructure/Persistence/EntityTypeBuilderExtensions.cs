@@ -1,5 +1,4 @@
-﻿using BookingHub.Domain.Common;
-using BookingHub.Domain.ValueObjects;
+﻿using BookingHub.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 

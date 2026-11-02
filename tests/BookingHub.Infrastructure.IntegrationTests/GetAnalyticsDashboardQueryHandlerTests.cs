@@ -1,5 +1,4 @@
 ﻿using BookingHub.Application.Common;
-using BookingHub.Application.Common.Security;
 using BookingHub.Application.Features.Analytics.Queries.GetAnalyticsDashboard;
 using BookingHub.Infrastructure.IntegrationTests.TestDoubles;
 using BookingHub.Infrastructure.Persistence.Repositories;

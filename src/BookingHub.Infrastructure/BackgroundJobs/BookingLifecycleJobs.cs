@@ -4,7 +4,6 @@ using BookingHub.Application.Features.Bookings.Commands.TransitionBookingsToAwai
 using BookingHub.Application.Features.Waitlist.Commands.ExpireWaitlistOffers;
 using BookingHub.Infrastructure.Logging;
 using Hangfire;
-using Hangfire.Server;
 using Microsoft.Extensions.Logging;
 
 namespace BookingHub.Infrastructure.BackgroundJobs;

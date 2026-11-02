@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using BookingHub.Infrastructure.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace BookingHub.Infrastructure.Notifications;
 
@@ -7,7 +8,7 @@ internal sealed class LoggingEmailService(ILogger<LoggingEmailService> logger) :
 {
     public Task SendAsync(EmailMessage message, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Email to {ToAddress}: {Subject} — {Body}", message.ToAddress, message.Subject, message.Body);
+        Log.EmailNotSent(logger, message.ToAddress, message.Subject, message.Body);
         return Task.CompletedTask;
     }
 }

@@ -1,5 +1,4 @@
 ﻿using BookingHub.Application.Common.Security;
-using BookingHub.Application.Common;
 using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Organizations.Commands.CreateOrganization;
 using BookingHub.Application.Tests.TestDoubles;

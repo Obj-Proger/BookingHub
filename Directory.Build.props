@@ -14,9 +14,13 @@
     <TreatWarningsAsErrors Condition="'$(CI)' == 'true'">true</TreatWarningsAsErrors>
 
     <!-- The compiler reports unnecessary usings (IDE0005) only when it builds the XML documentation,
-         which also checks every doc comment that is written. A missing doc comment (CS1591) is not
-         a warning: comments are written where they explain something, not on every public member. -->
+         which also checks every doc comment that is written. Comments are written where they explain
+         something, not on every member or parameter, so neither a missing doc comment (CS1591) nor
+         a parameter left out of one (CS1573) is a warning. -->
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;CS1573</NoWarn>
+
+    <!-- The default (neutral) resources are English; satellite assemblies hold the other cultures. -->
+    <NeutralLanguage>en</NeutralLanguage>
   </PropertyGroup>
 </Project>

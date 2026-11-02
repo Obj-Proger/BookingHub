@@ -58,21 +58,21 @@ public sealed class ApplicationDbContext(DbContextOptions<ApplicationDbContext> 
         configurationBuilder.Properties<WaitlistEntryStatus>().HaveConversion<string>();
     }
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    protected override void OnModelCreating(ModelBuilder builder)
     {
-        base.OnModelCreating(modelBuilder);
+        base.OnModelCreating(builder);
 
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
+        builder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
 
         // Third, independent layer of tenant isolation (Application's explicit .Where(...) is the
         // first; RLS, activated separately, is the second) — a no-op on public routes, where
         // currentTenant.OrganizationId is null and Application's own filtering is what protects.
-        modelBuilder.Entity<Location>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
-        modelBuilder.Entity<OrganizationMember>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
-        modelBuilder.Entity<Employee>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
-        modelBuilder.Entity<Service>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
-        modelBuilder.Entity<Booking>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
-        modelBuilder.Entity<WaitlistEntry>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
-        modelBuilder.Entity<Review>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
+        builder.Entity<Location>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
+        builder.Entity<OrganizationMember>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
+        builder.Entity<Employee>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
+        builder.Entity<Service>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
+        builder.Entity<Booking>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
+        builder.Entity<WaitlistEntry>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
+        builder.Entity<Review>().HasQueryFilter(e => currentTenant.OrganizationId == null || e.OrganizationId == currentTenant.OrganizationId);
     }
 }

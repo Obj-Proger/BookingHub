@@ -4,7 +4,6 @@ using BookingHub.API.RateLimiting;
 using BookingHub.Application;
 using BookingHub.Infrastructure;
 using BookingHub.Infrastructure.BackgroundJobs;
-using BookingHub.Infrastructure.Identity;
 using BookingHub.Infrastructure.Logging;
 using BookingHub.Infrastructure.Persistence;
 using System.Text.Json.Serialization;

@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
-using System.Net.Http.Json;
 using BookingHub.Web.Api;
 using BookingHub.Web.Api.Contracts;
 using Microsoft.AspNetCore.Components.Authorization;

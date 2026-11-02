@@ -1,5 +1,4 @@
-﻿using BookingHub.Application.Common;
-using BookingHub.Application.Common.Messaging;
+﻿using BookingHub.Application.Common.Messaging;
 using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Public.DTOs;
 using Microsoft.EntityFrameworkCore;

@@ -1,9 +1,7 @@
-﻿using AwesomeAssertions;
-using BookingHub.API.Controllers.Auth;
+﻿using BookingHub.API.Controllers.Auth;
 using BookingHub.Application.Features.Auth.DTOs;
 using System.Net;
 using System.Net.Http.Json;
-using Xunit;
 
 namespace BookingHub.API.Tests;
 

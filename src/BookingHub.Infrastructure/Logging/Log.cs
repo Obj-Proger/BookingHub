@@ -35,4 +35,10 @@ internal static partial class Log
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Purged {Count} processed outbox messages")]
     public static partial void PurgedOutboxMessages(ILogger logger, int count);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Email to {ToAddress}: {Subject} — {Body}")]
+    public static partial void EmailNotSent(ILogger logger, string toAddress, string subject, string body);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "SMS to {ToPhoneNumber}: {Body}")]
+    public static partial void SmsNotSent(ILogger logger, string toPhoneNumber, string body);
 }

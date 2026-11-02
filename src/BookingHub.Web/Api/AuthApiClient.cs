@@ -1,5 +1,4 @@
 ﻿using System.Net;
-using System.Net.Http.Json;
 using BookingHub.Web.Api.Contracts;
 
 namespace BookingHub.Web.Api;

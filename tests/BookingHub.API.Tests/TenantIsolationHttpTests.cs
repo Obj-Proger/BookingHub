@@ -2,7 +2,6 @@
 using BookingHub.Application.Features.Locations.DTOs;
 using System.Net;
 using System.Net.Http.Json;
-using Xunit;
 
 namespace BookingHub.API.Tests;
 

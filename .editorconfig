@@ -31,6 +31,15 @@ dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
 dotnet_style_namespace_match_folder = true:suggestion
 
+# .NET design-guideline rules written for reusable libraries, not for an application:
+# CA1711 - names ending in Exception, Delegate, EventHandler or Collection
+#          (ScheduleException is a schedule exception, not an Exception; AppDelegate is iOS's name)
+# CA1716 - names that are keywords in other .NET languages (Date, Error, Public, Me, Next)
+# CA1000 - static members on generic types (ApiResult<T>.Success/Failure are its factories)
+dotnet_diagnostic.CA1711.severity = none
+dotnet_diagnostic.CA1716.severity = none
+dotnet_diagnostic.CA1000.severity = none
+
 # Unnecessary usings and unused private members
 dotnet_diagnostic.IDE0005.severity = warning
 dotnet_diagnostic.IDE0051.severity = warning

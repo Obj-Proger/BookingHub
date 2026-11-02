@@ -1,7 +1,7 @@
 ﻿namespace BookingHub.Application.Common.Messaging;
 
 /// <summary>
-/// Builds a failed <typeparamref name="TResponse"/> (always <c>Result</c> or <c>Result&lt;T&gt;</c>,
+/// Builds a failed response (always <c>Result</c> or <c>Result&lt;T&gt;</c>,
 /// by construction of <c>ICommand</c>/<c>IQuery</c>) from an <see cref="Error"/> — shared by any
 /// pipeline behavior that needs to short-circuit before the handler runs.
 /// </summary>

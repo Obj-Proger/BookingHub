@@ -1,5 +1,4 @@
-﻿using BookingHub.Domain.Common;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 
 namespace BookingHub.Infrastructure.Persistence.Interceptors;

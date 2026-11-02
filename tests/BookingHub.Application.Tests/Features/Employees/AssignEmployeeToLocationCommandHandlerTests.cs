@@ -1,5 +1,4 @@
-﻿using BookingHub.Application.Common;
-using BookingHub.Application.Common.Persistence;
+﻿using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Employees.Commands.AssignEmployeeToLocation;
 using BookingHub.Domain.Entities;
 using BookingHub.Domain.ValueObjects;

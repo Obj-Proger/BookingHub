@@ -1,5 +1,4 @@
-﻿using BookingHub.Application.Common;
-using BookingHub.Application.Common.Notifications;
+﻿using BookingHub.Application.Common.Notifications;
 using BookingHub.Application.Common.Persistence;
 using BookingHub.Application.Features.Bookings.Commands.MarkCompleted;
 using BookingHub.Application.Features.Bookings.Commands.MarkNoShow;
