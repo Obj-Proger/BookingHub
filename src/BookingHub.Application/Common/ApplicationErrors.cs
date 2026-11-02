@@ -14,6 +14,12 @@ public static class ApplicationErrors
         public static readonly Error OnlyOwnerCanDelete = Error.Forbidden("Organization.OnlyOwnerCanDelete", "Only the organization's Owner can delete it.");
     }
 
+    public static class Auth
+    {
+        public static readonly Error InvalidCredentials = Error.Unauthorized("Auth.InvalidCredentials", "Invalid email or password.");
+        public static readonly Error InvalidRefreshToken = Error.Unauthorized("Auth.InvalidRefreshToken", "Invalid or expired refresh token.");
+    }
+
     public static class Authorization
     {
         public static readonly Error NotAMember = Error.Forbidden("Authorization.NotAMember", "You are not a member of this organization.");

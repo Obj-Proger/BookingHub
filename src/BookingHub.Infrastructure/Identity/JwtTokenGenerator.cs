@@ -6,12 +6,12 @@ using System.Text;
 
 namespace BookingHub.Infrastructure.Identity;
 
-internal sealed class JwtTokenGenerator(IOptions<JwtOptions> jwtOptions, TimeProvider timeProvider) : IJwtTokenGenerator
+internal sealed class JwtTokenGenerator(IOptions<JwtOptions> jwtOptions, TimeProvider timeProvider)
 {
     private static readonly JsonWebTokenHandler Handler = new();
     private readonly JwtOptions _options = jwtOptions.Value;
 
-    public string GenerateToken(ApplicationUser user)
+    public string GenerateToken(Guid userId)
     {
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
         var signingCredentials = new SigningCredentials(
@@ -20,7 +20,7 @@ internal sealed class JwtTokenGenerator(IOptions<JwtOptions> jwtOptions, TimePro
         var descriptor = new SecurityTokenDescriptor
         {
             Subject = new ClaimsIdentity([
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.CreateVersion7().ToString())
             ]),
             // Set explicitly so all three timestamps come from the same clock.

@@ -4,12 +4,13 @@ using System.Text;
 using BookingHub.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
-using BookingHub.Infrastructure.Identity;
 
 namespace BookingHub.Infrastructure.Identity;
 
+internal sealed record RefreshTokenRotation(Guid UserId, string NewRawToken);
+
+/// <summary>Refresh tokens are stored as SHA-256 hashes, never as the token itself.</summary>
 internal sealed class RefreshTokenService(ApplicationDbContext dbContext, TimeProvider timeProvider, IOptions<JwtOptions> jwtOptions)
-    : IRefreshTokenService
 {
     public async Task<string> IssueAsync(Guid userId, CancellationToken cancellationToken)
     {
@@ -23,14 +24,15 @@ internal sealed class RefreshTokenService(ApplicationDbContext dbContext, TimePr
         return rawToken;
     }
 
-    public async Task<RefreshTokenValidationResult> ValidateAndRotateAsync(string rawToken, CancellationToken cancellationToken)
+    /// <returns>The owner and the replacement token, or null when the token is unknown, expired or already used.</returns>
+    public async Task<RefreshTokenRotation?> ValidateAndRotateAsync(string rawToken, CancellationToken cancellationToken)
     {
         var utcNow = timeProvider.GetUtcNow().UtcDateTime;
         var tokenHash = HashToken(rawToken);
 
         var existing = await dbContext.RefreshTokens.FirstOrDefaultAsync(t => t.TokenHash == tokenHash, cancellationToken);
         if (existing is null)
-            return RefreshTokenValidationResult.Failed;
+            return null;
 
         if (existing.RevokedAtUtc is not null)
         {
@@ -44,11 +46,11 @@ internal sealed class RefreshTokenService(ApplicationDbContext dbContext, TimePr
                 token.Revoke(utcNow);
 
             await dbContext.SaveChangesAsync(cancellationToken);
-            return RefreshTokenValidationResult.Failed;
+            return null;
         }
 
         if (!existing.IsActive(utcNow))
-            return RefreshTokenValidationResult.Failed;
+            return null;
 
         existing.Revoke(utcNow);
 
@@ -57,7 +59,7 @@ internal sealed class RefreshTokenService(ApplicationDbContext dbContext, TimePr
             existing.UserId, HashToken(newRawToken), utcNow.AddDays(jwtOptions.Value.RefreshTokenExpiryDays), utcNow));
 
         await dbContext.SaveChangesAsync(cancellationToken);
-        return RefreshTokenValidationResult.Success(existing.UserId, newRawToken);
+        return new RefreshTokenRotation(existing.UserId, newRawToken);
     }
 
     public async Task RevokeAsync(string rawToken, CancellationToken cancellationToken)

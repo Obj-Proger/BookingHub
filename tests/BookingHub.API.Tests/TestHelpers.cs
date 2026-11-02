@@ -1,5 +1,6 @@
 ﻿using BookingHub.API.Controllers.Auth;
 using BookingHub.API.Controllers.Organizations;
+using BookingHub.Application.Features.Auth.DTOs;
 using BookingHub.Application.Features.Organizations.DTOs;
 using System.Net.Http.Json;
 

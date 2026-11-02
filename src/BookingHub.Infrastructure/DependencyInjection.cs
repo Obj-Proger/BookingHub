@@ -44,7 +44,7 @@ public static class DependencyInjection
         .AddDefaultTokenProviders();
 
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
-        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddSingleton<JwtTokenGenerator>();
 
         services.AddHttpContextAccessor();
         services.AddScoped<ICurrentUser, CurrentUser>();
@@ -111,7 +111,9 @@ public static class DependencyInjection
         services.AddScoped<IBookingRepository, BookingRepository>();
         services.AddScoped<IWaitlistEntryRepository, WaitlistEntryRepository>();
         services.AddScoped<IReviewRepository, ReviewRepository>();
-        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+        services.AddScoped<RefreshTokenService>();
+        services.AddScoped<IAuthTokenService, AuthTokenService>();
+        services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IUserDirectory, UserDirectory>();
 
         services.AddHangfire(config => config
