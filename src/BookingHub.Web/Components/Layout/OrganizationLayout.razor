@@ -1,8 +1,10 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.JSInterop
 @layout StaffLayout
-@implements IDisposable
+@implements IAsyncDisposable
 @inject NavigationManager Navigation
 @inject MembershipCache Memberships
+@inject IJSRuntime JS
 
 @if (_error is not null)
 {
@@ -27,13 +29,15 @@ else
                 <strong>@_membership.OrganizationName</strong>
                 <span>@L[$"Role_{_membership.Role}"]</span>
             </div>
-            @foreach (var item in StaffNavigation.ItemsFor(_membership.Role))
-            {
-                <NavLink href="@StaffNavigation.Href(_membership.OrganizationId, item)"
-                         Match="@(item.Segment.Length == 0 ? NavLinkMatch.All : NavLinkMatch.Prefix)">
-                    @L[item.TitleKey]
-                </NavLink>
-            }
+            <div class="org-nav-links">
+                @foreach (var item in StaffNavigation.ItemsFor(_membership.Role))
+                {
+                    <NavLink href="@StaffNavigation.Href(_membership.OrganizationId, item)"
+                             Match="@(item.Segment.Length == 0 ? NavLinkMatch.All : NavLinkMatch.Prefix)">
+                        @L[item.TitleKey]
+                    </NavLink>
+                }
+            </div>
             <div class="org-nav-secondary">
                 @if (_memberships.Count > 1)
                 {
@@ -54,6 +58,10 @@ else
     private IReadOnlyList<MyOrganizationMembershipResponse>? _memberships;
     private MyOrganizationMembershipResponse? _membership;
     private ApiError? _error;
+    private IJSObjectReference? _navigationScript;
+
+    /// <summary>Set when the page changes, so the link to it is brought into view once rendered.</summary>
+    private bool _revealActiveLink = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -85,7 +93,20 @@ else
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
         ResolveMembership();
+        _revealActiveLink = true;
         InvokeAsync(StateHasChanged);
+    }
+
+    // On a narrow screen the navigation is one row that scrolls sideways, where the current page's link
+    // can be out of sight (Settings, at the end); this scrolls it into view. A no-op when it is visible.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_revealActiveLink || _membership is null)
+            return;
+
+        _revealActiveLink = false;
+        _navigationScript ??= await JS.InvokeAsync<IJSObjectReference>("import", "./js/navigation.js");
+        await _navigationScript.InvokeVoidAsync("revealActiveLink", ".org-nav-links");
     }
 
     private void OnMembershipsChanged() =>
@@ -95,9 +116,21 @@ else
             StateHasChanged();
         });
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         Navigation.LocationChanged -= OnLocationChanged;
         Memberships.Changed -= OnMembershipsChanged;
+
+        if (_navigationScript is not null)
+        {
+            try
+            {
+                await _navigationScript.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                // The circuit is already gone, and the browser side with it.
+            }
+        }
     }
 }

@@ -228,4 +228,22 @@
   <data name="Overview_SignedInAs" xml:space="preserve">
     <value>Вы вошли как</value>
   </data>
+  <data name="Home_Lead" xml:space="preserve">
+    <value>Онлайн-запись для салонов, студий и клиник: гости сами выбирают время, а команда ведёт расписание.</value>
+  </data>
+  <data name="Home_StaffSignIn" xml:space="preserve">
+    <value>Вход для сотрудников</value>
+  </data>
+  <data name="Home_GuestHint" xml:space="preserve">
+    <value>Гости записываются на странице своего салона: /book/ и короткое имя салона.</value>
+  </data>
+  <data name="NotFound_Title" xml:space="preserve">
+    <value>Страница не найдена</value>
+  </data>
+  <data name="NotFound_Text" xml:space="preserve">
+    <value>Такой страницы нет, или она переехала.</value>
+  </data>
+  <data name="NotFound_Home" xml:space="preserve">
+    <value>На главную</value>
+  </data>
 </root>

@@ -1,9 +1,554 @@
+/* ==========================================================================
+   BookingHub.Web styles: design tokens, base elements, layout, shared pieces,
+   then the styles of individual components. Plain CSS, no framework.
+   ========================================================================== */
+
+/* ---- Tokens ------------------------------------------------------------- */
+
+:root {
+    color-scheme: light;
+
+    --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+
+    --bg: #f6f6f8;
+    --surface: #ffffff;
+    --surface-muted: #fafafb;
+    --text: #1f2027;
+    --muted: #6b6b73;
+    --border: #e3e3e6;
+    --divider: #f0f0f2;
+
+    --accent: #6b5bff;
+    --accent-hover: #5646f0;
+    --accent-soft: #eeeaff;
+    --accent-text: #4a3bd6;
+
+    --danger: #c43c3c;
+    --danger-soft: #fbeaea;
+    --success: #2d7a3e;
+
+    --radius: 0.75rem;
+    --radius-small: 0.5rem;
+    --focus-ring: 0 0 0 3px rgba(107, 91, 255, 0.3);
+}
+
+/* ---- Base --------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font);
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--text);
+    background: var(--bg);
+}
+
+h1,
+h2,
+h3 {
+    line-height: 1.25;
+}
+
+h1 {
+    margin: 0 0 1.25rem;
+    font-size: 1.6rem;
+    font-weight: 650;
+}
+
+/* Blazor moves focus to the page heading after navigation, for screen readers; no ring for that
+   (it gives the heading tabindex="-1" to make it focusable, which nothing else here uses). */
+h1:focus,
+[tabindex="-1"]:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+h2 {
+    margin: 1.5rem 0 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+h3 {
+    margin: 1rem 0 0.5rem;
+    font-size: 1rem;
+}
+
+p {
+    margin: 0 0 0.75rem;
+}
+
+a {
+    color: var(--accent-text);
+}
+
+    a:hover {
+        color: var(--accent-hover);
+    }
+
+img {
+    max-width: 100%;
+}
+
+summary {
+    cursor: pointer;
+}
+
+:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+/* ---- Layout ------------------------------------------------------------- */
+
+.page {
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 1rem 1.25rem 3rem;
+}
+
+.staff-page {
+    max-width: 75rem;
+}
+
+.page-tools {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+.staff-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.staff-brand {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.staff-header-tools {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.staff-user {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+    .staff-user form {
+        margin: 0;
+    }
+
+.org-shell {
+    display: grid;
+    grid-template-columns: 14rem minmax(0, 1fr);
+    align-items: start;
+    gap: 2rem;
+}
+
+.org-nav {
+    position: sticky;
+    top: 4.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+    .org-nav a {
+        padding: 0.45rem 0.75rem;
+        border-radius: var(--radius-small);
+        color: var(--text);
+        text-decoration: none;
+    }
+
+        .org-nav a:hover {
+            background: var(--divider);
+        }
+
+        .org-nav a.active {
+            background: var(--accent-soft);
+            color: var(--accent-text);
+            font-weight: 600;
+        }
+
+.org-nav-links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+}
+
+.org-nav-title {
+    display: flex;
+    flex-direction: column;
+    padding: 0 0.75rem 0.75rem;
+}
+
+    .org-nav-title span {
+        color: var(--muted);
+        font-size: 0.85rem;
+    }
+
+.org-nav-secondary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.9rem;
+}
+
+.org-content {
+    min-width: 0;
+}
+
+/* ---- Text --------------------------------------------------------------- */
+
+.hint {
+    color: var(--muted);
+    font-size: 0.875rem;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 0.75rem;
+    color: var(--muted);
+    font-size: 0.9rem;
+    text-decoration: none;
+}
+
+    .back-link:hover {
+        color: var(--accent-text);
+    }
+
+.error-text,
+.text-danger {
+    color: var(--danger);
+}
+
+.success-text {
+    color: var(--success);
+}
+
+/* ---- Forms -------------------------------------------------------------- */
+
+form {
+    margin: 0 0 1rem;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    max-width: 28rem;
+    margin-bottom: 1rem;
+}
+
+    .form-field label {
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+input,
+select,
+textarea {
+    font: inherit;
+    color: inherit;
+}
+
+input:not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+select,
+textarea {
+    min-height: 2.5rem;
+    padding: 0.45rem 0.7rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-small);
+}
+
+    input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):focus,
+    select:focus,
+    textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: var(--focus-ring);
+    }
+
+    input:disabled,
+    select:disabled,
+    textarea:disabled {
+        background: var(--surface-muted);
+        color: var(--muted);
+    }
+
+/* A date picker on its own above the times it chooses (the guest's slot page). */
+main > input[type="date"] {
+    margin-bottom: 0.5rem;
+}
+
+textarea {
+    display: block;
+    width: 100%;
+    max-width: 36rem;
+    margin-bottom: 1rem;
+    resize: vertical;
+}
+
+input[type="color"] {
+    width: 3rem;
+    height: 2.5rem;
+    padding: 0.2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-small);
+}
+
+input[type="checkbox"] {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--accent);
+}
+
+/* Blazor's validation classes and messages. */
+.modified.invalid,
+.invalid:not(form) {
+    border-color: var(--danger) !important;
+}
+
+.validation-errors {
+    margin: 0 0 1rem;
+    padding: 0.6rem 0.9rem 0.6rem 1.9rem;
+    background: var(--danger-soft);
+    border-radius: var(--radius-small);
+    color: var(--danger);
+    font-size: 0.9rem;
+}
+
+.validation-message {
+    color: var(--danger);
+    font-size: 0.875rem;
+}
+
+/* ---- Buttons ------------------------------------------------------------ */
+
+button,
+.button-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 2.5rem;
+    padding: 0.45rem 1.1rem;
+    font: inherit;
+    font-weight: 500;
+    color: #fff;
+    background: var(--accent);
+    border: 1px solid transparent;
+    border-radius: var(--radius-small);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+    button:hover,
+    .button-link:hover {
+        color: #fff;
+        background: var(--accent-hover);
+    }
+
+    button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+        button:disabled:hover {
+            background: var(--accent);
+        }
+
+/* A button that reads as a link: secondary actions inside rows and toolbars. */
+.link-button {
+    min-height: 0;
+    padding: 0;
+    color: var(--accent-text);
+    background: none;
+    border: none;
+    font-weight: 400;
+}
+
+    .link-button:hover {
+        color: var(--accent-hover);
+        background: none;
+        text-decoration: underline;
+    }
+
+    .link-button:disabled:hover {
+        background: none;
+        text-decoration: none;
+    }
+
+.btn-danger {
+    background: var(--danger);
+}
+
+    .btn-danger:hover,
+    .btn-danger:disabled:hover {
+        background: #a83131;
+    }
+
+/* ---- Loading, empty and error states ------------------------------------ */
+
+.state-message {
+    color: var(--muted);
+}
+
+.state-panel {
+    max-width: 36rem;
+    margin: 0 0 1.25rem;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius);
+}
+
+    .state-panel h2 {
+        margin-top: 0;
+    }
+
+    .state-panel p:last-child {
+        margin-bottom: 0;
+    }
+
+.state-error {
+    background: var(--danger-soft);
+    border: 1px solid #efc6c6;
+    color: #7d2525;
+}
+
+/* ---- Cards -------------------------------------------------------------- */
+
+.card-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.card {
+    padding: 1rem 1.1rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+    .card h2 {
+        margin: 0 0 0.25rem;
+        font-size: 1.05rem;
+    }
+
+    .card p {
+        margin: 0.15rem 0 0;
+    }
+
+a.card {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+    a.card:hover {
+        color: inherit;
+        border-color: var(--accent);
+        box-shadow: 0 2px 8px rgba(31, 32, 39, 0.06);
+    }
+
+/* ---- Guest booking ------------------------------------------------------ */
+
+.slot-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(5.25rem, 1fr));
+    gap: 0.5rem;
+    margin: 1rem 0 1.5rem;
+}
+
+.slot {
+    color: var(--accent-text);
+    background: var(--surface);
+    border-color: var(--border);
+    font-variant-numeric: tabular-nums;
+}
+
+    .slot:hover {
+        color: var(--accent-text);
+        background: var(--accent-soft);
+        border-color: var(--accent);
+    }
+
+.slot-selected,
+.slot-selected:hover {
+    color: #fff;
+    background: var(--accent);
+    border-color: var(--accent);
+}
+
+.star-row {
+    display: flex;
+    gap: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+    .star-row .star {
+        min-height: 0;
+        padding: 0.1rem 0.2rem;
+        font-size: 2rem;
+        line-height: 1;
+        background: none;
+    }
+
+        .star-row .star:hover {
+            background: none;
+            color: #f5c46a;
+        }
+
+    .star-row .star-filled,
+    .star-row .star-filled:hover {
+        color: #f0a92b;
+    }
+
+/* ==========================================================================
+   Components
+   ========================================================================== */
 
 .settings-section {
     margin-bottom: 1.5rem;
     padding: 1.25rem;
-    background: white;
-    border: 1px solid #e3e3e6;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 0.75rem;
 }
 
@@ -14,7 +559,7 @@
 
 .duration-row {
     padding: 0.75rem 0;
-    border-top: 1px solid #f0f0f2;
+    border-top: 1px solid var(--divider);
 }
 
     .duration-row:first-of-type {
@@ -41,46 +586,8 @@
     gap: 0.6rem;
 }
 
-.success-text {
-    color: #2d7a3e;
-}
-
 .danger-zone {
-    border-color: #e0a4a4;
-}
-
-.btn-danger {
-    background: #c43c3c;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-}
-
-    .btn-danger:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-
-a.card {
-    display: block;
-    color: inherit;
-    text-decoration: none;
-}
-
-    a.card:hover {
-        border-color: #6b5bff;
-    }
-
-.button-link {
-    display: inline-block;
-    padding: 0.5rem 1rem;
-    background: #6b5bff;
-    color: white;
-    border-radius: 0.5rem;
-    text-decoration: none;
+    border-color: #efc6c6;
 }
 
 .hours-table {
@@ -127,7 +634,7 @@ a.card {
 
 .price-row {
     padding: 0.75rem 0;
-    border-top: 1px solid #f0f0f2;
+    border-top: 1px solid var(--divider);
 }
 
     .price-row:first-of-type {
@@ -161,7 +668,7 @@ a.card {
     align-items: center;
     justify-content: space-between;
     padding: 0.4rem 0;
-    border-top: 1px solid #f0f0f2;
+    border-top: 1px solid var(--divider);
 }
 
     .assignment-row:first-child {
@@ -179,7 +686,7 @@ a.card {
     grid-template-columns: 7rem 1fr;
     gap: 0.75rem;
     padding: 0.6rem 0;
-    border-top: 1px solid #f0f0f2;
+    border-top: 1px solid var(--divider);
 }
 
     .schedule-day:first-of-type {
@@ -219,8 +726,8 @@ a.card {
     gap: 1rem;
     padding: 0.75rem 1rem;
     margin-bottom: 0.5rem;
-    background: white;
-    border: 1px solid #e3e3e6;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 0.75rem;
 }
 
@@ -282,8 +789,8 @@ a.card {
 
 .stat-card {
     padding: 0.9rem 1rem;
-    background: white;
-    border: 1px solid #e3e3e6;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 0.75rem;
 }
 
@@ -293,7 +800,7 @@ a.card {
 }
 
 .stat-label {
-    color: #6b6b73;
+    color: var(--muted);
     font-size: 0.85rem;
 }
 
@@ -310,13 +817,13 @@ a.card {
     .visits-table td {
         padding: 0.5rem 0.75rem 0.5rem 0;
         text-align: left;
-        border-top: 1px solid #f0f0f2;
+        border-top: 1px solid var(--divider);
         white-space: nowrap;
     }
 
     .visits-table th {
         border-top: none;
-        color: #6b6b73;
+        color: var(--muted);
         font-weight: 500;
     }
 
@@ -342,7 +849,7 @@ a.card {
 
 .bar-track {
     height: 0.7rem;
-    background: #eeeaff;
+    background: var(--accent-soft);
     border-radius: 999px;
     overflow: hidden;
 }
@@ -350,13 +857,13 @@ a.card {
 .bar-fill {
     display: block;
     height: 100%;
-    background: #6b5bff;
+    background: var(--accent);
     border-radius: 999px;
 }
 
 .bar-value {
     text-align: right;
-    color: #6b6b73;
+    color: var(--muted);
 }
 
 .hour-chart {
@@ -376,7 +883,7 @@ a.card {
 
 .hour-bar {
     min-height: 2px;
-    background: #6b5bff;
+    background: var(--accent);
     border-radius: 3px 3px 0 0;
 }
 
@@ -384,20 +891,20 @@ a.card {
     height: 1rem;
     font-size: 0.7rem;
     text-align: center;
-    color: #6b6b73;
+    color: var(--muted);
 }
 
 .review-row {
     padding: 0.9rem 1rem;
     margin-bottom: 0.6rem;
-    background: white;
-    border: 1px solid #e3e3e6;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 0.75rem;
 }
 
 .review-hidden {
     opacity: 0.7;
-    background: #fafafb;
+    background: var(--surface-muted);
 }
 
 .review-head {
@@ -432,7 +939,7 @@ a.card {
 
 .member-row {
     padding: 0.75rem 0;
-    border-top: 1px solid #f0f0f2;
+    border-top: 1px solid var(--divider);
 }
 
     .member-row:first-of-type {
@@ -464,18 +971,6 @@ a.card {
     margin-top: 0.5rem;
 }
 
-.page-tools {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: 0.5rem;
-}
-
-.staff-header-tools {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-}
-
 .language-switcher {
     display: inline-flex;
     align-items: center;
@@ -487,3 +982,115 @@ a.card {
         font-weight: 700;
         text-decoration: underline;
     }
+
+/* ==========================================================================
+   Narrow screens
+   ========================================================================== */
+
+@media (max-width: 48rem) {
+    .page {
+        padding: 0.75rem 1rem 2.5rem;
+    }
+
+    .staff-header {
+        padding: 0.6rem 1rem;
+    }
+
+    .staff-user span {
+        display: none;
+    }
+
+    .org-shell {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 1rem;
+    }
+
+    /* The organization and its secondary links on one line, the page links on a row below. */
+    .org-nav {
+        position: static;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "title secondary"
+            "links links";
+        align-items: baseline;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .org-nav-title {
+        grid-area: title;
+        flex-direction: row;
+        align-items: baseline;
+        gap: 0.5rem;
+        padding: 0 0 0.5rem;
+    }
+
+    /* One row that scrolls sideways, edge to edge, instead of wrapping into several. */
+    .org-nav-links {
+        grid-area: links;
+        flex-direction: row;
+        gap: 0.25rem;
+        margin: 0 -1rem;
+        padding: 0 1rem;
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none;
+    }
+
+        .org-nav-links::-webkit-scrollbar {
+            display: none;
+        }
+
+        .org-nav-links a {
+            flex: none;
+        }
+
+    .org-nav-secondary {
+        grid-area: secondary;
+        flex-direction: row;
+        gap: 1rem;
+        margin: 0;
+        padding: 0;
+        border-top: none;
+        font-size: 0.85rem;
+    }
+
+        .org-nav-secondary a {
+            padding: 0;
+        }
+
+    .booking-row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.4rem;
+    }
+
+    .schedule-day {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0.25rem;
+    }
+
+    .bar-list li {
+        grid-template-columns: 6rem 1fr 2.5rem;
+    }
+}
+
+/* A mouse cannot swipe: where the side navigation scrolls sideways, show a thin scrollbar to drag.
+   Touch screens keep it hidden; the item cut off at the edge shows there is more. */
+@media (max-width: 48rem) and (pointer: fine) {
+    .org-nav-links {
+        padding-bottom: 0.25rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+    }
+
+        .org-nav-links::-webkit-scrollbar {
+            display: block;
+            height: 6px;
+        }
+
+        .org-nav-links::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+}
