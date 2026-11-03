@@ -11,13 +11,12 @@ public class DeleteOrganizationCommandHandlerTests
     private readonly IOrganizationRepository _organizationRepository = Substitute.For<IOrganizationRepository>();
     private readonly IOrganizationMemberRepository _organizationMemberRepository = Substitute.For<IOrganizationMemberRepository>();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
-    private readonly IUnitOfWork _unitOfWork = Substitute.For<IUnitOfWork>();
 
     private static readonly Guid OrganizationId = Guid.CreateVersion7();
     private static readonly Guid UserId = Guid.CreateVersion7();
 
     private DeleteOrganizationCommandHandler CreateSut() =>
-        new(_organizationRepository, _organizationMemberRepository, _currentUser, _unitOfWork);
+        new(_organizationRepository, _organizationMemberRepository, _currentUser);
 
     [Fact]
     public async Task Handle_CallerNotOwner_ReturnsForbidden()
@@ -31,7 +30,7 @@ public class DeleteOrganizationCommandHandlerTests
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(ApplicationErrors.Organization.OnlyOwnerCanDelete);
-        await _organizationRepository.DidNotReceive().DeleteAllDataAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+        await _organizationRepository.DidNotReceive().DeleteAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -40,30 +39,28 @@ public class DeleteOrganizationCommandHandlerTests
         _currentUser.UserId.Returns(UserId);
         _organizationMemberRepository.GetByOrganizationAndUserAsync(OrganizationId, UserId, Arg.Any<CancellationToken>())
             .Returns(OrganizationMember.Create(OrganizationId, UserId, OrganizationRole.Owner, null, null).Value);
-        _organizationRepository.GetByIdAsync(OrganizationId, Arg.Any<CancellationToken>()).Returns((Organization?)null);
+        _organizationRepository.GetSlugAsync(OrganizationId, Arg.Any<CancellationToken>()).Returns((string?)null);
         var sut = CreateSut();
 
         var result = await sut.Handle(new DeleteOrganizationCommand(OrganizationId), CancellationToken.None);
 
         result.IsFailure.Should().BeTrue();
         result.Error.Should().Be(ApplicationErrors.Organization.NotFound);
+        await _organizationRepository.DidNotReceive().DeleteAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
-    public async Task Handle_CallerIsOwner_DeletesAllDataThenRemovesOrganization()
+    public async Task Handle_CallerIsOwner_DeletesTheOrganization()
     {
-        var organization = Organization.Create("Acme", "acme").Value;
         _currentUser.UserId.Returns(UserId);
         _organizationMemberRepository.GetByOrganizationAndUserAsync(OrganizationId, UserId, Arg.Any<CancellationToken>())
             .Returns(OrganizationMember.Create(OrganizationId, UserId, OrganizationRole.Owner, null, null).Value);
-        _organizationRepository.GetByIdAsync(OrganizationId, Arg.Any<CancellationToken>()).Returns(organization);
+        _organizationRepository.GetSlugAsync(OrganizationId, Arg.Any<CancellationToken>()).Returns("acme");
         var sut = CreateSut();
 
         var result = await sut.Handle(new DeleteOrganizationCommand(OrganizationId), CancellationToken.None);
 
         result.IsSuccess.Should().BeTrue();
-        await _organizationRepository.Received(1).DeleteAllDataAsync(OrganizationId, Arg.Any<CancellationToken>());
-        _organizationRepository.Received(1).Remove(organization);
-        await _unitOfWork.Received(1).SaveChangesAsync(Arg.Any<CancellationToken>());
+        await _organizationRepository.Received(1).DeleteAsync(OrganizationId, Arg.Any<CancellationToken>());
     }
 }

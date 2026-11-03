@@ -5,7 +5,6 @@ namespace BookingHub.Application.Common.Persistence;
 public interface IOrganizationRepository
 {
     void Add(Organization organization);
-    void Remove(Organization organization);
     Task<Organization?> GetByIdAsync(Guid organizationId, CancellationToken cancellationToken);
     Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken);
 
@@ -13,9 +12,9 @@ public interface IOrganizationRepository
     Task<string?> GetSlugAsync(Guid organizationId, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Deletes everything that belongs to the organization, without loading it. Does not delete the
-    /// organization itself (call <see cref="Remove"/> and save in the same unit of work) and never
-    /// touches clients, which are shared across organizations.
+    /// Deletes the organization and everything that belongs to it, straight in the database: nothing is
+    /// loaded and no save is needed, so run it inside the caller's transaction. Clients, which are shared
+    /// across organizations, are never touched.
     /// </summary>
-    Task DeleteAllDataAsync(Guid organizationId, CancellationToken cancellationToken);
+    Task DeleteAsync(Guid organizationId, CancellationToken cancellationToken);
 }

@@ -8,8 +8,6 @@ internal sealed class OrganizationRepository(ApplicationDbContext dbContext) : I
 {
     public void Add(Organization organization) => dbContext.Organizations.Add(organization);
 
-    public void Remove(Organization organization) => dbContext.Organizations.Remove(organization);
-
     public Task<Organization?> GetByIdAsync(Guid organizationId, CancellationToken cancellationToken) =>
         dbContext.Organizations.FirstOrDefaultAsync(o => o.Id == organizationId, cancellationToken);
 
@@ -22,11 +20,15 @@ internal sealed class OrganizationRepository(ApplicationDbContext dbContext) : I
             .Select(o => o.Slug)
             .FirstOrDefaultAsync(cancellationToken);
 
-    public async Task DeleteAllDataAsync(Guid organizationId, CancellationToken cancellationToken)
+    public async Task DeleteAsync(Guid organizationId, CancellationToken cancellationToken)
     {
         // Every foreign key in this schema is DeleteBehavior.Restrict, so nothing cascades on its own:
-        // rows are deleted leaves first, and the Organization itself last (Remove, by the caller).
-        // Client rows are never touched — clients are global, shared across organizations.
+        // rows are deleted leaves first, and the Organization itself last. Client rows are never
+        // touched — clients are global, shared across organizations.
+        //
+        // The organization row goes the same way as the rest, not through the change tracker: entities
+        // loaded earlier in the request (the caller's membership, at least) are still tracked there,
+        // and removing the organization through it would trip over them.
         //
         // Every statement is filtered by this organization explicitly. Row-level security and the
         // query filters scope these deletes as well, but must never be the only thing that does.
@@ -60,5 +62,8 @@ internal sealed class OrganizationRepository(ApplicationDbContext dbContext) : I
         await dbContext.Employees.Where(e => e.OrganizationId == organizationId).ExecuteDeleteAsync(cancellationToken);
         await dbContext.Services.Where(s => s.OrganizationId == organizationId).ExecuteDeleteAsync(cancellationToken);
         await dbContext.Locations.Where(l => l.OrganizationId == organizationId).ExecuteDeleteAsync(cancellationToken);
+
+        // Its outbox messages go with it (the only cascading foreign key).
+        await dbContext.Organizations.Where(o => o.Id == organizationId).ExecuteDeleteAsync(cancellationToken);
     }
 }

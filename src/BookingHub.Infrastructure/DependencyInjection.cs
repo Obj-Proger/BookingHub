@@ -126,7 +126,10 @@ public static class DependencyInjection
             .UseRecommendedSerializerSettings()
             .UsePostgreSqlStorage(options => options.UseNpgsqlConnection(configuration.GetConnectionString("Database"))));
 
-        services.AddHangfireServer();
+        // Every worker polls the database on a connection of its own. The jobs are a handful of light
+        // recurring sweeps, so two workers are plenty; Hangfire's default (up to 20 per instance) would
+        // take a large share of a small PostgreSQL server's connections.
+        services.AddHangfireServer(options => options.WorkerCount = configuration.GetValue("Hangfire:WorkerCount", 2));
         services.AddSingleton<TenantJobRunner>();
         services.AddScoped<BookingLifecycleJobs>();
         services.AddScoped<OutboxCleanupJob>();

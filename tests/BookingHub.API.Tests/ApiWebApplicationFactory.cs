@@ -42,6 +42,10 @@ public sealed class ApiWebApplicationFactory(string connectionString, bool relax
         // Guest messages go out within a fraction of a second, so tests that wait for one stay fast.
         builder.UseSetting("Outbox:PollingInterval", "00:00:00.2");
 
+        // Several of these hosts run at once, each with its own Hangfire server: one worker apiece keeps
+        // them well within the database server's connection limit.
+        builder.UseSetting("Hangfire:WorkerCount", "1");
+
         builder.ConfigureServices(services =>
         {
             // First of all hosted services: the outbox processor and Hangfire query the schema as soon as they start.

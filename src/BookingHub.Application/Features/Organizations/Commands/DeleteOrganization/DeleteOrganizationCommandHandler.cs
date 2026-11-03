@@ -9,8 +9,7 @@ namespace BookingHub.Application.Features.Organizations.Commands.DeleteOrganizat
 internal sealed class DeleteOrganizationCommandHandler(
     IOrganizationRepository organizationRepository,
     IOrganizationMemberRepository organizationMemberRepository,
-    ICurrentUser currentUser,
-    IUnitOfWork unitOfWork)
+    ICurrentUser currentUser)
     : ICommandHandler<DeleteOrganizationCommand>
 {
     public async Task<Result> Handle(DeleteOrganizationCommand command, CancellationToken cancellationToken)
@@ -19,14 +18,10 @@ internal sealed class DeleteOrganizationCommandHandler(
         if (caller is null || caller.Role != OrganizationRole.Owner)
             return Result.Failure(ApplicationErrors.Organization.OnlyOwnerCanDelete);
 
-        var organization = await organizationRepository.GetByIdAsync(command.OrganizationId, cancellationToken);
-        if (organization is null)
+        if (await organizationRepository.GetSlugAsync(command.OrganizationId, cancellationToken) is null)
             return Result.Failure(ApplicationErrors.Organization.NotFound);
 
-        await organizationRepository.DeleteAllDataAsync(command.OrganizationId, cancellationToken);
-        organizationRepository.Remove(organization);
-
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        await organizationRepository.DeleteAsync(command.OrganizationId, cancellationToken);
         return Result.Success();
     }
 }
